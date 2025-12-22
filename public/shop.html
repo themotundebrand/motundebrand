@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Motunde Brand | Luxury Fragrances</title>
+    <title>Shop | The Motunde Brand</title>
     
     <link rel="icon" type="image/png" href="https://i.imgur.com/CVKXV7R.png">
     
@@ -15,8 +15,8 @@
                     colors: {
                         brandWhite: '#FFFFFF',
                         brandBlack: '#000000',
-                        brandPink: '#D4A5A9', /* Darkened from F7C8D0 */
-                        brandPinkDark: '#B8868B', /* Darkened from E2A9B3 */
+                        brandPink: '#F7C8D0',
+                        brandPinkDark: '#E2A9B3',
                     },
                     letterSpacing: {
                         luxury: '0.4em',
@@ -26,139 +26,120 @@
         }
     </script>
     <style>
-        .fade-slide {
-            transition: opacity 1.2s cubic-bezier(0.4, 0, 0.2, 1);
-            background-color: #000;
+        /* Transparent Pink Background Setup */
+        .bg-overlay {
+            background: linear-gradient(rgba(247, 200, 208, 0.85), rgba(247, 200, 208, 0.85)), 
+                        url('https://i.imgur.com/KQ2leiY.jpeg');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
         }
-
-        .optimized-img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover; 
-            object-position: center;
-            content-visibility: auto;
-            image-rendering: -webkit-optimize-contrast;
-            transition: transform 4s ease-out;
+        
+        .product-card {
+            transition: transform 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
         }
-
-        @media (min-width: 1024px) {
-            .optimized-img {
-                object-fit: contain; 
-                padding: 20px;
-            }
-        }
-
-        @keyframes progress {
-            from { width: 0%; }
-            to { width: 100%; }
-        }
-
-        .timer-bar {
-            animation: progress 9.5s linear forwards;
-        }
-
-        .h-screen-safe {
-            height: 100vh;
-            height: 100dvh; 
+        .product-card:hover {
+            transform: translateY(-8px);
         }
     </style>
 </head>
-<body class="bg-brandBlack text-brandWhite overflow-x-hidden antialiased">
+<body class="bg-overlay min-h-screen flex flex-col antialiased">
 
-    <div class="fixed top-0 left-0 h-[2px] bg-brandPink z-50 timer-bar"></div>
-
-    <header class="relative h-screen-safe w-full overflow-hidden flex items-center justify-center">
-        <div id="slider-container" class="absolute inset-0 z-0">
-            <div class="slider-image absolute inset-0 opacity-100 fade-slide overflow-hidden">
-                <div class="absolute inset-0 bg-black/40 z-10"></div>
-                <img src="https://i.imgur.com/Wp0HCu8.jpeg" class="optimized-img" alt="Luxury 1">
-            </div>
-            <div class="slider-image absolute inset-0 opacity-0 fade-slide overflow-hidden">
-                <div class="absolute inset-0 bg-black/40 z-10"></div>
-                <img src="https://i.imgur.com/BRl8AVs.jpeg" class="optimized-img" alt="Luxury 2">
-            </div>
-            <div class="slider-image absolute inset-0 opacity-0 fade-slide overflow-hidden">
-                <div class="absolute inset-0 bg-black/40 z-10"></div>
-                <img src="https://i.imgur.com/KQ2leiY.jpeg" class="optimized-img" alt="Luxury 3">
-            </div>
-        </div>
-
-        <div class="relative z-30 flex flex-col justify-center items-center text-center px-6 pointer-events-none">
-            <h1 class="text-lg md:text-2xl lg:text-3xl font-bold tracking-luxury uppercase mb-2 drop-shadow-xl">
-                The Motunde Brand
-            </h1>
-            <div class="w-12 h-[1px] bg-brandPink/60 mb-3"></div>
-            <p class="text-[8px] md:text-[10px] tracking-[0.6em] uppercase text-brandPink font-light">
-                Entering the World of Luxury
-            </p>
-        </div>
-
-        <div class="absolute bottom-24 left-1/2 -translate-x-1/2 z-40 flex items-center space-x-4">
-            <div class="dot h-[1px] bg-white transition-all duration-500" id="dot-0"></div>
-            <div class="dot h-[1px] bg-white/20 transition-all duration-500" id="dot-1"></div>
-            <div class="dot h-[1px] bg-white/20 transition-all duration-500" id="dot-2"></div>
-        </div>
-    </header>
-
-    <footer class="bg-brandBlack py-8 px-6 text-center border-t border-white/5">
-        <div class="max-w-screen-xl mx-auto space-y-4">
-            <div>
-                <h3 class="text-[10px] tracking-[0.4em] uppercase font-bold mb-1">The Motunde Brand</h3>
-                <p class="text-[9px] text-white/50 tracking-widest leading-relaxed max-w-xs mx-auto">
-                    A legacy of luxury fragrances designed to define your essence.
-                </p>
-            </div>
+    <nav class="fixed w-full z-50 bg-white/90 backdrop-blur-md border-b border-brandPink/30">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+            <h1 class="text-lg md:text-xl font-bold tracking-luxury uppercase">The Motunde Brand</h1>
             
-            <div class="flex justify-center space-x-6 text-[8px] tracking-[0.2em] uppercase text-brandPink">
-                <a href="#" class="hover:text-white transition-colors">Shipping</a>
-                <a href="#" class="hover:text-white transition-colors">Contact</a>
+            <div class="hidden md:flex space-x-8 uppercase text-[10px] tracking-[0.2em] font-semibold">
+                <a href="index.html" class="hover:text-brandPinkDark transition">Home</a>
+                <a href="#" class="text-brandPinkDark">Shop</a>
+                <a href="#" class="hover:text-brandPinkDark transition">Cart (0)</a>
             </div>
 
-            <p class="text-[7px] text-white/30 uppercase tracking-widest">
-                © 2025 THE MOTUNDE BRAND
-            </p>
+            <div class="md:hidden">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16m-7 6h7" stroke-width="1.5"></path></svg>
+            </div>
+        </div>
+    </nav>
+
+    <main class="flex-grow pt-32 pb-20 px-6">
+        <div class="max-w-7xl mx-auto">
+            <header class="text-center mb-16">
+                <h2 class="text-3xl md:text-5xl font-light uppercase tracking-widest mb-4">The Collection</h2>
+                <div class="w-20 h-1 bg-brandBlack mx-auto"></div>
+            </header>
+
+            <div id="product-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+                <div class="animate-pulse text-center col-span-full py-20 uppercase tracking-widest text-sm">
+                    Curating Excellence...
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="bg-brandBlack text-white py-12 px-6">
+        <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-10 text-center md:text-left">
+            <div>
+                <h3 class="uppercase tracking-widest text-sm font-bold mb-4">The Motunde Brand</h3>
+                <p class="text-[10px] text-gray-400 leading-loose">A legacy of luxury fragrances designed to define your essence.</p>
+            </div>
+            <div>
+                <h3 class="uppercase tracking-widest text-sm font-bold mb-4">Customer Care</h3>
+                <ul class="text-[10px] space-y-2 text-gray-400 uppercase tracking-tighter">
+                    <li><a href="#" class="hover:text-brandPink transition">Shipping & Returns</a></li>
+                    <li><a href="#" class="hover:text-brandPink transition">Contact Us</a></li>
+                </ul>
+            </div>
+            <div class="text-center md:text-right">
+                <p class="text-[10px] uppercase tracking-widest text-brandPink">© 2025 THE MOTUNDE BRAND</p>
+            </div>
         </div>
     </footer>
 
     <script>
-        let currentIndex = 0;
-        const slides = document.querySelectorAll('.slider-image');
-        const dots = document.querySelectorAll('.dot');
-        const totalSlides = slides.length;
-        const slideInterval = 3000; 
+        async function loadProducts() {
+            try {
+                // Fetching from your Netlify Function
+                const response = await fetch('/api/products');
+                const products = await response.json();
 
-        function showSlide(index) {
-            slides.forEach((slide, i) => {
-                const img = slide.querySelector('img');
-                if (i === index) {
-                    slide.style.opacity = '1';
-                    slide.style.zIndex = '10';
-                    img.style.transform = "scale(1.05)"; 
-                } else {
-                    slide.style.opacity = '0';
-                    slide.style.zIndex = '0';
-                    img.style.transform = "scale(1)";
+                const grid = document.getElementById('product-grid');
+                
+                if (products.length === 0) {
+                    grid.innerHTML = `<p class="col-span-full text-center">No scents found in the vault.</p>`;
+                    return;
                 }
-            });
-            
-            dots.forEach((dot, i) => {
-                dot.style.backgroundColor = i === index ? '#FFFFFF' : 'rgba(255,255,255,0.2)';
-                dot.style.width = i === index ? '32px' : '16px';
-            });
-        }
 
-        function nextSlide() {
-            if (currentIndex < totalSlides - 1) {
-                currentIndex++;
-                showSlide(currentIndex);
-            } else {
-                clearInterval(cycle);
-                // Optional: redirect logic can go here
+                grid.innerHTML = products.map(product => `
+                    <div class="product-card bg-white p-2 shadow-sm border border-brandPink/10">
+                        <div class="aspect-[4/5] overflow-hidden bg-gray-100 relative group">
+                            <img src="${product.imageUrl}" alt="${product.name}" 
+                                 class="w-full h-full object-cover transition duration-700 group-hover:scale-110">
+                            <div class="absolute inset-0 bg-brandBlack/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                        </div>
+                        <div class="p-6 text-center">
+                            <h3 class="uppercase font-bold tracking-[0.2em] text-xs mb-2">${product.name}</h3>
+                            <p class="text-brandPinkDark font-serif italic mb-6">$${product.price}</p>
+                            <button onclick="addToCart('${product._id}')" 
+                                    class="w-full bg-brandBlack text-white py-4 text-[10px] uppercase tracking-[0.3em] hover:bg-brandPink hover:text-brandBlack transition-all duration-300 active:scale-95">
+                                Add to Bag
+                            </button>
+                        </div>
+                    </div>
+                `).join('');
+
+            } catch (error) {
+                console.error("Fetch error:", error);
+                document.getElementById('product-grid').innerHTML = `<p class="col-span-full text-center">Unable to load the collection at this time.</p>`;
             }
         }
 
-        const cycle = setInterval(nextSlide, slideInterval);
-        showSlide(0);
+        function addToCart(id) {
+            console.log("Added product to cart:", id);
+            alert("Scent added to your bag.");
+        }
+
+        // Initialize
+        loadProducts();
     </script>
 </body>
 </html>
