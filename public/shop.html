@@ -121,22 +121,37 @@
                         <a href="#" class="px-6 py-3 text-[9px] text-brandPink/80 hover:text-brandPink hover:bg-white/5 uppercase tracking-widest transition">Oil Perfumes</a>
                         <a href="#" class="px-6 py-3 text-[9px] text-brandPink/80 hover:text-brandPink hover:bg-white/5 uppercase tracking-widest transition">Combo Collection</a>
                         <a href="#" class="px-6 py-3 text-[9px] text-brandPink/80 hover:text-brandPink hover:bg-white/5 uppercase tracking-widest transition">Body Spray</a>
-                        <a href="#" class="px-6 py-3 text-[9px] text-brandPink/80 hover:text-brandPink hover:bg-white/5 uppercase tracking-widest transition">Fragrance</a>
                     </div>
                 </div>
             </div>
         </div>
     </section>
 
-    <main class="flex-grow py-20 px-8">
+   <main class="flex-grow py-20 px-4 md:px-8">
         <div class="max-w-7xl mx-auto">
-            <header class="text-center mb-16">
-                <h2 class="text-brandBlack text-2xl md:text-3xl font-light uppercase tracking-[0.3em] mb-4">The Collection</h2>
-                <div class="w-12 h-[1px] bg-brandPink mx-auto"></div>
-            </header>
-            <div id="product-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-                <div class="col-span-full py-20 text-center uppercase tracking-widest text-[10px] text-gray-400">Loading Scent Vault...</div>
-            </div>
+            
+            <section id="womens-section" class="mb-24">
+                <header class="text-center mb-12">
+                    <h2 class="text-brandBlack text-2xl md:text-3xl font-light uppercase tracking-[0.3em] mb-4">Women's Collection</h2>
+                    <div class="w-12 h-[1px] bg-brandPink mx-auto"></div>
+                </header>
+                <div id="women-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
+                    <div class="col-span-full py-10 text-center uppercase tracking-widest text-[10px] text-gray-400 animate-pulse">Consulting the Scent Vault...</div>
+                </div>
+            </section>
+
+            <hr class="border-brandPink/10 mb-24">
+
+            <section id="mens-section">
+                <header class="text-center mb-12">
+                    <h2 class="text-brandBlack text-2xl md:text-3xl font-light uppercase tracking-[0.3em] mb-4">Men's Collection</h2>
+                    <div class="w-12 h-[1px] bg-brandPink mx-auto"></div>
+                </header>
+                <div id="men-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
+                    <div class="col-span-full py-10 text-center uppercase tracking-widest text-[10px] text-gray-400 animate-pulse">Consulting the Scent Vault...</div>
+                </div>
+            </section>
+
         </div>
     </main>
 
@@ -174,9 +189,9 @@
         shopBtn.onclick = (e) => {
             e.stopPropagation();
             const isOpen = !shopMenu.classList.contains('invisible');
-            shopMenu.classList.toggle('opacity-0', isOpen);
-            shopMenu.classList.toggle('invisible', isOpen);
-            shopMenu.classList.toggle('-translate-y-2', isOpen);
+            shopMenu.classList.toggle('opacity-0', !isOpen);
+            shopMenu.classList.toggle('invisible', !isOpen);
+            shopMenu.classList.toggle('-translate-y-2', !isOpen);
         };
 
         window.onclick = () => {
@@ -197,30 +212,50 @@
         }
         setInterval(rotateSlides, 4000);
 
-        // API PRODUCTS
+        // API PRODUCTS & SORTING
         async function loadProducts() {
             try {
                 const response = await fetch('/api/products');
                 const products = await response.json();
-                const grid = document.getElementById('product-grid');
+                
+                const womenGrid = document.getElementById('women-grid');
+                const menGrid = document.getElementById('men-grid');
+
                 if (!products || products.length === 0) {
-                    grid.innerHTML = `<p class="col-span-full text-center text-gray-400 py-10 uppercase text-[10px]">Vault empty</p>`;
+                    const emptyMsg = `<p class="col-span-full text-center text-gray-400 py-10 uppercase text-[10px]">Vault empty</p>`;
+                    womenGrid.innerHTML = emptyMsg;
+                    menGrid.innerHTML = emptyMsg;
                     return;
                 }
-                grid.innerHTML = products.map(p => `
-                    <div class="product-card group bg-white border border-gray-50 p-4 hover:border-brandPink">
-                        <div class="aspect-[3/4] overflow-hidden bg-gray-50 mb-6"><img src="${p.imageUrl}" class="w-full h-full object-cover transition duration-1000 group-hover:scale-105"></div>
+
+                // Helper to render HTML
+                const renderCard = (p) => `
+                    <div class="product-card group bg-white border border-gray-50 p-4 hover:border-brandPink transition-all duration-500">
+                        <div class="aspect-[3/4] overflow-hidden bg-gray-50 mb-6">
+                            <img src="${p.imageUrl}" class="w-full h-full object-cover transition duration-1000 group-hover:scale-105">
+                        </div>
                         <div class="text-center">
                             <h3 class="uppercase font-bold tracking-widest text-[9px] text-brandBlack mb-2">${p.name}</h3>
                             <p class="text-gray-400 text-[9px] mb-6">$${p.price}</p>
                             <button onclick="addToCart('${p._id}')" class="w-full bg-brandBlack text-brandPink py-3 text-[8px] uppercase tracking-[0.3em] hover:bg-brandPink hover:text-brandBlack transition-all">Add to Bag</button>
                         </div>
                     </div>
-                `).join('');
-            } catch (e) { document.getElementById('product-grid').innerHTML = `<p class="col-span-full text-center text-gray-300">Sync Error</p>`; }
+                `;
+
+                // Filter logic (adjust 'women' or 'men' strings to match your database values)
+                const womenProds = products.filter(p => p.category?.toLowerCase() === 'women');
+                const menProds = products.filter(p => p.category?.toLowerCase() === 'men');
+
+                womenGrid.innerHTML = womenProds.length ? womenProds.map(renderCard).join('') : `<p class="col-span-full text-center text-gray-300">No feminine scents available</p>`;
+                menGrid.innerHTML = menProds.length ? menProds.map(renderCard).join('') : `<p class="col-span-full text-center text-gray-300">No masculine scents available</p>`;
+
+            } catch (e) { 
+                const errorMsg = `<p class="col-span-full text-center text-red-300">Sync Error</p>`;
+                document.getElementById('women-grid').innerHTML = errorMsg;
+                document.getElementById('men-grid').innerHTML = errorMsg;
+            }
         }
+
         function addToCart(id) { alert("Scent added to bag."); }
         loadProducts();
     </script>
-</body>
-</html>
