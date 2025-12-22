@@ -41,7 +41,7 @@
 
         /* Smooth Slider Transitions */
         .slide-fade {
-            transition: opacity 1s ease-in-out;
+            transition: opacity 1.2s ease-in-out;
             position: absolute;
             inset: 0;
             width: 100%;
@@ -50,6 +50,13 @@
         .slide-hidden { opacity: 0; pointer-events: none; }
         .slide-active { opacity: 1; pointer-events: auto; }
 
+        /* Blur Overlay */
+        .glass-overlay {
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(247, 200, 208, 0.1);
+        }
+
         @media (max-width: 768px) {
             .logo-text { font-size: 0.85rem !important; letter-spacing: 0.2em !important; }
         }
@@ -57,7 +64,7 @@
 </head>
 <body class="bg-white font-sans min-h-screen flex flex-col antialiased overflow-x-hidden">
 
-    <div id="mobile-menu" class="fixed inset-y-0 right-0 w-64 bg-brandBlack z-[60] transform translate-x-full flex flex-col p-8 shadow-2xl">
+    <div id="mobile-menu" class="fixed inset-y-0 right-0 w-64 bg-brandBlack z-[70] transform translate-x-full flex flex-col p-8 shadow-2xl">
         <button id="close-menu" class="self-end text-brandPink mb-12">
             <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" stroke-width="1.5"></path></svg>
         </button>
@@ -68,7 +75,7 @@
             <a href="#" class="text-brandPink/60 hover:text-brandPink">Contact</a>
         </nav>
     </div>
-    <div id="menu-overlay" class="fixed inset-0 bg-black/50 z-[55] hidden backdrop-blur-sm"></div>
+    <div id="menu-overlay" class="fixed inset-0 bg-black/50 z-[65] hidden backdrop-blur-sm"></div>
 
     <nav class="fixed w-full z-50 bg-brandBlack shadow-xl border-b border-brandPink/10">
         <div class="max-w-7xl mx-auto px-6 py-5 flex justify-between items-center">
@@ -86,68 +93,67 @@
         </div>
     </nav>
 
-    <section class="pt-20 bg-brandBlack">
-        <div class="relative h-[450px] md:h-[600px] overflow-hidden">
+    <section class="pt-20 bg-brandBlack relative">
+        <div class="relative h-[300px] md:h-[450px] overflow-hidden">
             <div id="slide-group-1" class="slide-fade slide-active flex flex-row h-full">
-                <div class="w-full md:w-1/2 h-full border-r border-brandPink/5">
-                    <img src="https://i.imgur.com/bO3iAss.jpeg" class="w-full h-full object-cover" alt="Fragrance 1">
-                </div>
-                <div class="hidden md:block md:w-1/2 h-full">
-                    <img src="https://i.imgur.com/OttTbfO.jpeg" class="w-full h-full object-cover" alt="Fragrance 2">
-                </div>
+                <div class="w-full md:w-1/2 h-full"><img src="https://i.imgur.com/bO3iAss.jpeg" class="w-full h-full object-cover"></div>
+                <div class="hidden md:block md:w-1/2 h-full"><img src="https://i.imgur.com/OttTbfO.jpeg" class="w-full h-full object-cover"></div>
             </div>
-
             <div id="slide-group-2" class="slide-fade slide-hidden flex flex-row h-full">
-                <div class="w-full md:w-1/2 h-full border-r border-brandPink/5">
-                    <img src="https://i.imgur.com/mfXDwZG.jpeg" class="w-full h-full object-cover" alt="Fragrance 3">
-                </div>
-                <div class="hidden md:block md:w-1/2 h-full">
-                    <img src="https://i.imgur.com/LWxBC3K.jpeg" class="w-full h-full object-cover" alt="Fragrance 4">
-                </div>
+                <div class="w-full md:w-1/2 h-full"><img src="https://i.imgur.com/mfXDwZG.jpeg" class="w-full h-full object-cover"></div>
+                <div class="hidden md:block md:w-1/2 h-full"><img src="https://i.imgur.com/LWxBC3K.jpeg" class="w-full h-full object-cover"></div>
             </div>
-            
-            <div id="slide-group-3" class="slide-fade slide-hidden flex md:hidden flex-row h-full">
-                <img src="https://i.imgur.com/OttTbfO.jpeg" class="w-full h-full object-cover" alt="Fragrance 2">
-            </div>
-            <div id="slide-group-4" class="slide-fade slide-hidden flex md:hidden flex-row h-full">
-                <img src="https://i.imgur.com/LWxBC3K.jpeg" class="w-full h-full object-cover" alt="Fragrance 4">
-            </div>
+            <div id="slide-group-3" class="slide-fade slide-hidden md:hidden flex h-full"><img src="https://i.imgur.com/OttTbfO.jpeg" class="w-full h-full object-cover"></div>
+            <div id="slide-group-4" class="slide-fade slide-hidden md:hidden flex h-full"><img src="https://i.imgur.com/LWxBC3K.jpeg" class="w-full h-full object-cover"></div>
         </div>
-        
-        <div class="bg-brandBlack py-4 text-center border-b border-brandPink/10">
-            <span class="text-[9px] uppercase tracking-[0.5em] text-brandPink font-bold">The Signature Experience</span>
+
+        <div class="absolute inset-0 flex flex-col items-center justify-center z-10 pointer-events-none">
+            <div class="glass-overlay p-6 md:p-10 rounded-full border border-brandPink/20 pointer-events-auto relative group">
+                <button id="shop-dropdown-btn" class="text-brandPink uppercase tracking-[0.5em] text-[10px] md:text-xs font-bold flex items-center gap-4 group">
+                    Shop Collection
+                    <svg class="w-3 h-3 transition-transform group-hover:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7" stroke-width="2"></path></svg>
+                </button>
+
+                <div id="shop-dropdown-menu" class="absolute top-full left-1/2 -translate-x-1/2 mt-4 w-64 bg-brandBlack/95 backdrop-blur-xl border border-brandPink/20 opacity-0 invisible transition-all duration-300 transform -translate-y-2">
+                    <div class="flex flex-col py-4">
+                        <a href="#" class="px-6 py-3 text-[9px] text-brandPink/80 hover:text-brandPink hover:bg-white/5 uppercase tracking-widest transition">Women's Collection</a>
+                        <a href="#" class="px-6 py-3 text-[9px] text-brandPink/80 hover:text-brandPink hover:bg-white/5 uppercase tracking-widest transition">Men's Collection</a>
+                        <a href="#" class="px-6 py-3 text-[9px] text-brandPink/80 hover:text-brandPink hover:bg-white/5 uppercase tracking-widest transition">Oil Perfumes</a>
+                        <a href="#" class="px-6 py-3 text-[9px] text-brandPink/80 hover:text-brandPink hover:bg-white/5 uppercase tracking-widest transition">Combo Collection</a>
+                        <a href="#" class="px-6 py-3 text-[9px] text-brandPink/80 hover:text-brandPink hover:bg-white/5 uppercase tracking-widest transition">Body Spray</a>
+                        <a href="#" class="px-6 py-3 text-[9px] text-brandPink/80 hover:text-brandPink hover:bg-white/5 uppercase tracking-widest transition">Fragrance</a>
+                    </div>
+                </div>
+            </div>
         </div>
     </section>
 
-    <main class="flex-grow py-24 px-8">
+    <main class="flex-grow py-20 px-8">
         <div class="max-w-7xl mx-auto">
-            <header class="text-center mb-24">
-                <h2 class="text-brandBlack text-2xl md:text-4xl font-light uppercase tracking-[0.3em] mb-6">The Collection</h2>
-                <div class="w-10 h-[1px] bg-brandPinkDark mx-auto"></div>
+            <header class="text-center mb-16">
+                <h2 class="text-brandBlack text-2xl md:text-3xl font-light uppercase tracking-[0.3em] mb-4">The Collection</h2>
+                <div class="w-12 h-[1px] bg-brandPink mx-auto"></div>
             </header>
-            <div id="product-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-8 gap-y-16">
-                <div class="col-span-full py-20 text-center uppercase tracking-widest text-[10px] text-gray-400">Syncing Scents...</div>
+            <div id="product-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+                <div class="col-span-full py-20 text-center uppercase tracking-widest text-[10px] text-gray-400">Loading Scent Vault...</div>
             </div>
         </div>
     </main>
 
     <footer class="bg-brandBlack border-t border-brandPink/10 py-12 px-8">
-        <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center space-y-8 md:space-y-0 text-center md:text-left">
-            <div>
-                <h3 class="uppercase tracking-widest text-[10px] font-bold text-brandPink">The Motunde Brand</h3>
-                <p class="text-[9px] text-brandPink/50 uppercase tracking-tighter">Your Essence, Redefined.</p>
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center space-y-8 md:space-y-0 text-[9px] uppercase tracking-widest">
+            <div class="text-brandPink">The Motunde Brand <span class="mx-4 text-brandPink/30">|</span> <span class="text-brandPink/50">Essence of Luxury</span></div>
+            <div class="flex space-x-8 text-brandPink/50">
+                <a href="#" class="hover:text-brandPink transition">Privacy</a>
+                <a href="#" class="hover:text-brandPink transition">Terms</a>
+                <a href="#" class="hover:text-brandPink transition">Contact</a>
             </div>
-            <div class="flex space-x-8 text-[9px] uppercase tracking-widest text-brandPink/50">
-                <a href="#" class="hover:text-brandPink">Privacy</a>
-                <a href="#" class="hover:text-brandPink">Terms</a>
-                <a href="#" class="hover:text-brandPink">Contact</a>
-            </div>
-            <p class="text-[9px] uppercase tracking-[0.2em] text-brandPink/30">© 2025</p>
+            <div class="text-brandPink/30">© 2025</div>
         </div>
     </footer>
 
     <script>
-        // SIDEBAR
+        // MOBILE MENU LOGIC
         const openBtn = document.getElementById('open-menu');
         const closeBtn = document.getElementById('close-menu');
         const menu = document.getElementById('mobile-menu');
@@ -156,34 +162,40 @@
         function toggleMenu() {
             menu.classList.toggle('translate-x-full');
             overlay.classList.toggle('hidden');
-            document.body.classList.toggle('overflow-hidden');
         }
-        openBtn.addEventListener('click', toggleMenu);
-        closeBtn.addEventListener('click', toggleMenu);
-        overlay.addEventListener('click', toggleMenu);
+        openBtn.onclick = toggleMenu;
+        closeBtn.onclick = toggleMenu;
+        overlay.onclick = toggleMenu;
+
+        // DROPDOWN LOGIC
+        const shopBtn = document.getElementById('shop-dropdown-btn');
+        const shopMenu = document.getElementById('shop-dropdown-menu');
+
+        shopBtn.onclick = (e) => {
+            e.stopPropagation();
+            const isOpen = !shopMenu.classList.contains('invisible');
+            shopMenu.classList.toggle('opacity-0', isOpen);
+            shopMenu.classList.toggle('invisible', isOpen);
+            shopMenu.classList.toggle('-translate-y-2', isOpen);
+        };
+
+        window.onclick = () => {
+            shopMenu.classList.add('opacity-0', 'invisible', '-translate-y-2');
+        };
 
         // SLIDER LOGIC
         let currentSlide = 1;
-        const totalSlidesDesktop = 2; // Groups of 2
-        const totalSlidesMobile = 4;  // Individual images
-
         function rotateSlides() {
             const isMobile = window.innerWidth < 768;
-            const total = isMobile ? totalSlidesMobile : totalSlidesDesktop;
-            
-            // Hide all
+            const total = isMobile ? 4 : 2;
             for(let i=1; i<=4; i++) {
                 const s = document.getElementById(`slide-group-${i}`);
                 if(s) s.classList.replace('slide-active', 'slide-hidden');
             }
-            
             currentSlide = (currentSlide % total) + 1;
-            
-            const nextSlide = document.getElementById(`slide-group-${currentSlide}`);
-            nextSlide.classList.replace('slide-hidden', 'slide-active');
+            document.getElementById(`slide-group-${currentSlide}`).classList.replace('slide-hidden', 'slide-active');
         }
-
-        setInterval(rotateSlides, 3500); // Swaps every 3.5 seconds
+        setInterval(rotateSlides, 4000);
 
         // API PRODUCTS
         async function loadProducts() {
@@ -197,15 +209,15 @@
                 }
                 grid.innerHTML = products.map(p => `
                     <div class="product-card group bg-white border border-gray-50 p-4 hover:border-brandPink">
-                        <div class="aspect-[3/4] overflow-hidden bg-gray-50 mb-8"><img src="${p.imageUrl}" class="w-full h-full object-cover transition duration-1000 group-hover:scale-105"></div>
+                        <div class="aspect-[3/4] overflow-hidden bg-gray-50 mb-6"><img src="${p.imageUrl}" class="w-full h-full object-cover transition duration-1000 group-hover:scale-105"></div>
                         <div class="text-center">
-                            <h3 class="uppercase font-bold tracking-widest text-[10px] text-brandBlack mb-2">${p.name}</h3>
-                            <p class="text-gray-400 text-[10px] mb-8 tracking-widest">$${p.price}</p>
-                            <button onclick="addToCart('${p._id}')" class="w-full bg-brandBlack text-brandPink py-4 text-[9px] uppercase tracking-[0.3em] hover:bg-brandPink hover:text-brandBlack transition-all">Add to Bag</button>
+                            <h3 class="uppercase font-bold tracking-widest text-[9px] text-brandBlack mb-2">${p.name}</h3>
+                            <p class="text-gray-400 text-[9px] mb-6">$${p.price}</p>
+                            <button onclick="addToCart('${p._id}')" class="w-full bg-brandBlack text-brandPink py-3 text-[8px] uppercase tracking-[0.3em] hover:bg-brandPink hover:text-brandBlack transition-all">Add to Bag</button>
                         </div>
                     </div>
                 `).join('');
-            } catch (e) { document.getElementById('product-grid').innerHTML = `<p class="col-span-full text-center text-gray-300">Connection Error</p>`; }
+            } catch (e) { document.getElementById('product-grid').innerHTML = `<p class="col-span-full text-center text-gray-300">Sync Error</p>`; }
         }
         function addToCart(id) { alert("Scent added to bag."); }
         loadProducts();
