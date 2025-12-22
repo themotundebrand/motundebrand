@@ -1,30 +1,17 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
-  content: [
-    "./app/**/*.{js,ts,jsx,tsx,mdx}",
-    "./pages/**/*.{js,ts,jsx,tsx,mdx}",
-    "./components/**/*.{js,ts,jsx,tsx,mdx}",
-  ],
+  content: ["./public/**/*.html", "./public/**/*.js"],
   theme: {
     extend: {
       colors: {
-        'brand-pink': '#FFC0CB', 
-        'brand-black': '#1A1A1A',
         'brand-white': '#FFFFFF',
+        'brand-black': '#000000',
+        'brand-pink': '#F7C8D0', // A sophisticated soft pink
+        'brand-pink-dark': '#E2A9B3', // For hover states
       },
-      fontFamily: {
-        serif: ['Playfair Display', 'serif'],
-        sans: ['Inter', 'sans-serif'], 
-      },
-      animation: {
-        'fade-in': 'fadeIn 1s ease-in-out',
-      },
-      keyframes: {
-        fadeIn: {
-          '0%': { opacity: '0' },
-          '100%': { opacity: '1' },
-        },
-      },
+      letterSpacing: {
+        'luxury': '0.2em',
+      }
     },
   },
   plugins: [],

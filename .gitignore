@@ -1,14 +1,4 @@
-# Dependencies
-node_modules/
-
-# Next.js Build Output
-.next/
-out/
-
-# Environment Variables (Keep your DB password safe!)
+#Envinroment variables
 .env
-.env.local
-
-# Operating System Files
-.DS_Store
-Thumbs.db
+#Node modules
+node_modules/

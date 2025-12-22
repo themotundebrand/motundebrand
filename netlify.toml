@@ -1,0 +1,24 @@
+[build]
+  # The folder containing your HTML, JS, and CSS
+  publish = "public"
+
+  # The folder where your Netlify Functions are stored
+  functions = "netlify/functions"
+
+[functions]
+  # Ensures your Node.js environment is up to date
+  node_bundler = "esbuild"
+
+[[redirects]]
+  # This handles the API routing so your frontend can 
+  # call '/api/...' instead of the long '/.netlify/functions/api'
+  from = "/api/*"
+  to = "/.netlify/functions/api/:splat"
+  status = 200
+
+[[redirects]]
+  # This helps with Single Page App routing (if needed later)
+  # or ensuring that 404s stay within your site
+  from = "/*"
+  to = "/index.html"
+  status = 200
