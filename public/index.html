@@ -28,25 +28,26 @@
     <style>
         .fade-slide {
             transition: opacity 1.5s ease-in-out;
+            background-color: #000; /* Prevents white flashes between slides */
         }
 
-        /* Image Optimization & Framing */
+        /* RESPONSIVE IMAGE LOGIC:
+           - Mobile: 'cover' ensures the screen is filled for an immersive feel.
+           - Desktop: 'contain' ensures the full perfume bottle/model is visible without cropping.
+        */
         .optimized-img {
             width: 100%;
             height: 100%;
-            object-fit: cover;
+            object-fit: cover; 
             object-position: center;
-            /* Sharpness & Scaling optimization */
-            image-rendering: -webkit-optimize-contrast;
             image-rendering: high-quality;
-            transform: scale(1.05); /* Very slight zoom to prevent edge bleeding */
+            transition: transform 6s ease-out;
         }
 
-        /* Prevent image from feeling 'too big' on ultra-wide screens */
-        @media (min-width: 1536px) {
-            .slider-image {
-                max-width: 1920px;
-                margin: 0 auto;
+        @media (min-width: 1024px) {
+            .optimized-img {
+                object-fit: contain; /* Shows the full image on large screens */
+                padding: 2rem; /* Optional: gives the product some breathing room on desktop */
             }
         }
 
@@ -72,15 +73,15 @@
     <header class="relative h-screen-safe w-full overflow-hidden flex items-center justify-center">
         <div id="slider-container" class="absolute inset-0 z-0">
             <div class="slider-image absolute inset-0 opacity-100 fade-slide overflow-hidden">
-                <div class="absolute inset-0 bg-black/50 z-10"></div>
+                <div class="absolute inset-0 bg-black/40 z-10"></div>
                 <img src="https://i.imgur.com/KQ2leiY.jpeg" class="optimized-img" alt="Fragrance 1">
             </div>
             <div class="slider-image absolute inset-0 opacity-0 fade-slide overflow-hidden">
-                <div class="absolute inset-0 bg-black/50 z-10"></div>
+                <div class="absolute inset-0 bg-black/40 z-10"></div>
                 <img src="https://i.imgur.com/Wp0HCu8.jpeg" class="optimized-img" alt="Fragrance 2">
             </div>
             <div class="slider-image absolute inset-0 opacity-0 fade-slide overflow-hidden">
-                <div class="absolute inset-0 bg-black/50 z-10"></div>
+                <div class="absolute inset-0 bg-black/40 z-10"></div>
                 <img src="https://i.imgur.com/BRl8AVs.jpeg" class="optimized-img" alt="Fragrance 3">
             </div>
         </div>
@@ -111,14 +112,18 @@
 
         function showSlide(index) {
             slides.forEach((slide, i) => {
-                slide.style.opacity = i === index ? '1' : '0';
-                // Add a very subtle zoom-in effect while the slide is active for a premium feel
                 const img = slide.querySelector('img');
                 if (i === index) {
+                    slide.style.opacity = '1';
+                    slide.style.zIndex = '10';
+                    // Apply Ken Burns zoom effect
                     img.style.transform = "scale(1.1)";
                     img.style.transition = "transform 6s ease-out";
                 } else {
-                    img.style.transform = "scale(1.05)";
+                    slide.style.opacity = '0';
+                    slide.style.zIndex = '0';
+                    // Reset zoom for next time
+                    img.style.transform = "scale(1)";
                     img.style.transition = "none";
                 }
             });
@@ -134,21 +139,17 @@
                 currentIndex++;
                 showSlide(currentIndex);
             } else {
+                // Redirect to shop after the last slide
+                clearInterval(cycle);
                 setTimeout(() => {
                     window.location.href = 'shop.html';
                 }, slideInterval);
             }
         }
 
-        const cycle = setInterval(() => {
-            if (currentIndex >= totalSlides - 1) {
-                clearInterval(cycle);
-                nextSlide(); 
-            } else {
-                nextSlide();
-            }
-        }, slideInterval);
+        const cycle = setInterval(nextSlide, slideInterval);
 
+        // Initialize first slide
         showSlide(0);
     </script>
 </body>
