@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shop | The Motunde Brand</title>
+    
+    <link rel="icon" type="image/png" href="https://i.imgur.com/CVKXV7R.png">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brandWhite: '#FFFFFF',
+                        brandBlack: '#000000',
+                        brandPink: '#F7C8D0',
+                        brandPinkDark: '#E2A9B3',
+                    },
+                    letterSpacing: {
+                        luxury: '0.4em',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Transparent Pink Background Setup */
+        .bg-overlay {
+            background: linear-gradient(rgba(247, 200, 208, 0.85), rgba(247, 200, 208, 0.85)), 
+                        url('https://i.imgur.com/KQ2leiY.jpeg');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+        }
+        
+        .product-card {
+            transition: transform 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+        }
+        .product-card:hover {
+            transform: translateY(-8px);
+        }
+    </style>
+</head>
+<body class="bg-overlay min-h-screen flex flex-col antialiased">
+
+    <nav class="fixed w-full z-50 bg-white/90 backdrop-blur-md border-b border-brandPink/30">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+            <h1 class="text-lg md:text-xl font-bold tracking-luxury uppercase">The Motunde Brand</h1>
+            
+            <div class="hidden md:flex space-x-8 uppercase text-[10px] tracking-[0.2em] font-semibold">
+                <a href="index.html" class="hover:text-brandPinkDark transition">Home</a>
+                <a href="#" class="text-brandPinkDark">Shop</a>
+                <a href="#" class="hover:text-brandPinkDark transition">Cart (0)</a>
+            </div>
+
+            <div class="md:hidden">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16m-7 6h7" stroke-width="1.5"></path></svg>
+            </div>
+        </div>
+    </nav>
+
+    <main class="flex-grow pt-32 pb-20 px-6">
+        <div class="max-w-7xl mx-auto">
+            <header class="text-center mb-16">
+                <h2 class="text-3xl md:text-5xl font-light uppercase tracking-widest mb-4">The Collection</h2>
+                <div class="w-20 h-1 bg-brandBlack mx-auto"></div>
+            </header>
+
+            <div id="product-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+                <div class="animate-pulse text-center col-span-full py-20 uppercase tracking-widest text-sm">
+                    Curating Excellence...
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="bg-brandBlack text-white py-12 px-6">
+        <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-10 text-center md:text-left">
+            <div>
+                <h3 class="uppercase tracking-widest text-sm font-bold mb-4">The Motunde Brand</h3>
+                <p class="text-[10px] text-gray-400 leading-loose">A legacy of luxury fragrances designed to define your essence.</p>
+            </div>
+            <div>
+                <h3 class="uppercase tracking-widest text-sm font-bold mb-4">Customer Care</h3>
+                <ul class="text-[10px] space-y-2 text-gray-400 uppercase tracking-tighter">
+                    <li><a href="#" class="hover:text-brandPink transition">Shipping & Returns</a></li>
+                    <li><a href="#" class="hover:text-brandPink transition">Contact Us</a></li>
+                </ul>
+            </div>
+            <div class="text-center md:text-right">
+                <p class="text-[10px] uppercase tracking-widest text-brandPink">© 2025 THE MOTUNDE BRAND</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        async function loadProducts() {
+            try {
+                // Fetching from your Netlify Function
+                const response = await fetch('/api/products');
+                const products = await response.json();
+
+                const grid = document.getElementById('product-grid');
+                
+                if (products.length === 0) {
+                    grid.innerHTML = `<p class="col-span-full text-center">No scents found in the vault.</p>`;
+                    return;
+                }
+
+                grid.innerHTML = products.map(product => `
+                    <div class="product-card bg-white p-2 shadow-sm border border-brandPink/10">
+                        <div class="aspect-[4/5] overflow-hidden bg-gray-100 relative group">
+                            <img src="${product.imageUrl}" alt="${product.name}" 
+                                 class="w-full h-full object-cover transition duration-700 group-hover:scale-110">
+                            <div class="absolute inset-0 bg-brandBlack/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                        </div>
+                        <div class="p-6 text-center">
+                            <h3 class="uppercase font-bold tracking-[0.2em] text-xs mb-2">${product.name}</h3>
+                            <p class="text-brandPinkDark font-serif italic mb-6">$${product.price}</p>
+                            <button onclick="addToCart('${product._id}')" 
+                                    class="w-full bg-brandBlack text-white py-4 text-[10px] uppercase tracking-[0.3em] hover:bg-brandPink hover:text-brandBlack transition-all duration-300 active:scale-95">
+                                Add to Bag
+                            </button>
+                        </div>
+                    </div>
+                `).join('');
+
+            } catch (error) {
+                console.error("Fetch error:", error);
+                document.getElementById('product-grid').innerHTML = `<p class="col-span-full text-center">Unable to load the collection at this time.</p>`;
+            }
+        }
+
+        function addToCart(id) {
+            console.log("Added product to cart:", id);
+            alert("Scent added to your bag.");
+        }
+
+        // Initialize
+        loadProducts();
+    </script>
+</body>
+</html>
