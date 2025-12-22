@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Account | The Motunde Brand</title>
+    <link rel="icon" type="image/png" href="https://i.imgur.com/CVKXV7R.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brandBlack: '#000000',
+                        brandPink: '#F7C8D0',
+                        brandGray: '#1A1A1A',
+                    },
+                    letterSpacing: { luxury: '0.4em' }
+                }
+            }
+        }
+    </script>
+    <style>
+        input { background: transparent !important; border-bottom: 1px solid rgba(247, 200, 208, 0.3) !important; transition: border-color 0.3s; }
+        input:focus { border-color: #F7C8D0 !important; outline: none; }
+        .form-container { display: none; }
+        .form-active { display: block; animation: fadeIn 0.5s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body class="bg-brandBlack text-brandWhite min-h-screen flex flex-col font-sans">
+
+    <nav class="p-6">
+        <a href="index.html" class="text-brandPink text-[10px] tracking-luxury uppercase">← Back to Gallery</a>
+    </nav>
+
+    <main class="flex-grow flex items-center justify-center px-6 py-12">
+        <div class="w-full max-w-md bg-brandGray/50 p-8 md:p-12 rounded-sm border border-brandPink/5 backdrop-blur-md">
+            
+            <div class="flex justify-center space-x-8 mb-12">
+                <button id="tab-login" onclick="switchTab('login')" class="text-[10px] uppercase tracking-widest text-brandPink border-b border-brandPink pb-2">Login</button>
+                <button id="tab-register" onclick="switchTab('register')" class="text-[10px] uppercase tracking-widest text-brandPink/40 hover:text-brandPink pb-2 transition">Create Account</button>
+            </div>
+
+            <form id="login-form" class="form-container form-active space-y-6">
+                <div>
+                    <label class="block text-[8px] uppercase tracking-widest text-brandPink/60 mb-2">Email Address</label>
+                    <input type="email" id="login-email" required class="w-full py-2 text-sm text-white">
+                </div>
+                <div>
+                    <label class="block text-[8px] uppercase tracking-widest text-brandPink/60 mb-2">Password</label>
+                    <input type="password" id="login-password" required class="w-full py-2 text-sm text-white">
+                </div>
+                <button type="submit" class="w-full bg-brandPink text-brandBlack py-4 text-[10px] font-bold uppercase tracking-[0.3em] hover:bg-white transition-all duration-500">
+                    Sign In
+                </button>
+            </form>
+
+            <form id="register-form" class="form-container space-y-5">
+                <div>
+                    <label class="block text-[8px] uppercase tracking-widest text-brandPink/60 mb-1">Full Name</label>
+                    <input type="text" id="reg-name" required class="w-full py-2 text-sm text-white">
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-[8px] uppercase tracking-widest text-brandPink/60 mb-1">Phone Number</label>
+                        <input type="tel" id="reg-phone" required class="w-full py-2 text-sm text-white">
+                    </div>
+                    <div>
+                        <label class="block text-[8px] uppercase tracking-widest text-brandPink/60 mb-1">WhatsApp Number</label>
+                        <input type="tel" id="reg-whatsapp" required class="w-full py-2 text-sm text-white">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-[8px] uppercase tracking-widest text-brandPink/60 mb-1">Email Address</label>
+                    <input type="email" id="reg-email" required class="w-full py-2 text-sm text-white">
+                </div>
+                <div>
+                    <label class="block text-[8px] uppercase tracking-widest text-brandPink/60 mb-1">Shipping Address</label>
+                    <input type="text" id="reg-address" required class="w-full py-2 text-sm text-white">
+                </div>
+                <div>
+                    <label class="block text-[8px] uppercase tracking-widest text-brandPink/60 mb-1">Password</label>
+                    <input type="password" id="reg-password" required class="w-full py-2 text-sm text-white">
+                </div>
+                <button type="submit" class="w-full bg-brandPink text-brandBlack py-4 mt-4 text-[10px] font-bold uppercase tracking-[0.3em] hover:bg-white transition-all duration-500">
+                    Create Profile
+                </button>
+            </form>
+        </div>
+    </main>
+
+    <script>
+        // TOGGLE LOGIC
+        function switchTab(tab) {
+            const loginForm = document.getElementById('login-form');
+            const regForm = document.getElementById('register-form');
+            const loginBtn = document.getElementById('tab-login');
+            const regBtn = document.getElementById('tab-register');
+
+            if(tab === 'login') {
+                loginForm.classList.add('form-active');
+                regForm.classList.remove('form-active');
+                loginBtn.className = "text-[10px] uppercase tracking-widest text-brandPink border-b border-brandPink pb-2";
+                regBtn.className = "text-[10px] uppercase tracking-widest text-brandPink/40 hover:text-brandPink pb-2 transition";
+            } else {
+                regForm.classList.add('form-active');
+                loginForm.classList.remove('form-active');
+                regBtn.className = "text-[10px] uppercase tracking-widest text-brandPink border-b border-brandPink pb-2";
+                loginBtn.className = "text-[10px] uppercase tracking-widest text-brandPink/40 hover:text-brandPink pb-2 transition";
+            }
+        }
+
+        // AUTH LOGIC
+        const API_URL = '/api';
+
+        // Register Submit
+        document.getElementById('register-form').onsubmit = async (e) => {
+            e.preventDefault();
+            const userData = {
+                name: document.getElementById('reg-name').value,
+                email: document.getElementById('reg-email').value,
+                password: document.getElementById('reg-password').value,
+                phone: document.getElementById('reg-phone').value,
+                whatsapp: document.getElementById('reg-whatsapp').value,
+                address: document.getElementById('reg-address').value
+            };
+
+            try {
+                const res = await fetch(`${API_URL}/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(userData)
+                });
+                const data = await res.json();
+                if(data.token) {
+                    saveSession(data.token, data.user);
+                } else { alert(data.error); }
+            } catch (err) { alert("Connection Error"); }
+        };
+
+        // Login Submit
+        document.getElementById('login-form').onsubmit = async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+
+            try {
+                const res = await fetch(`${API_URL}/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+                const data = await res.json();
+                if(data.token) {
+                    saveSession(data.token, data.user);
+                } else { alert(data.error); }
+            } catch (err) { alert("Connection Error"); }
+        };
+
+        function saveSession(token, user) {
+            localStorage.setItem('motunde_token', token);
+            localStorage.setItem('motunde_user', JSON.stringify(user));
+            window.location.href = 'shop.html';
+        }
+    </script>
+</body>
+</html>
