@@ -102,7 +102,7 @@
                 if(res.ok && data.isAdmin) {
                     // Store admin token separately from customer token
                     localStorage.setItem('tmb_admin_token', data.token);
-                    window.location.href = 'dashboard.html';
+                    window.location.href = 'tmbdashboard.html';
                 } else {
                     errorMsg.classList.remove('hidden');
                     setTimeout(() => errorMsg.classList.add('hidden'), 3000);

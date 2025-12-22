@@ -58,54 +58,36 @@ const authenticateAdmin = (req, res, next) => {
     });
 };
 
-// --- AUTH ROUTES ---
 
-// REGISTER (Supports Detailed Address)
-router.post('/register', async (req, res) => {
+// ADMIN REGISTRATION (Internal Enrollment)
+router.post('/admin/register', async (req, res) => {
     try {
         const db = await getDb();
-        const { name, email, password, phone, whatsapp, address } = req.body;
+        const { name, email, password } = req.body;
 
-        if (!email || !password || !name) return res.status(400).json({ error: "Required fields missing" });
+        if (!email || !password || !name) {
+            return res.status(400).json({ error: "All administrative fields required" });
+        }
 
-        const existingUser = await db.collection("users").findOne({ email: email.toLowerCase() });
-        if (existingUser) return res.status(400).json({ error: "Account already exists" });
+        const existingAdmin = await db.collection("users").findOne({ email: email.toLowerCase() });
+        if (existingAdmin) {
+            return res.status(400).json({ error: "Identity already registered in system" });
+        }
 
         const hashedPassword = await bcrypt.hash(password, 12);
+        
         const result = await db.collection("users").insertOne({
             name,
             email: email.toLowerCase(),
             password: hashedPassword,
-            phone,
-            whatsapp,
-            address, // Contains street, city, state, country
-            isAdmin: false,
+            isAdmin: true, // Forces Admin Privileges
+            role: "superadmin",
             createdAt: new Date()
         });
 
-        const token = jwt.sign({ id: result.insertedId, isAdmin: false }, JWT_SECRET, { expiresIn: '24h' });
-        res.status(201).json({ token, user: { name, email: email.toLowerCase() } });
+        res.status(201).json({ message: "Administrative profile initialized" });
     } catch (error) {
-        res.status(500).json({ error: "Registration failed" });
-    }
-});
-
-// CUSTOMER LOGIN
-router.post('/login', async (req, res) => {
-    try {
-        const db = await getDb();
-        const { email, password } = req.body;
-
-        const user = await db.collection("users").findOne({ email: email.toLowerCase() });
-        if (!user) return res.status(404).json({ error: "User not found" });
-
-        const isMatch = await bcrypt.compare(password, user.password);
-        if (!isMatch) return res.status(400).json({ error: "Invalid password" });
-
-        const token = jwt.sign({ id: user._id, isAdmin: user.isAdmin || false }, JWT_SECRET, { expiresIn: '24h' });
-        res.status(200).json({ token, user: { name: user.name, email: user.email } });
-    } catch (error) {
-        res.status(500).json({ error: "Login failed" });
+        res.status(500).json({ error: "System enrollment failed" });
     }
 });
 
@@ -169,6 +151,58 @@ router.get('/admin/orders', authenticateAdmin, async (req, res) => {
         res.status(500).json({ error: "Failed to fetch orders" });
     }
 });
+
+// --- AUTH ROUTES ---
+
+// REGISTER (Supports Detailed Address)
+router.post('/register', async (req, res) => {
+    try {
+        const db = await getDb();
+        const { name, email, password, phone, whatsapp, address } = req.body;
+
+        if (!email || !password || !name) return res.status(400).json({ error: "Required fields missing" });
+
+        const existingUser = await db.collection("users").findOne({ email: email.toLowerCase() });
+        if (existingUser) return res.status(400).json({ error: "Account already exists" });
+
+        const hashedPassword = await bcrypt.hash(password, 12);
+        const result = await db.collection("users").insertOne({
+            name,
+            email: email.toLowerCase(),
+            password: hashedPassword,
+            phone,
+            whatsapp,
+            address, // Contains street, city, state, country
+            isAdmin: false,
+            createdAt: new Date()
+        });
+
+        const token = jwt.sign({ id: result.insertedId, isAdmin: false }, JWT_SECRET, { expiresIn: '24h' });
+        res.status(201).json({ token, user: { name, email: email.toLowerCase() } });
+    } catch (error) {
+        res.status(500).json({ error: "Registration failed" });
+    }
+});
+
+// CUSTOMER LOGIN
+router.post('/login', async (req, res) => {
+    try {
+        const db = await getDb();
+        const { email, password } = req.body;
+
+        const user = await db.collection("users").findOne({ email: email.toLowerCase() });
+        if (!user) return res.status(404).json({ error: "User not found" });
+
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) return res.status(400).json({ error: "Invalid password" });
+
+        const token = jwt.sign({ id: user._id, isAdmin: user.isAdmin || false }, JWT_SECRET, { expiresIn: '24h' });
+        res.status(200).json({ token, user: { name: user.name, email: user.email } });
+    } catch (error) {
+        res.status(500).json({ error: "Login failed" });
+    }
+});
+
 
 // --- ORDER ROUTES ---
 
