@@ -15,8 +15,8 @@
                     colors: {
                         brandWhite: '#FFFFFF',
                         brandBlack: '#000000',
-                        brandPink: '#D4A5A9', /* Darkened Luxury Pink */
-                        brandPinkDark: '#B8868B', /* Deeper Pink Tone */
+                        brandPink: '#F7C8D0',
+                        brandPinkDark: '#E2A9B3',
                     },
                     letterSpacing: {
                         luxury: '0.4em',
@@ -26,83 +26,77 @@
         }
     </script>
     <style>
-        /* Transparent Pink Background Setup using the requested new image */
-        .bg-overlay {
-            background: linear-gradient(rgba(212, 165, 169, 0.85), rgba(212, 165, 169, 0.85)), 
-                        url('https://i.imgur.com/Wp0HCu8.jpeg');
-            background-size: cover;
-            background-position: center;
-            background-attachment: fixed;
-        }
-        
+        /* Smooth transitions for product cards */
         .product-card {
-            transition: transform 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+            transition: transform 0.4s cubic-bezier(0.165, 0.84, 0.44, 1), box-shadow 0.4s ease;
         }
         .product-card:hover {
-            transform: translateY(-8px);
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(226, 169, 179, 0.2);
         }
 
-        /* Mobile Height Reduction for Footer */
+        /* Mobile-specific footer height reduction */
         @media (max-width: 768px) {
             footer {
-                padding-top: 2rem !important;
-                padding-bottom: 2rem !important;
+                padding-top: 1.5rem !important;
+                padding-bottom: 1.5rem !important;
+            }
+            .footer-grid {
+                gap: 1.5rem !important;
             }
         }
     </style>
 </head>
-<body class="bg-overlay min-h-screen flex flex-col antialiased">
+<body class="bg-white min-h-screen flex flex-col antialiased">
 
-    <nav class="fixed w-full z-50 bg-white/90 backdrop-blur-md border-b border-brandPink/30">
-        <div class="max-w-7xl mx-auto px-6 py-3 md:py-4 flex justify-between items-center">
-            <h1 class="text-sm md:text-lg font-bold tracking-luxury uppercase">The Motunde Brand</h1>
+    <nav class="fixed w-full z-50 bg-brandPinkDark shadow-md border-b border-white/10">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+            <h1 class="text-white text-lg md:text-xl font-bold tracking-luxury uppercase">The Motunde Brand</h1>
             
-            <div class="hidden md:flex space-x-8 uppercase text-[10px] tracking-[0.2em] font-semibold">
-                <a href="index.html" class="hover:text-brandPinkDark transition">Home</a>
-                <a href="#" class="text-brandPinkDark">Shop</a>
-                <a href="#" class="hover:text-brandPinkDark transition">Cart (0)</a>
+            <div class="hidden md:flex space-x-8 uppercase text-[10px] tracking-[0.2em] font-bold text-white">
+                <a href="index.html" class="hover:text-brandBlack transition">Home</a>
+                <a href="#" class="border-b border-white">Shop</a>
+                <a href="#" class="hover:text-brandBlack transition">Cart (0)</a>
             </div>
 
-            <div class="md:hidden">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16m-7 6h7" stroke-width="1.5"></path></svg>
+            <div class="md:hidden text-white">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16m-7 6h7" stroke-width="2"></path></svg>
             </div>
         </div>
     </nav>
 
-    <main class="flex-grow pt-24 md:pt-32 pb-10 md:pb-20 px-6">
+    <main class="flex-grow pt-32 pb-20 px-6">
         <div class="max-w-7xl mx-auto">
-            <header class="text-center mb-10 md:mb-16">
-                <h2 class="text-2xl md:text-4xl font-light uppercase tracking-widest mb-3">The Collection</h2>
-                <div class="w-12 md:w-20 h-[1px] bg-brandBlack mx-auto"></div>
+            <header class="text-center mb-12">
+                <h2 class="text-brandBlack text-3xl md:text-5xl font-light uppercase tracking-widest mb-4">The Collection</h2>
+                <div class="w-16 h-[2px] bg-brandPinkDark mx-auto"></div>
             </header>
 
-            <div id="product-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
-                <div class="animate-pulse text-center col-span-full py-10 md:py-20 uppercase tracking-widest text-[10px]">
-                    Curating Excellence...
+            <div id="product-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-10">
+                <div class="animate-pulse text-center col-span-full py-20 uppercase tracking-widest text-xs text-brandPinkDark">
+                    Loading Luxury Scents...
                 </div>
             </div>
         </div>
     </main>
 
-    <footer class="bg-brandBlack text-white py-8 md:py-12 px-6 border-t border-white/5">
-        <div class="max-w-7xl mx-auto">
-            <div class="flex flex-row flex-wrap justify-between items-start gap-y-6">
-                <div class="w-1/2 md:w-1/3 pr-4">
-                    <h3 class="uppercase tracking-[0.3em] text-[10px] font-bold mb-3">The Motunde Brand</h3>
-                    <p class="text-[9px] text-gray-400 leading-relaxed uppercase tracking-tighter">Luxury fragrances for your essence.</p>
-                </div>
+    <footer class="bg-brandBlack text-white py-10 px-6 mt-auto">
+        <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 text-center md:text-left footer-grid">
+            <div class="space-y-2">
+                <h3 class="uppercase tracking-widest text-[11px] font-bold text-brandPink">The Motunde Brand</h3>
+                <p class="text-[10px] text-gray-400 leading-relaxed max-w-xs mx-auto md:mx-0">Luxury fragrances designed to define your essence.</p>
+            </div>
+            
+            <div class="hidden md:block">
+                <h3 class="uppercase tracking-widest text-[11px] font-bold mb-3">Explore</h3>
+                <ul class="text-[10px] space-y-2 text-gray-400 uppercase tracking-wider">
+                    <li><a href="#" class="hover:text-brandPink transition">Privacy Policy</a></li>
+                    <li><a href="#" class="hover:text-brandPink transition">Terms of Service</a></li>
+                </ul>
+            </div>
 
-                <div class="w-1/2 md:w-1/3">
-                    <h3 class="uppercase tracking-[0.3em] text-[10px] font-bold mb-3">Care</h3>
-                    <ul class="text-[9px] space-y-2 text-gray-400 uppercase tracking-tighter">
-                        <li><a href="#" class="hover:text-brandPink transition">Shipping</a></li>
-                        <li><a href="#" class="hover:text-brandPink transition">Contact</a></li>
-                    </ul>
-                </div>
-
-                <div class="w-full md:w-1/3 md:text-right border-t border-white/10 md:border-none pt-4 md:pt-0">
-                    <p class="text-[8px] uppercase tracking-widest text-brandPink">© 2025 THE MOTUNDE BRAND</p>
-                </div>
+            <div class="flex flex-col justify-center md:items-end">
+                <p class="text-[9px] uppercase tracking-[0.2em] text-gray-500">© 2025 THE MOTUNDE BRAND</p>
             </div>
         </div>
     </footer>
@@ -115,22 +109,21 @@
                 const grid = document.getElementById('product-grid');
                 
                 if (!products || products.length === 0) {
-                    grid.innerHTML = `<p class="col-span-full text-center text-[10px] uppercase tracking-widest py-20">Unable to load the collection at this time.</p>`;
+                    grid.innerHTML = `<p class="col-span-full text-center text-gray-400 py-10">Collection currently in the vault.</p>`;
                     return;
                 }
 
                 grid.innerHTML = products.map(product => `
-                    <div class="product-card bg-white p-2 shadow-sm border border-brandPink/10">
-                        <div class="aspect-[4/5] overflow-hidden bg-gray-100 relative group">
+                    <div class="product-card bg-white overflow-hidden border border-gray-100 shadow-sm">
+                        <div class="aspect-square overflow-hidden bg-gray-50 relative group">
                             <img src="${product.imageUrl}" alt="${product.name}" 
-                                 class="w-full h-full object-cover transition duration-700 group-hover:scale-110">
-                            <div class="absolute inset-0 bg-brandBlack/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                                 class="w-full h-full object-cover transition duration-700 group-hover:scale-105">
                         </div>
-                        <div class="p-4 md:p-6 text-center">
-                            <h3 class="uppercase font-bold tracking-[0.2em] text-[10px] mb-2">${product.name}</h3>
-                            <p class="text-brandPinkDark font-serif italic mb-4 md:mb-6 text-sm">$${product.price}</p>
+                        <div class="p-6 text-center">
+                            <h3 class="uppercase font-bold tracking-widest text-[11px] text-brandBlack mb-1">${product.name}</h3>
+                            <p class="text-brandPinkDark font-medium text-sm mb-5 tracking-tighter">$${product.price}</p>
                             <button onclick="addToCart('${product._id}')" 
-                                    class="w-full bg-brandBlack text-white py-3 md:py-4 text-[9px] uppercase tracking-[0.3em] hover:bg-brandPink hover:text-brandBlack transition-all duration-300 active:scale-95">
+                                    class="w-full bg-brandBlack text-white py-3 text-[9px] uppercase tracking-[0.3em] hover:bg-brandPinkDark transition-colors duration-300">
                                 Add to Bag
                             </button>
                         </div>
@@ -139,12 +132,11 @@
 
             } catch (error) {
                 console.error("Fetch error:", error);
-                document.getElementById('product-grid').innerHTML = `<p class="col-span-full text-center text-[10px] uppercase tracking-widest py-20">Unable to load the collection at this time.</p>`;
+                document.getElementById('product-grid').innerHTML = `<p class="col-span-full text-center text-red-300">Connection error. Please refresh.</p>`;
             }
         }
 
         function addToCart(id) {
-            console.log("Added product to cart:", id);
             alert("Scent added to your bag.");
         }
 
