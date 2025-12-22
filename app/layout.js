@@ -1,5 +1,5 @@
 import { Playfair_Display, Inter } from 'next/font/google'
-import './global.css'
+import './globals.css'
 
 const playfair = Playfair_Display({ subsets: ['latin'], variable: '--font-playfair' })
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
