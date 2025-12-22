@@ -5,49 +5,45 @@ const helmet = require('helmet');
 const compression = require('compression');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
+const AWS = require('aws-sdk'); // Import AWS SDK
 
 const app = express();
 const router = express.Router();
 
-// --- SECURITY & OPTIMIZATION ---
 app.use(helmet());
 app.use(compression());
-app.use(express.json());
+app.use(express.json({ limit: '10mb' })); // Increased limit for Base64 images
 
 const uri = process.env.MONGODB_URI;
 const JWT_SECRET = process.env.JWT_SECRET;
+
+// --- IDRIVE E2 CONFIGURATION ---
+const s3 = new AWS.S3({
+    accessKeyId: process.env.E2_ACCESS_KEY,
+    secretAccessKey: process.env.E2_SECRET_KEY,
+    endpoint: new AWS.Endpoint(process.env.E2_ENDPOINT), // s3.us-west-1.idrivee2.com
+    region: process.env.E2_REGION,                       // us-west-1
+    s3ForcePathStyle: true,
+    signatureVersion: 'v4'
+});
+
+const BUCKET_NAME = process.env.E2_BUCKET; // themotundebrand
 
 // Improved Connection Pooling
 let cachedClient = null;
 let cachedDb = null;
 
 async function getDb() {
-    // If we already have a connection, use it immediately
     if (cachedDb) return cachedDb;
-
     if (!cachedClient) {
-        cachedClient = new MongoClient(uri); // Modern driver doesn't need deprecated options
+        cachedClient = new MongoClient(uri);
         await cachedClient.connect();
     }
-    
     cachedDb = cachedClient.db("themotundebrand");
     return cachedDb;
 }
 
 // --- AUTH MIDDLEWARE ---
-const authenticateToken = (req, res, next) => {
-    const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1];
-
-    if (!token) return res.status(401).json({ error: "Access denied. Please log in." });
-
-    jwt.verify(token, JWT_SECRET, (err, user) => {
-        if (err) return res.status(403).json({ error: "Session expired. Please log in again." });
-        req.user = user;
-        next();
-    });
-};
-
 const authenticateAdmin = (req, res, next) => {
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1];
@@ -61,67 +57,15 @@ const authenticateAdmin = (req, res, next) => {
     });
 };
 
-// --- ADMIN ROUTES ---
+// --- PRODUCT ROUTES ---
 
-// Registration
-router.post('/admin/register', async (req, res) => {
-    try {
-        const db = await getDb();
-        const { name, email, password } = req.body;
-
-        if (!email || !password || !name) {
-            return res.status(400).json({ error: "All administrative fields required" });
-        }
-
-        const existingAdmin = await db.collection("users").findOne({ email: email.toLowerCase() });
-        if (existingAdmin) {
-            return res.status(400).json({ error: "Identity already registered" });
-        }
-
-        const hashedPassword = await bcrypt.hash(password, 12);
-        await db.collection("users").insertOne({
-            name,
-            email: email.toLowerCase(),
-            password: hashedPassword,
-            isAdmin: true,
-            role: "superadmin",
-            createdAt: new Date()
-        });
-
-        res.status(201).json({ message: "Administrative profile initialized" });
-    } catch (error) {
-        console.error("Reg Error:", error);
-        res.status(500).json({ error: "System enrollment failed" });
-    }
-});
-
-// Login
-router.post('/admin/login', async (req, res) => {
-    try {
-        const db = await getDb();
-        const { email, password } = req.body;
-
-        const admin = await db.collection("users").findOne({ email: email.toLowerCase(), isAdmin: true });
-        if (!admin) return res.status(401).json({ error: "Access Denied" });
-
-        const isMatch = await bcrypt.compare(password, admin.password);
-        if (!isMatch) return res.status(401).json({ error: "Access Denied" });
-
-        const token = jwt.sign({ id: admin._id, isAdmin: true }, JWT_SECRET, { expiresIn: '12h' });
-        res.status(200).json({ token, isAdmin: true });
-    } catch (error) {
-        res.status(500).json({ error: "System error" });
-    }
-});
-
-// --- PRODUCT & ORDER ROUTES ---
-
+// GET Products
 router.get('/products', async (req, res) => {
     try {
         const db = await getDb();
         const perfumes = await db.collection("products")
             .find({})
-            .project({ name: 1, price: 1, imageUrl: 1, category: 1, featured: 1 }) 
+            .project({ name: 1, price: 1, imageUrl: 1, category: 1, size: 1, description: 1 }) 
             .toArray();
         res.status(200).json(perfumes);
     } catch (error) {
@@ -129,19 +73,58 @@ router.get('/products', async (req, res) => {
     }
 });
 
+// POST Admin Product (Uploads to IDrive E2 + Saves to MongoDB)
 router.post('/admin/products', authenticateAdmin, async (req, res) => {
     try {
         const db = await getDb();
-        const product = { ...req.body, createdAt: new Date() };
+        const { 
+            name, price, size, description, category, 
+            imageBase64, fileName, contentType 
+        } = req.body;
+
+        if (!imageBase64 || !name || !price) {
+            return res.status(400).json({ error: "Missing required product data or image." });
+        }
+
+        // 1. Process and Upload Image to IDrive e2
+        const buffer = Buffer.from(imageBase64, 'base64');
+        const uploadKey = `${category}/${Date.now()}-${fileName.replace(/\s+/g, '-')}`;
+
+        const uploadParams = {
+            Bucket: BUCKET_NAME,
+            Key: uploadKey,
+            Body: buffer,
+            ContentType: contentType,
+            ACL: 'public-read' // Allows the public to view the image via URL
+        };
+
+        const uploadResult = await s3.upload(uploadParams).promise();
+
+        // 2. Save Product Info to MongoDB
+        const product = {
+            name,
+            price: parseFloat(price),
+            size,
+            description,
+            category, // 'women' or 'men'
+            imageUrl: uploadResult.Location,
+            createdAt: new Date()
+        };
+
         const result = await db.collection("products").insertOne(product);
-        res.status(201).json({ message: "Product added", id: result.insertedId });
+        
+        res.status(201).json({ 
+            message: "Product added and image stored", 
+            id: result.insertedId,
+            url: uploadResult.Location 
+        });
+
     } catch (error) {
-        res.status(500).json({ error: "Failed to add product" });
+        console.error("Upload Error:", error);
+        res.status(500).json({ error: "Failed to process product inventory update" });
     }
-});
+} );
 
 // --- EXPORT ---
 app.use('/.netlify/functions/api', router);
-app.use('/api', router);
-
 module.exports.handler = serverless(app);
