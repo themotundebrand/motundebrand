@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TMB Dashboard | Management Terminal</title>
+    <link rel="icon" type="image/png" href="https://i.imgur.com/CVKXV7R.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brandWhite: '#FFFFFF',
+                        brandBlack: '#000000',
+                        brandPinkDark: '#D48A96',
+                        brandPinkLight: '#F7C8D0',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #F9F9F9; }
+        .sidebar { transition: all 0.3s ease; }
+        .nav-link:hover { background-color: #F7C8D0; color: #000; }
+        .mobile-overlay { background: rgba(0,0,0,0.5); display: none; }
+        .mobile-overlay.active { display: block; }
+    </style>
+</head>
+<body class="text-brandBlack">
+
+    <div class="lg:hidden bg-white border-b p-4 flex justify-between items-center sticky top-0 z-50">
+        <span class="font-bold tracking-widest text-xs">TMB ADMIN</span>
+        <button onclick="toggleSidebar()" class="text-brandBlack text-xl">
+            <i class="fa-solid fa-bars-staggered"></i>
+        </button>
+    </div>
+
+    <div class="flex">
+        <div id="overlay" onclick="toggleSidebar()" class="mobile-overlay fixed inset-0 z-40 lg:hidden"></div>
+
+        <aside id="sidebar" class="sidebar fixed lg:static inset-y-0 left-0 z-50 w-64 bg-white border-r transform -translate-x-full lg:translate-x-0 h-screen flex flex-col">
+            <div class="p-8 border-b">
+                <h1 class="font-bold tracking-[0.3em] text-sm text-center">TMB SYSTEM</h1>
+            </div>
+
+            <nav class="flex-1 px-4 py-8 space-y-2">
+                <p class="text-[10px] uppercase tracking-widest text-gray-400 px-4 mb-4">Inventory Management</p>
+                
+                <a href="womenscents.html" class="nav-link flex items-center px-4 py-3 text-xs tracking-widest uppercase font-medium transition-all">
+                    <i class="fa-solid fa-venus mr-3 w-5 text-brandPinkDark"></i> Women Scents
+                </a>
+                
+                <a href="menscents.html" class="nav-link flex items-center px-4 py-3 text-xs tracking-widest uppercase font-medium transition-all">
+                    <i class="fa-solid fa-mars mr-3 w-5 text-gray-400"></i> Men Scents
+                </a>
+
+                <div class="pt-8">
+                    <p class="text-[10px] uppercase tracking-widest text-gray-400 px-4 mb-4">Orders & Analytics</p>
+                    <a href="#" class="nav-link flex items-center px-4 py-3 text-xs tracking-widest uppercase font-medium transition-all">
+                        <i class="fa-solid fa-bag-shopping mr-3 w-5 text-gray-400"></i> Recent Orders
+                    </a>
+                </div>
+            </nav>
+
+            <div class="p-4 border-t">
+                <button onclick="logout()" class="w-full flex items-center justify-center px-4 py-3 text-[10px] uppercase tracking-widest font-bold bg-brandBlack text-white hover:bg-brandPinkDark transition-all">
+                    <i class="fa-solid fa-power-off mr-2"></i> System Exit
+                </button>
+            </div>
+        </aside>
+
+        <main class="flex-1 min-h-screen p-6 lg:p-12">
+            <div class="max-w-6xl mx-auto">
+                <div class="flex justify-between items-end mb-12">
+                    <div>
+                        <h2 class="text-2xl font-light tracking-tight mb-1">Welcome back, Admin</h2>
+                        <p class="text-[10px] uppercase tracking-[0.2em] text-brandPinkDark font-bold">The Motunde Brand Terminal</p>
+                    </div>
+                    <div class="hidden lg:block text-right">
+                        <p id="current-date" class="text-[10px] uppercase tracking-widest text-gray-400 font-bold"></p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+                    <div class="bg-white p-8 border shadow-sm flex flex-col items-center text-center">
+                        <span class="text-xs uppercase tracking-widest text-gray-400 mb-2">Total Scents</span>
+                        <span class="text-3xl font-light">42</span>
+                    </div>
+                    <div class="bg-white p-8 border shadow-sm flex flex-col items-center text-center">
+                        <span class="text-xs uppercase tracking-widest text-gray-400 mb-2">Pending Orders</span>
+                        <span class="text-3xl font-light text-brandPinkDark">12</span>
+                    </div>
+                    <div class="bg-white p-8 border shadow-sm flex flex-col items-center text-center">
+                        <span class="text-xs uppercase tracking-widest text-gray-400 mb-2">Revenue (MTD)</span>
+                        <span class="text-3xl font-light">₦ 450k</span>
+                    </div>
+                </div>
+
+                <div class="bg-white border p-12 text-center">
+                    <i class="fa-solid fa-chart-line text-4xl text-brandPinkLight mb-4"></i>
+                    <h3 class="text-sm uppercase tracking-widest font-bold mb-2">System Initialized</h3>
+                    <p class="text-xs text-gray-500 max-w-sm mx-auto">Select a category from the sidebar to manage your perfume collections or view customer orders.</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Security Check: Redirect to login if no token exists
+        window.onload = () => {
+            if (!localStorage.getItem('tmb_admin_token')) {
+                window.location.href = 'tmbadmin-login.html';
+            }
+            document.getElementById('current-date').innerText = new Date().toLocaleDateString('en-US', {
+                weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+            });
+        };
+
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('overlay');
+            sidebar.classList.toggle('-translate-x-full');
+            overlay.classList.toggle('active');
+        }
+
+        function logout() {
+            localStorage.removeItem('tmb_admin_token');
+            window.location.href = 'tmbadmin-login.html';
+        }
+    </script>
+</body>
+</html>
