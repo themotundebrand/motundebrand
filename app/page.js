@@ -13,15 +13,14 @@ export default function SplashScreen() {
   ];
 
   useEffect(() => {
-    // Cycles images every 1.3 seconds
+    // Switch images every 1.2 seconds to show all 3 within ~4 seconds
     const imageInterval = setInterval(() => {
       setCurrentImg((prev) => (prev + 1) % images.length);
-    }, 1300);
+    }, 1200);
 
-    // Redirects to products after 5 seconds (allows users to see the sequence)
     const redirectTimer = setTimeout(() => {
       router.push('/products');
-    }, 5000);
+    }, 4500);
 
     return () => {
       clearInterval(imageInterval);
@@ -30,45 +29,45 @@ export default function SplashScreen() {
   }, [router, images.length]);
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-white px-4">
+    <div className="fixed inset-0 flex flex-col items-center justify-center bg-white z-50 px-6">
       
-      {/* 1. Logo Section - Responsive scaling */}
-      <div className="mb-8 md:mb-12 animate-pulse">
+      {/* 1. Logo Section - Scaled for Mobile/Desktop */}
+      <div className="mb-10 md:mb-14 animate-pulse">
         <img 
           src="/logo.png" 
           alt="themotundebrand logo" 
-          className="h-16 md:h-24 w-auto object-contain"
+          className="h-20 md:h-32 w-auto object-contain"
         />
       </div>
 
-      {/* 2. Responsive Image Container */}
-      {/* Mobile: Width is 90% of screen. Desktop: Fixed max-width and taller height */}
-      <div className="relative w-[90%] md:w-full md:max-w-lg aspect-[3/4] overflow-hidden rounded-2xl shadow-2xl border-4 border-brand-pink">
+      {/* 2. Optimized Image Container */}
+      {/* We use 'relative' here and 'absolute' on images so they stack! */}
+      <div className="relative w-full max-w-[320px] md:max-w-[400px] aspect-[3/4] overflow-hidden rounded-3xl shadow-[0_20px_50px_rgba(255,192,203,0.3)] border-[6px] border-brand-pink bg-gray-50">
         {images.map((img, index) => (
           <img
             key={index}
             src={img}
-            alt={`Luxury Perfume ${index + 1}`}
-            className={`absolute inset-0 w-full h-full object-cover transition-all duration-1000 ease-in-out ${
-              index === currentImg 
-                ? "opacity-100 scale-100 translate-x-0" 
-                : "opacity-0 scale-105 translate-x-4"
+            alt="Luxury Perfume"
+            className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ease-in-out ${
+              index === currentImg ? "opacity-100 scale-100" : "opacity-0 scale-110"
             }`}
           />
         ))}
       </div>
 
-      {/* 3. Responsive Loading Text */}
-      <div className="mt-10 text-center">
-        <p className="text-brand-black font-serif text-sm md:text-lg tracking-[0.3em] uppercase animate-bounce">
-          Entering themotundebrand
+      {/* 3. Luxury Loading Text & Indicators */}
+      <div className="mt-12 text-center">
+        <p className="text-brand-black font-serif text-sm md:text-base tracking-[0.4em] uppercase opacity-80 mb-4">
+          The Motunde Brand
         </p>
-        <div className="mt-2 flex justify-center gap-2">
+        
+        {/* Visual Progress Dots */}
+        <div className="flex justify-center gap-3">
           {images.map((_, i) => (
             <div 
               key={i}
-              className={`h-1 transition-all duration-500 rounded-full ${
-                i === currentImg ? "w-8 bg-brand-pink" : "w-2 bg-gray-200"
+              className={`h-1.5 transition-all duration-500 rounded-full ${
+                i === currentImg ? "w-10 bg-brand-pink" : "w-3 bg-gray-200"
               }`}
             />
           ))}
