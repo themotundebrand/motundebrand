@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Men Scents | TMB Management</title>
+    <link rel="icon" type="image/png" href="https://i.imgur.com/CVKXV7R.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: { brandBlack: '#000000', brandPinkDark: '#D48A96', brandPinkLight: '#F7C8D0' }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #FBFBFB; }
+        .input-field { border: 1px solid #e5e7eb; padding: 10px; font-size: 12px; width: 100%; }
+        .input-field:focus { outline: none; border-color: #000; }
+    </style>
+</head>
+<body class="text-brandBlack">
+    <div class="flex">
+        <aside class="w-64 bg-white border-r h-screen sticky top-0 flex flex-col">
+            <div class="p-8 border-b text-center font-bold tracking-[0.3em] text-sm">TMB SYSTEM</div>
+            <nav class="flex-1 px-4 py-8 space-y-1">
+                <p class="text-[9px] uppercase tracking-[0.2em] text-gray-400 px-4 mb-4 font-bold">Inventory</p>
+                <a href="womenscents.html" class="flex items-center px-4 py-3 text-[10px] uppercase font-semibold text-gray-400 hover:text-black">Women Scents</a>
+                <a href="menscents.html" class="bg-gray-100 flex items-center px-4 py-3 text-[10px] uppercase font-semibold text-black">Men Scents</a>
+            </nav>
+        </aside>
+
+        <main class="flex-1 p-12">
+            <h2 class="text-2xl font-light mb-1">Men Scents Collection</h2>
+            <p class="text-[9px] uppercase tracking-[0.3em] text-gray-400 font-bold mb-12">Inventory Management</p>
+
+            <div class="bg-white border p-8 mb-12">
+                <form id="addScentForm" class="grid grid-cols-2 gap-6">
+                    <div class="space-y-4">
+                        <input type="text" id="pName" placeholder="Perfume Name" class="input-field" required>
+                        <div class="grid grid-cols-2 gap-4">
+                            <select id="pSize" class="input-field"><option>50ml</option><option>100ml</option></select>
+                            <input type="number" id="pPrice" placeholder="Price (₦)" class="input-field" required>
+                        </div>
+                        <textarea id="pDesc" rows="3" placeholder="Description..." class="input-field"></textarea>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="border-2 border-dashed h-40 flex flex-col items-center justify-center relative">
+                            <input type="file" id="imageUpload" class="absolute inset-0 opacity-0 cursor-pointer" accept="image/*" required>
+                            <p id="fileName" class="text-[10px] text-gray-400 uppercase">Upload Image</p>
+                        </div>
+                        <button type="submit" id="submitBtn" class="w-full bg-black text-white py-4 text-[10px] uppercase font-bold tracking-widest">Update Men's Collection</button>
+                    </div>
+                </form>
+            </div>
+
+            <div id="inventoryGrid" class="grid grid-cols-3 gap-6"></div>
+        </main>
+    </div>
+
+    <script>
+        // Fetch and Display Men's Products
+        async function loadProducts() {
+            const res = await fetch('/api/products');
+            const products = await res.json();
+            const menProducts = products.filter(p => p.category === 'men');
+            document.getElementById('inventoryGrid').innerHTML = menProducts.map(p => `
+                <div class="bg-white border p-4">
+                    <img src="${p.imageUrl}" class="aspect-square object-cover mb-4 w-full">
+                    <div class="flex justify-between font-bold uppercase text-[10px]"><span>${p.name}</span><span>₦${p.price.toLocaleString()}</span></div>
+                </div>
+            `).join('');
+        }
+
+        document.getElementById('imageUpload').onchange = (e) => {
+            document.getElementById('fileName').innerText = e.target.files[0].name;
+        };
+
+        document.getElementById('addScentForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('submitBtn');
+            btn.disabled = true; btn.innerText = "UPLOADING...";
+            
+            const file = document.getElementById('imageUpload').files[0];
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = async () => {
+                const payload = {
+                    name: document.getElementById('pName').value,
+                    price: document.getElementById('pPrice').value,
+                    size: document.getElementById('pSize').value,
+                    description: document.getElementById('pDesc').value,
+                    category: 'men',
+                    imageBase64: reader.result.split(',')[1],
+                    fileName: file.name,
+                    contentType: file.type
+                };
+
+                const res = await fetch('/api/admin/products', {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('tmb_admin_token')}`
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                if(res.ok) { alert("Men's scent added!"); location.reload(); }
+                else { alert("Error uploading."); btn.disabled = false; }
+            };
+        };
+
+        window.onload = loadProducts;
+    </script>
+</body>
+</html>
