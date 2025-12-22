@@ -107,7 +107,7 @@
 
     <script>
         // Because of your netlify.toml redirect, /api/ maps to /.netlify/functions/api/
-        const API_URL = '/api/admin';
+        const API_URL = '/api';
 
         function togglePasswordVisibility(inputId, icon) {
             const input = document.getElementById(inputId);
@@ -156,7 +156,7 @@
         document.getElementById('admin-login-form').onsubmit = async (e) => {
             e.preventDefault();
             try {
-                const res = await fetch(`${API_URL}/login`, {
+                const res = await fetch(`${API_URL}/admin/login`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -180,7 +180,7 @@
         document.getElementById('admin-register-form').onsubmit = async (e) => {
             e.preventDefault();
             try {
-                const res = await fetch(`${API_URL}/register`, {
+                const res = await fetch(`${API_URL}/admin/register`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
