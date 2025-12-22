@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Motunde Brand | Luxury Fragrances</title>
+    <title>The Motunde Brand | Welcome</title>
     
     <link rel="icon" type="image/png" href="https://i.imgur.com/CVKXV7R.png">
     
@@ -29,65 +29,49 @@
         .fade-slide {
             transition: opacity 1.5s ease-in-out;
         }
-        /* Prevents horizontal scroll on mobile due to long tracking */
-        h1, h2 { overflow-wrap: break-word; }
+        /* Progress bar animation for the automatic redirect */
+        @keyframes progress {
+            from { width: 0%; }
+            to { width: 100%; }
+        }
+        .timer-bar {
+            animation: progress 9s linear forwards;
+        }
     </style>
 </head>
-<body class="bg-brandWhite text-brandBlack overflow-x-hidden selection:bg-brandPink">
+<body class="bg-brandBlack text-brandWhite overflow-hidden">
 
-    <nav class="fixed w-full z-50 bg-white/80 backdrop-blur-md border-b border-brandPink/20">
-        <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-            <button class="md:hidden p-2" aria-label="Menu">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M4 6h16M4 12h16m-7 6h7"></path>
-                </svg>
-            </button>
+    <div class="fixed top-0 left-0 h-1 bg-brandPink z-50 timer-bar"></div>
 
-            <h1 class="text-xl md:text-2xl font-bold tracking-luxury uppercase">The Motunde Brand</h1>
-            
-            <div class="hidden md:flex space-x-10 uppercase text-[10px] tracking-[0.2em] font-medium">
-                <a href="/collection" class="hover:text-brandPinkDark transition">Collection</a>
-                <a href="/story" class="hover:text-brandPinkDark transition">The Story</a>
-                <a href="/cart" class="hover:text-brandPinkDark transition">Cart (0)</a>
-            </div>
-
-            <div class="md:hidden w-6"></div> 
-        </div>
-    </nav>
-
-    <header class="relative h-screen w-full overflow-hidden bg-black">
+    <header class="relative h-screen w-full overflow-hidden">
         <div id="slider-container">
             <div class="slider-image absolute inset-0 opacity-100 fade-slide">
-                <div class="absolute inset-0 bg-black/30 z-10"></div>
-                <img src="https://i.imgur.com/KQ2leiY.jpeg" class="w-full h-full object-cover" alt="Luxury Perfume Bottle 1">
+                <div class="absolute inset-0 bg-black/40 z-10"></div>
+                <img src="https://i.imgur.com/KQ2leiY.jpeg" class="w-full h-full object-cover" alt="Perfume 1">
             </div>
             <div class="slider-image absolute inset-0 opacity-0 fade-slide">
-                <div class="absolute inset-0 bg-black/30 z-10"></div>
-                <img src="https://i.imgur.com/Wp0HCu8.jpeg" class="w-full h-full object-cover" alt="Luxury Perfume Bottle 2">
+                <div class="absolute inset-0 bg-black/40 z-10"></div>
+                <img src="https://i.imgur.com/Wp0HSl8.jpeg" class="w-full h-full object-cover" alt="Perfume 2">
             </div>
             <div class="slider-image absolute inset-0 opacity-0 fade-slide">
-                <div class="absolute inset-0 bg-black/30 z-10"></div>
-                <img src="https://i.imgur.com/BRl8AVs.jpeg" class="w-full h-full object-cover" alt="Luxury Perfume Bottle 3">
+                <div class="absolute inset-0 bg-black/40 z-10"></div>
+                <img src="https://i.imgur.com/BRl8AVs.jpeg" class="w-full h-full object-cover" alt="Perfume 3">
             </div>
         </div>
 
-        <div class="relative z-20 h-full flex flex-col justify-center items-center text-center text-white px-4">
-            <span class="uppercase text-xs tracking-[0.5em] mb-4 text-brandPink">Exquisite Essence</span>
-            <h2 class="text-4xl md:text-7xl font-light tracking-tighter mb-8 uppercase">Define Your Scent</h2>
-            <div class="flex flex-col md:flex-row gap-4">
-                <a href="/shop" class="bg-white text-black px-10 py-4 text-xs uppercase tracking-widest hover:bg-brandPink transition duration-500 font-bold">
-                    Shop Collection
-                </a>
-                <a href="#" class="border border-white text-white px-10 py-4 text-xs uppercase tracking-widest hover:bg-white hover:text-black transition duration-500">
-                    Discover More
-                </a>
-            </div>
+        <div class="relative z-20 h-full flex flex-col justify-center items-center text-center px-4">
+            <h1 class="text-2xl md:text-3xl font-bold tracking-[0.5em] uppercase mb-2 animate-pulse">The Motunde Brand</h1>
+            <p class="text-[10px] tracking-widest uppercase text-brandPink">Entering the World of Luxury...</p>
         </div>
+
+        <a href="/shop.html" class="absolute bottom-10 right-10 z-30 text-[10px] uppercase tracking-widest border-b border-brandPink pb-1 hover:text-brandPink transition">
+            Skip Intro
+        </a>
 
         <div class="absolute bottom-10 left-1/2 -translate-x-1/2 z-30 flex space-x-3">
-            <button onclick="goToSlide(0)" class="dot w-2 h-2 rounded-full bg-white transition-all duration-300" id="dot-0" aria-label="Slide 1"></button>
-            <button onclick="goToSlide(1)" class="dot w-2 h-2 rounded-full bg-white/40 transition-all duration-300" id="dot-1" aria-label="Slide 2"></button>
-            <button onclick="goToSlide(2)" class="dot w-2 h-2 rounded-full bg-white/40 transition-all duration-300" id="dot-2" aria-label="Slide 3"></button>
+            <div class="dot w-6 h-1 rounded-full bg-white transition-all duration-300" id="dot-0"></div>
+            <div class="dot w-2 h-1 rounded-full bg-white/40 transition-all duration-300" id="dot-1"></div>
+            <div class="dot w-2 h-1 rounded-full bg-white/40 transition-all duration-300" id="dot-2"></div>
         </div>
     </header>
 
@@ -95,6 +79,8 @@
         let currentIndex = 0;
         const slides = document.querySelectorAll('.slider-image');
         const dots = document.querySelectorAll('.dot');
+        const totalSlides = slides.length;
+        const slideInterval = 3000; // 3 seconds per image
 
         function showSlide(index) {
             slides.forEach((slide, i) => {
@@ -104,22 +90,31 @@
             dots.forEach((dot, i) => {
                 dot.style.backgroundColor = i === index ? '#FFFFFF' : 'rgba(255,255,255,0.4)';
                 dot.style.width = i === index ? '24px' : '8px';
-                dot.style.borderRadius = i === index ? '4px' : '9999px';
             });
         }
 
         function nextSlide() {
-            currentIndex = (currentIndex + 1) % slides.length;
-            showSlide(currentIndex);
+            if (currentIndex < totalSlides - 1) {
+                currentIndex++;
+                showSlide(currentIndex);
+            } else {
+                // After the last image is shown for 3 seconds, redirect
+                setTimeout(() => {
+                    window.location.href = 'shop.html';
+                }, slideInterval);
+            }
         }
 
-        function goToSlide(index) {
-            currentIndex = index;
-            showSlide(currentIndex);
-        }
+        // Initialize the cycle
+        const cycle = setInterval(() => {
+            if (currentIndex >= totalSlides - 1) {
+                clearInterval(cycle);
+                nextSlide(); // Trigger the final redirect logic
+            } else {
+                nextSlide();
+            }
+        }, slideInterval);
 
-        // Initialize Slider
-        setInterval(nextSlide, 3000);
         showSlide(0);
     </script>
 </body>
