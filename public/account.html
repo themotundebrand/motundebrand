@@ -21,21 +21,29 @@
         }
     </script>
     <style>
-        input { background: transparent !important; border-bottom: 1px solid rgba(247, 200, 208, 0.3) !important; transition: border-color 0.3s; }
-        input:focus { border-color: #F7C8D0 !important; outline: none; }
+        input, select { 
+            background: transparent !important; 
+            border-bottom: 1px solid rgba(247, 200, 208, 0.3) !important; 
+            transition: border-color 0.3s; 
+            border-radius: 0 !important;
+        }
+        input:focus, select:focus { border-color: #F7C8D0 !important; outline: none; }
         .form-container { display: none; }
         .form-active { display: block; animation: fadeIn 0.5s ease-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        /* Custom styling for the select arrow */
+        select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23F7C8D0'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right center; background-size: 12px; }
     </style>
 </head>
-<body class="bg-brandBlack text-brandWhite min-h-screen flex flex-col font-sans">
+<body class="bg-brandBlack text-white min-h-screen flex flex-col font-sans">
 
     <nav class="p-6">
-        <a href="index.html" class="text-brandPink text-[10px] tracking-luxury uppercase">← Back to Gallery</a>
+        <a href="shop.html" class="text-brandPink text-[10px] tracking-luxury uppercase">← Back to Shop</a>
     </nav>
 
     <main class="flex-grow flex items-center justify-center px-6 py-12">
-        <div class="w-full max-w-md bg-brandGray/50 p-8 md:p-12 rounded-sm border border-brandPink/5 backdrop-blur-md">
+        <div class="w-full max-w-lg bg-brandGray/50 p-8 md:p-12 rounded-sm border border-brandPink/5 backdrop-blur-md">
             
             <div class="flex justify-center space-x-8 mb-12">
                 <button id="tab-login" onclick="switchTab('login')" class="text-[10px] uppercase tracking-widest text-brandPink border-b border-brandPink pb-2">Login</button>
@@ -61,6 +69,7 @@
                     <label class="block text-[8px] uppercase tracking-widest text-brandPink/60 mb-1">Full Name</label>
                     <input type="text" id="reg-name" required class="w-full py-2 text-sm text-white">
                 </div>
+
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <label class="block text-[8px] uppercase tracking-widest text-brandPink/60 mb-1">Phone Number</label>
@@ -71,18 +80,41 @@
                         <input type="tel" id="reg-whatsapp" required class="w-full py-2 text-sm text-white">
                     </div>
                 </div>
+
                 <div>
                     <label class="block text-[8px] uppercase tracking-widest text-brandPink/60 mb-1">Email Address</label>
                     <input type="email" id="reg-email" required class="w-full py-2 text-sm text-white">
                 </div>
-                <div>
-                    <label class="block text-[8px] uppercase tracking-widest text-brandPink/60 mb-1">Shipping Address</label>
-                    <input type="text" id="reg-address" required class="w-full py-2 text-sm text-white">
+
+                <div class="pt-4 border-t border-brandPink/10 mt-4">
+                    <p class="text-[9px] uppercase tracking-luxury text-brandPink mb-4">Shipping Details</p>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-[8px] uppercase tracking-widest text-brandPink/60 mb-1">Street Address</label>
+                            <input type="text" id="reg-street" placeholder="House No. and Street Name" required class="w-full py-2 text-sm text-white placeholder:text-gray-700">
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-[8px] uppercase tracking-widest text-brandPink/60 mb-1">City</label>
+                                <input type="text" id="reg-city" required class="w-full py-2 text-sm text-white">
+                            </div>
+                            <div>
+                                <label class="block text-[8px] uppercase tracking-widest text-brandPink/60 mb-1">State</label>
+                                <input type="text" id="reg-state" required class="w-full py-2 text-sm text-white">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-[8px] uppercase tracking-widest text-brandPink/60 mb-1">Country</label>
+                            <input type="text" value="Nigeria" disabled class="w-full py-2 text-sm text-brandPink/40 cursor-not-allowed">
+                        </div>
+                    </div>
                 </div>
-                <div>
-                    <label class="block text-[8px] uppercase tracking-widest text-brandPink/60 mb-1">Password</label>
+
+                <div class="pt-2">
+                    <label class="block text-[8px] uppercase tracking-widest text-brandPink/60 mb-1">Create Password</label>
                     <input type="password" id="reg-password" required class="w-full py-2 text-sm text-white">
                 </div>
+
                 <button type="submit" class="w-full bg-brandPink text-brandBlack py-4 mt-4 text-[10px] font-bold uppercase tracking-[0.3em] hover:bg-white transition-all duration-500">
                     Create Profile
                 </button>
@@ -91,7 +123,6 @@
     </main>
 
     <script>
-        // TOGGLE LOGIC
         function switchTab(tab) {
             const loginForm = document.getElementById('login-form');
             const regForm = document.getElementById('register-form');
@@ -111,10 +142,9 @@
             }
         }
 
-        // AUTH LOGIC
         const API_URL = '/api';
 
-        // Register Submit
+        // Register
         document.getElementById('register-form').onsubmit = async (e) => {
             e.preventDefault();
             const userData = {
@@ -123,7 +153,12 @@
                 password: document.getElementById('reg-password').value,
                 phone: document.getElementById('reg-phone').value,
                 whatsapp: document.getElementById('reg-whatsapp').value,
-                address: document.getElementById('reg-address').value
+                address: {
+                    street: document.getElementById('reg-street').value,
+                    city: document.getElementById('reg-city').value,
+                    state: document.getElementById('reg-state').value,
+                    country: "Nigeria"
+                }
             };
 
             try {
@@ -139,7 +174,7 @@
             } catch (err) { alert("Connection Error"); }
         };
 
-        // Login Submit
+        // Login
         document.getElementById('login-form').onsubmit = async (e) => {
             e.preventDefault();
             const email = document.getElementById('login-email').value;

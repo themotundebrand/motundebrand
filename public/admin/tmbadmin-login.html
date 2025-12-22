@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TMB System Access | The Motunde Brand</title>
+    <link rel="icon" type="image/png" href="https://i.imgur.com/CVKXV7R.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        adminBlack: '#050505',
+                        brandPink: '#F7C8D0',
+                        adminGold: '#D4AF37', /* Subtle gold for admin distinction */
+                    },
+                    letterSpacing: { luxury: '0.5em' }
+                }
+            }
+        }
+    </script>
+    <style>
+        .admin-input {
+            background: transparent !important;
+            border: 1px solid rgba(247, 200, 208, 0.1) !important;
+            transition: all 0.4s ease;
+        }
+        .admin-input:focus {
+            border-color: #F7C8D0 !important;
+            background: rgba(247, 200, 208, 0.05) !important;
+            outline: none;
+        }
+        .glass-panel {
+            background: rgba(10, 10, 10, 0.8);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.03);
+        }
+    </style>
+</head>
+<body class="bg-adminBlack text-white min-h-screen flex items-center justify-center font-sans overflow-hidden">
+
+    <div class="absolute inset-0 overflow-hidden pointer-events-none">
+        <div class="absolute -top-[10%] -left-[10%] w-[40%] h-[40%] bg-brandPink/5 rounded-full blur-[120px]"></div>
+    </div>
+
+    <div class="relative z-10 w-full max-w-md px-6">
+        <div class="glass-panel p-10 md:p-14 rounded-sm shadow-2xl text-center">
+            
+            <div class="mb-12">
+                <h1 class="text-brandPink text-xs tracking-luxury uppercase mb-2">TMB Architecture</h1>
+                <h2 class="text-white text-[10px] font-bold tracking-[0.3em] uppercase opacity-40">Administrative Portal</h2>
+            </div>
+
+            <form id="admin-login-form" class="space-y-8 text-left">
+                <div>
+                    <label class="block text-[8px] uppercase tracking-widest text-brandPink/60 mb-3 ml-1">Access ID (Email)</label>
+                    <input type="email" id="admin-email" required 
+                        class="admin-input w-full px-4 py-4 text-xs text-white tracking-widest">
+                </div>
+
+                <div>
+                    <label class="block text-[8px] uppercase tracking-widest text-brandPink/60 mb-3 ml-1">Secure Key (Password)</label>
+                    <input type="password" id="admin-password" required 
+                        class="admin-input w-full px-4 py-4 text-xs text-white tracking-widest">
+                </div>
+
+                <div id="error-msg" class="hidden text-[8px] text-red-400 uppercase tracking-widest text-center animate-pulse">
+                    Access Denied: Invalid Credentials
+                </div>
+
+                <button type="submit" class="w-full bg-white text-brandBlack py-5 text-[9px] font-black uppercase tracking-[0.4em] hover:bg-brandPink transition-all duration-700">
+                    Authorize Entry
+                </button>
+            </form>
+
+            <div class="mt-12">
+                <a href="../index.html" class="text-[8px] uppercase tracking-widest text-white/20 hover:text-brandPink transition">Return to Main Terminal</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = '/api/admin';
+
+        document.getElementById('admin-login-form').onsubmit = async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('admin-email').value;
+            const password = document.getElementById('admin-password').value;
+            const errorMsg = document.getElementById('error-msg');
+
+            try {
+                // Pointing to an admin-specific login route for security
+                const res = await fetch(`${API_URL}/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const data = await res.json();
+
+                if(res.ok && data.isAdmin) {
+                    // Store admin token separately from customer token
+                    localStorage.setItem('tmb_admin_token', data.token);
+                    window.location.href = 'dashboard.html';
+                } else {
+                    errorMsg.classList.remove('hidden');
+                    setTimeout(() => errorMsg.classList.add('hidden'), 3000);
+                }
+            } catch (err) {
+                alert("Critical System Error: Connection Refused");
+            }
+        };
+    </script>
+</body>
+</html>
