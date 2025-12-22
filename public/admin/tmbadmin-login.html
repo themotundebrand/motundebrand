@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TMB System Access | The Motunde Brand</title>
+    <title>The Motunde Brand | System Access</title>
     <link rel="icon" type="image/png" href="https://i.imgur.com/CVKXV7R.png">
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -11,9 +11,10 @@
             theme: {
                 extend: {
                     colors: {
-                        adminBlack: '#050505',
-                        brandPink: '#F7C8D0',
-                        adminGold: '#D4AF37', /* Subtle gold for admin distinction */
+                        brandWhite: '#FFFFFF',
+                        brandBlack: '#000000',
+                        brandPinkDark: '#D48A96', // Sophisticated Dark Pink
+                        brandPinkLight: '#F7C8D0',
                     },
                     letterSpacing: { luxury: '0.5em' }
                 }
@@ -21,94 +22,154 @@
         }
     </script>
     <style>
+        body { background-color: #FFFFFF; color: #000000; }
         .admin-input {
             background: transparent !important;
-            border: 1px solid rgba(247, 200, 208, 0.1) !important;
+            border-bottom: 2px solid #F7C8D0 !important;
             transition: all 0.4s ease;
+            border-radius: 0;
         }
         .admin-input:focus {
-            border-color: #F7C8D0 !important;
-            background: rgba(247, 200, 208, 0.05) !important;
+            border-color: #D48A96 !important;
             outline: none;
         }
-        .glass-panel {
-            background: rgba(10, 10, 10, 0.8);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.03);
-        }
+        .form-container { display: none; }
+        .form-active { display: block; animation: fadeIn 0.6s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     </style>
 </head>
-<body class="bg-adminBlack text-white min-h-screen flex items-center justify-center font-sans overflow-hidden">
+<body class="min-h-screen flex items-center justify-center font-sans">
 
-    <div class="absolute inset-0 overflow-hidden pointer-events-none">
-        <div class="absolute -top-[10%] -left-[10%] w-[40%] h-[40%] bg-brandPink/5 rounded-full blur-[120px]"></div>
-    </div>
+    <div class="w-full max-w-md px-8 py-12">
+        <div class="text-center mb-16">
+            <h1 class="text-brandBlack text-sm tracking-luxury uppercase font-bold mb-2">THE MOTUNDE BRAND</h1>
+            <h2 id="portal-title" class="text-brandPinkDark text-[10px] font-bold tracking-[0.3em] uppercase">Administrative Entry</h2>
+        </div>
 
-    <div class="relative z-10 w-full max-w-md px-6">
-        <div class="glass-panel p-10 md:p-14 rounded-sm shadow-2xl text-center">
-            
-            <div class="mb-12">
-                <h1 class="text-brandPink text-xs tracking-luxury uppercase mb-2">TMB Architecture</h1>
-                <h2 class="text-white text-[10px] font-bold tracking-[0.3em] uppercase opacity-40">Administrative Portal</h2>
+        <div class="flex justify-center space-x-12 mb-12 border-b border-gray-100">
+            <button id="tab-login" onclick="switchTab('login')" class="text-[9px] uppercase tracking-widest font-bold pb-4 border-b-2 border-brandBlack transition-all">Login</button>
+            <button id="tab-register" onclick="switchTab('register')" class="text-[9px] uppercase tracking-widest font-bold pb-4 border-b-2 border-transparent text-gray-300 hover:text-brandPinkDark transition-all">Register</button>
+        </div>
+
+        <form id="admin-login-form" class="form-container form-active space-y-8">
+            <div>
+                <label class="block text-[8px] uppercase tracking-[0.2em] text-brandPinkDark font-bold mb-2">Access ID</label>
+                <input type="email" id="login-email" required class="admin-input w-full py-3 text-sm text-brandBlack">
             </div>
-
-            <form id="admin-login-form" class="space-y-8 text-left">
-                <div>
-                    <label class="block text-[8px] uppercase tracking-widest text-brandPink/60 mb-3 ml-1">Access ID (Email)</label>
-                    <input type="email" id="admin-email" required 
-                        class="admin-input w-full px-4 py-4 text-xs text-white tracking-widest">
-                </div>
-
-                <div>
-                    <label class="block text-[8px] uppercase tracking-widest text-brandPink/60 mb-3 ml-1">Secure Key (Password)</label>
-                    <input type="password" id="admin-password" required 
-                        class="admin-input w-full px-4 py-4 text-xs text-white tracking-widest">
-                </div>
-
-                <div id="error-msg" class="hidden text-[8px] text-red-400 uppercase tracking-widest text-center animate-pulse">
-                    Access Denied: Invalid Credentials
-                </div>
-
-                <button type="submit" class="w-full bg-white text-brandBlack py-5 text-[9px] font-black uppercase tracking-[0.4em] hover:bg-brandPink transition-all duration-700">
-                    Authorize Entry
-                </button>
-            </form>
-
-            <div class="mt-12">
-                <a href="../index.html" class="text-[8px] uppercase tracking-widest text-white/20 hover:text-brandPink transition">Return to Main Terminal</a>
+            <div>
+                <label class="block text-[8px] uppercase tracking-[0.2em] text-brandPinkDark font-bold mb-2">Secure Key</label>
+                <input type="password" id="login-password" required class="admin-input w-full py-3 text-sm text-brandBlack">
             </div>
+            <button type="submit" class="w-full bg-brandBlack text-white py-5 text-[9px] font-black uppercase tracking-[0.4em] hover:bg-brandPinkDark transition-all duration-500">
+                Authorize Access
+            </button>
+        </form>
+
+        <form id="admin-register-form" class="form-container space-y-8">
+            <div>
+                <label class="block text-[8px] uppercase tracking-[0.2em] text-brandPinkDark font-bold mb-2">Full Name</label>
+                <input type="text" id="reg-name" required class="admin-input w-full py-3 text-sm text-brandBlack">
+            </div>
+            <div>
+                <label class="block text-[8px] uppercase tracking-[0.2em] text-brandPinkDark font-bold mb-2">Admin Email</label>
+                <input type="email" id="reg-email" required class="admin-input w-full py-3 text-sm text-brandBlack">
+            </div>
+            <div>
+                <label class="block text-[8px] uppercase tracking-[0.2em] text-brandPinkDark font-bold mb-2">Set Password</label>
+                <input type="password" id="reg-password" required class="admin-input w-full py-3 text-sm text-brandBlack">
+            </div>
+            <button type="submit" class="w-full bg-brandPinkDark text-white py-5 text-[9px] font-black uppercase tracking-[0.4em] hover:bg-brandBlack transition-all duration-500">
+                Create Account
+            </button>
+        </form>
+
+        <div id="status-msg" class="hidden mt-8 text-[9px] uppercase tracking-widest text-center font-bold"></div>
+
+        <div class="mt-20 text-center">
+            <a href="../index.html" class="text-[8px] uppercase tracking-widest text-gray-400 hover:text-brandBlack transition">Return to Gallery</a>
         </div>
     </div>
 
     <script>
         const API_URL = '/api/admin';
 
+        function switchTab(tab) {
+            const loginForm = document.getElementById('admin-login-form');
+            const regForm = document.getElementById('admin-register-form');
+            const loginBtn = document.getElementById('tab-login');
+            const regBtn = document.getElementById('tab-register');
+            const title = document.getElementById('portal-title');
+
+            if(tab === 'login') {
+                loginForm.classList.add('form-active');
+                regForm.classList.remove('form-active');
+                loginBtn.className = "text-[9px] uppercase tracking-widest font-bold pb-4 border-b-2 border-brandBlack transition-all";
+                regBtn.className = "text-[9px] uppercase tracking-widest font-bold pb-4 border-b-2 border-transparent text-gray-300 transition-all";
+                title.innerText = "Administrative Entry";
+            } else {
+                regForm.classList.add('form-active');
+                loginForm.classList.remove('form-active');
+                regBtn.className = "text-[9px] uppercase tracking-widest font-bold pb-4 border-b-2 border-brandBlack transition-all";
+                loginBtn.className = "text-[9px] uppercase tracking-widest font-bold pb-4 border-b-2 border-transparent text-gray-300 transition-all";
+                title.innerText = "System Enrollment";
+            }
+        }
+
+        function showStatus(msg, isError = true) {
+            const status = document.getElementById('status-msg');
+            status.innerText = msg;
+            status.className = `mt-8 text-[9px] uppercase tracking-widest text-center font-bold ${isError ? 'text-red-500' : 'text-brandPinkDark'}`;
+            status.classList.remove('hidden');
+            setTimeout(() => status.classList.add('hidden'), 4000);
+        }
+
+        // LOGIN SUBMIT
         document.getElementById('admin-login-form').onsubmit = async (e) => {
             e.preventDefault();
-            const email = document.getElementById('admin-email').value;
-            const password = document.getElementById('admin-password').value;
-            const errorMsg = document.getElementById('error-msg');
-
             try {
-                // Pointing to an admin-specific login route for security
                 const res = await fetch(`${API_URL}/login`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email, password })
+                    body: JSON.stringify({
+                        email: document.getElementById('login-email').value,
+                        password: document.getElementById('login-password').value
+                    })
                 });
-
                 const data = await res.json();
-
                 if(res.ok && data.isAdmin) {
-                    // Store admin token separately from customer token
                     localStorage.setItem('tmb_admin_token', data.token);
-                    window.location.href = 'tmbdashboard.html';
+                    window.location.href = 'tmbdashboard.html'; 
                 } else {
-                    errorMsg.classList.remove('hidden');
-                    setTimeout(() => errorMsg.classList.add('hidden'), 3000);
+                    showStatus(data.error || "Access Denied");
                 }
             } catch (err) {
-                alert("Critical System Error: Connection Refused");
+                showStatus("Connection Refused");
+            }
+        };
+
+        // REGISTER SUBMIT
+        document.getElementById('admin-register-form').onsubmit = async (e) => {
+            e.preventDefault();
+            try {
+                const res = await fetch(`${API_URL}/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        name: document.getElementById('reg-name').value,
+                        email: document.getElementById('reg-email').value,
+                        password: document.getElementById('reg-password').value,
+                        isAdmin: true
+                    })
+                });
+                const data = await res.json();
+                if(res.ok) {
+                    showStatus("Account Created. Please Login.", false);
+                    setTimeout(() => switchTab('login'), 2000);
+                } else {
+                    showStatus(data.error || "Registration Failed");
+                }
+            } catch (err) {
+                showStatus("System Error");
             }
         };
     </script>
