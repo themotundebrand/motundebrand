@@ -1,0 +1,9 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom Pink Selection Color for your brand */
+::selection {
+  background-color: #FFC0CB;
+  color: black;
+}
