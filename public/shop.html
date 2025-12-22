@@ -37,15 +37,18 @@
         .product-card { transition: all 0.5s ease; }
         .product-card:hover { transform: translateY(-4px); border-color: #F7C8D0; }
 
-        /* Sidebar Transition */
-        #mobile-menu {
-            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        }
+        #mobile-menu { transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
 
-        /* Carousel Fading Effect */
-        .carousel-img {
-            transition: opacity 0.8s ease-in-out;
+        /* Smooth Slider Transitions */
+        .slide-fade {
+            transition: opacity 1s ease-in-out;
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
         }
+        .slide-hidden { opacity: 0; pointer-events: none; }
+        .slide-active { opacity: 1; pointer-events: auto; }
 
         @media (max-width: 768px) {
             .logo-text { font-size: 0.85rem !important; letter-spacing: 0.2em !important; }
@@ -72,73 +75,79 @@
             <h1 class="logo-text text-brandPink text-lg md:text-xl font-black tracking-luxury uppercase">
                 The Motunde Brand
             </h1>
-            
             <div class="hidden md:flex space-x-12 uppercase text-[10px] tracking-refined font-bold text-brandPink/70">
                 <a href="index.html" class="hover:text-brandPink transition-colors">Home</a>
                 <a href="#" class="text-brandPink border-b border-brandPink pb-1">Shop</a>
                 <a href="#" class="hover:text-brandPink transition-colors">Cart (0)</a>
             </div>
-
             <button id="open-menu" class="md:hidden text-brandPink">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 8h16M4 16h16" stroke-width="2"></path></svg>
             </button>
         </div>
     </nav>
 
-    <section class="pt-24 bg-brandBlack overflow-hidden">
-        <div class="flex flex-col md:flex-row h-[400px] md:h-[500px]">
-            <div class="relative w-full h-full md:w-1/4 border-r border-brandPink/5 overflow-hidden">
-                <img src="https://i.imgur.com/bO3iAss.jpeg" class="w-full h-full object-cover" alt="Collection 1">
+    <section class="pt-20 bg-brandBlack">
+        <div class="relative h-[450px] md:h-[600px] overflow-hidden">
+            <div id="slide-group-1" class="slide-fade slide-active flex flex-row h-full">
+                <div class="w-full md:w-1/2 h-full border-r border-brandPink/5">
+                    <img src="https://i.imgur.com/bO3iAss.jpeg" class="w-full h-full object-cover" alt="Fragrance 1">
+                </div>
+                <div class="hidden md:block md:w-1/2 h-full">
+                    <img src="https://i.imgur.com/OttTbfO.jpeg" class="w-full h-full object-cover" alt="Fragrance 2">
+                </div>
             </div>
-            <div class="relative w-full h-full md:w-1/4 border-r border-brandPink/5 overflow-hidden">
-                <img src="https://i.imgur.com/OttTbfO.jpeg" class="w-full h-full object-cover" alt="Collection 2">
+
+            <div id="slide-group-2" class="slide-fade slide-hidden flex flex-row h-full">
+                <div class="w-full md:w-1/2 h-full border-r border-brandPink/5">
+                    <img src="https://i.imgur.com/mfXDwZG.jpeg" class="w-full h-full object-cover" alt="Fragrance 3">
+                </div>
+                <div class="hidden md:block md:w-1/2 h-full">
+                    <img src="https://i.imgur.com/LWxBC3K.jpeg" class="w-full h-full object-cover" alt="Fragrance 4">
+                </div>
             </div>
-            <div class="relative w-full h-full md:w-1/4 border-r border-brandPink/5 overflow-hidden">
-                <img src="https://i.imgur.com/mfXDwZG.jpeg" class="w-full h-full object-cover" alt="Collection 3">
+            
+            <div id="slide-group-3" class="slide-fade slide-hidden flex md:hidden flex-row h-full">
+                <img src="https://i.imgur.com/OttTbfO.jpeg" class="w-full h-full object-cover" alt="Fragrance 2">
             </div>
-            <div class="relative w-full h-full md:w-1/4 overflow-hidden">
-                <img src="https://i.imgur.com/LWxBC3K.jpeg" class="w-full h-full object-cover" alt="Collection 4">
+            <div id="slide-group-4" class="slide-fade slide-hidden flex md:hidden flex-row h-full">
+                <img src="https://i.imgur.com/LWxBC3K.jpeg" class="w-full h-full object-cover" alt="Fragrance 4">
             </div>
         </div>
+        
         <div class="bg-brandBlack py-4 text-center border-b border-brandPink/10">
-            <span class="text-[9px] uppercase tracking-[0.6em] text-brandPink animate-pulse">New Arrivals Display</span>
+            <span class="text-[9px] uppercase tracking-[0.5em] text-brandPink font-bold">The Signature Experience</span>
         </div>
     </section>
 
     <main class="flex-grow py-24 px-8">
         <div class="max-w-7xl mx-auto">
             <header class="text-center mb-24">
-                <h2 class="text-brandBlack text-2xl md:text-4xl font-light uppercase tracking-[0.3em] mb-6">
-                    The Collection
-                </h2>
+                <h2 class="text-brandBlack text-2xl md:text-4xl font-light uppercase tracking-[0.3em] mb-6">The Collection</h2>
                 <div class="w-10 h-[1px] bg-brandPinkDark mx-auto"></div>
             </header>
-
             <div id="product-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-8 gap-y-16">
-                <div class="col-span-full py-20 text-center uppercase tracking-widest text-[10px] text-gray-400">
-                    Curating the collection...
-                </div>
+                <div class="col-span-full py-20 text-center uppercase tracking-widest text-[10px] text-gray-400">Syncing Scents...</div>
             </div>
         </div>
     </main>
 
-    <footer class="bg-brandBlack border-t border-brandPink/10 py-12 px-8 mt-auto">
+    <footer class="bg-brandBlack border-t border-brandPink/10 py-12 px-8">
         <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center space-y-8 md:space-y-0 text-center md:text-left">
-            <div class="space-y-1">
+            <div>
                 <h3 class="uppercase tracking-widest text-[10px] font-bold text-brandPink">The Motunde Brand</h3>
-                <p class="text-[9px] text-brandPink/50 uppercase tracking-tighter">Defining your unique essence.</p>
+                <p class="text-[9px] text-brandPink/50 uppercase tracking-tighter">Your Essence, Redefined.</p>
             </div>
             <div class="flex space-x-8 text-[9px] uppercase tracking-widest text-brandPink/50">
-                <a href="#" class="hover:text-brandPink transition">Privacy</a>
-                <a href="#" class="hover:text-brandPink transition">Terms</a>
-                <a href="#" class="hover:text-brandPink transition">Contact</a>
+                <a href="#" class="hover:text-brandPink">Privacy</a>
+                <a href="#" class="hover:text-brandPink">Terms</a>
+                <a href="#" class="hover:text-brandPink">Contact</a>
             </div>
             <p class="text-[9px] uppercase tracking-[0.2em] text-brandPink/30">© 2025</p>
         </div>
     </footer>
 
     <script>
-        // SIDEBAR LOGIC
+        // SIDEBAR
         const openBtn = document.getElementById('open-menu');
         const closeBtn = document.getElementById('close-menu');
         const menu = document.getElementById('mobile-menu');
@@ -149,42 +158,55 @@
             overlay.classList.toggle('hidden');
             document.body.classList.toggle('overflow-hidden');
         }
-
         openBtn.addEventListener('click', toggleMenu);
         closeBtn.addEventListener('click', toggleMenu);
         overlay.addEventListener('click', toggleMenu);
 
-        // DYNAMIC PRODUCTS
+        // SLIDER LOGIC
+        let currentSlide = 1;
+        const totalSlidesDesktop = 2; // Groups of 2
+        const totalSlidesMobile = 4;  // Individual images
+
+        function rotateSlides() {
+            const isMobile = window.innerWidth < 768;
+            const total = isMobile ? totalSlidesMobile : totalSlidesDesktop;
+            
+            // Hide all
+            for(let i=1; i<=4; i++) {
+                const s = document.getElementById(`slide-group-${i}`);
+                if(s) s.classList.replace('slide-active', 'slide-hidden');
+            }
+            
+            currentSlide = (currentSlide % total) + 1;
+            
+            const nextSlide = document.getElementById(`slide-group-${currentSlide}`);
+            nextSlide.classList.replace('slide-hidden', 'slide-active');
+        }
+
+        setInterval(rotateSlides, 3500); // Swaps every 3.5 seconds
+
+        // API PRODUCTS
         async function loadProducts() {
             try {
                 const response = await fetch('/api/products');
                 const products = await response.json();
                 const grid = document.getElementById('product-grid');
-                
                 if (!products || products.length === 0) {
-                    grid.innerHTML = `<p class="col-span-full text-center text-gray-400 py-10 uppercase text-[10px] tracking-widest">Vault Empty</p>`;
+                    grid.innerHTML = `<p class="col-span-full text-center text-gray-400 py-10 uppercase text-[10px]">Vault empty</p>`;
                     return;
                 }
-
-                grid.innerHTML = products.map(product => `
+                grid.innerHTML = products.map(p => `
                     <div class="product-card group bg-white border border-gray-50 p-4 hover:border-brandPink">
-                        <div class="aspect-[3/4] overflow-hidden bg-gray-50 mb-8">
-                            <img src="${product.imageUrl}" alt="${product.name}" class="w-full h-full object-cover transition duration-1000 group-hover:scale-105">
-                        </div>
-                        <div class="text-center px-2">
-                            <h3 class="uppercase font-bold tracking-widest text-[10px] text-brandBlack mb-2">${product.name}</h3>
-                            <p class="text-gray-400 text-[10px] mb-8 tracking-widest">$${product.price}</p>
-                            <button onclick="addToCart('${product._id}')" class="w-full bg-brandBlack text-brandPink py-4 text-[9px] uppercase tracking-[0.3em] hover:bg-brandPink hover:text-brandBlack transition-all">
-                                Add to Bag
-                            </button>
+                        <div class="aspect-[3/4] overflow-hidden bg-gray-50 mb-8"><img src="${p.imageUrl}" class="w-full h-full object-cover transition duration-1000 group-hover:scale-105"></div>
+                        <div class="text-center">
+                            <h3 class="uppercase font-bold tracking-widest text-[10px] text-brandBlack mb-2">${p.name}</h3>
+                            <p class="text-gray-400 text-[10px] mb-8 tracking-widest">$${p.price}</p>
+                            <button onclick="addToCart('${p._id}')" class="w-full bg-brandBlack text-brandPink py-4 text-[9px] uppercase tracking-[0.3em] hover:bg-brandPink hover:text-brandBlack transition-all">Add to Bag</button>
                         </div>
                     </div>
                 `).join('');
-            } catch (error) {
-                document.getElementById('product-grid').innerHTML = `<p class="col-span-full text-center text-gray-300 py-10">Syncing Error...</p>`;
-            }
+            } catch (e) { document.getElementById('product-grid').innerHTML = `<p class="col-span-full text-center text-gray-300">Connection Error</p>`; }
         }
-
         function addToCart(id) { alert("Scent added to bag."); }
         loadProducts();
     </script>
