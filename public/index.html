@@ -29,16 +29,38 @@
         .fade-slide {
             transition: opacity 1.5s ease-in-out;
         }
+
+        /* Image Optimization & Framing */
+        .optimized-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center;
+            /* Sharpness & Scaling optimization */
+            image-rendering: -webkit-optimize-contrast;
+            image-rendering: high-quality;
+            transform: scale(1.05); /* Very slight zoom to prevent edge bleeding */
+        }
+
+        /* Prevent image from feeling 'too big' on ultra-wide screens */
+        @media (min-width: 1536px) {
+            .slider-image {
+                max-width: 1920px;
+                margin: 0 auto;
+            }
+        }
+
         @keyframes progress {
             from { width: 0%; }
             to { width: 100%; }
         }
+
         .timer-bar {
             animation: progress 9s linear forwards;
         }
-        /* Extra smoothness for mobile browsers */
+
         .h-screen-safe {
-            height: 100vh; /* Fallback */
+            height: 100vh;
             height: 100dvh; 
         }
     </style>
@@ -47,36 +69,36 @@
 
     <div class="fixed top-0 left-0 h-[2px] bg-brandPink z-50 timer-bar"></div>
 
-    <header class="relative h-screen-safe w-full overflow-hidden">
-        <div id="slider-container" class="absolute inset-0">
-            <div class="slider-image absolute inset-0 opacity-100 fade-slide">
-                <div class="absolute inset-0 bg-black/40 z-10"></div>
-                <img src="https://i.imgur.com/KQ2leiY.jpeg" class="w-full h-full object-cover object-center" alt="Fragrance Note 1">
+    <header class="relative h-screen-safe w-full overflow-hidden flex items-center justify-center">
+        <div id="slider-container" class="absolute inset-0 z-0">
+            <div class="slider-image absolute inset-0 opacity-100 fade-slide overflow-hidden">
+                <div class="absolute inset-0 bg-black/50 z-10"></div>
+                <img src="https://i.imgur.com/KQ2leiY.jpeg" class="optimized-img" alt="Fragrance 1">
             </div>
-            <div class="slider-image absolute inset-0 opacity-0 fade-slide">
-                <div class="absolute inset-0 bg-black/40 z-10"></div>
-                <img src="https://i.imgur.com/Wp0HCu8.jpeg" class="w-full h-full object-cover object-center" alt="Fragrance Note 2">
+            <div class="slider-image absolute inset-0 opacity-0 fade-slide overflow-hidden">
+                <div class="absolute inset-0 bg-black/50 z-10"></div>
+                <img src="https://i.imgur.com/Wp0HCu8.jpeg" class="optimized-img" alt="Fragrance 2">
             </div>
-            <div class="slider-image absolute inset-0 opacity-0 fade-slide">
-                <div class="absolute inset-0 bg-black/40 z-10"></div>
-                <img src="https://i.imgur.com/BRl8AVs.jpeg" class="w-full h-full object-cover object-center" alt="Fragrance Note 3">
+            <div class="slider-image absolute inset-0 opacity-0 fade-slide overflow-hidden">
+                <div class="absolute inset-0 bg-black/50 z-10"></div>
+                <img src="https://i.imgur.com/BRl8AVs.jpeg" class="optimized-img" alt="Fragrance 3">
             </div>
         </div>
 
-        <div class="relative z-20 h-full flex flex-col justify-center items-center text-center px-6">
-            <h1 class="text-xl md:text-4xl font-bold tracking-luxury uppercase mb-4 animate-pulse">
+        <div class="relative z-30 flex flex-col justify-center items-center text-center px-6 pointer-events-none">
+            <h1 class="text-xl md:text-3xl lg:text-4xl font-bold tracking-luxury uppercase mb-4 animate-pulse drop-shadow-2xl">
                 The Motunde Brand
             </h1>
-            <div class="w-12 h-px bg-brandPink mb-4"></div>
-            <p class="text-[9px] md:text-xs tracking-[0.5em] uppercase text-brandPink font-light">
+            <div class="w-16 h-[1px] bg-brandPink/60 mb-4"></div>
+            <p class="text-[9px] md:text-xs tracking-[0.6em] uppercase text-brandPink font-light drop-shadow-md">
                 Entering the World of Luxury
             </p>
         </div>
 
-        <div class="absolute bottom-12 left-1/2 -translate-x-1/2 z-30 flex space-x-4">
-            <div class="dot w-8 h-[2px] bg-white transition-all duration-300" id="dot-0"></div>
-            <div class="dot w-4 h-[2px] bg-white/30 transition-all duration-300" id="dot-1"></div>
-            <div class="dot w-4 h-[2px] bg-white/30 transition-all duration-300" id="dot-2"></div>
+        <div class="absolute bottom-12 left-1/2 -translate-x-1/2 z-40 flex space-x-6">
+            <div class="dot w-10 h-[1px] bg-white transition-all duration-300" id="dot-0"></div>
+            <div class="dot w-6 h-[1px] bg-white/20 transition-all duration-300" id="dot-1"></div>
+            <div class="dot w-6 h-[1px] bg-white/20 transition-all duration-300" id="dot-2"></div>
         </div>
     </header>
 
@@ -90,11 +112,20 @@
         function showSlide(index) {
             slides.forEach((slide, i) => {
                 slide.style.opacity = i === index ? '1' : '0';
+                // Add a very subtle zoom-in effect while the slide is active for a premium feel
+                const img = slide.querySelector('img');
+                if (i === index) {
+                    img.style.transform = "scale(1.1)";
+                    img.style.transition = "transform 6s ease-out";
+                } else {
+                    img.style.transform = "scale(1.05)";
+                    img.style.transition = "none";
+                }
             });
             
             dots.forEach((dot, i) => {
-                dot.style.backgroundColor = i === index ? '#FFFFFF' : 'rgba(255,255,255,0.3)';
-                dot.style.width = i === index ? '32px' : '16px';
+                dot.style.backgroundColor = i === index ? '#FFFFFF' : 'rgba(255,255,255,0.2)';
+                dot.style.width = i === index ? '40px' : '24px';
             });
         }
 
@@ -103,14 +134,12 @@
                 currentIndex++;
                 showSlide(currentIndex);
             } else {
-                // Final delay so user sees the 3rd image for 3 seconds before redirect
                 setTimeout(() => {
                     window.location.href = 'shop.html';
                 }, slideInterval);
             }
         }
 
-        // Automatic Transition Logic
         const cycle = setInterval(() => {
             if (currentIndex >= totalSlides - 1) {
                 clearInterval(cycle);
@@ -120,7 +149,6 @@
             }
         }, slideInterval);
 
-        // Initial setup
         showSlide(0);
     </script>
 </body>
