@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>The Motunde Brand | System Access</title>
     <link rel="icon" type="image/png" href="https://i.imgur.com/CVKXV7R.png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -13,7 +14,7 @@
                     colors: {
                         brandWhite: '#FFFFFF',
                         brandBlack: '#000000',
-                        brandPinkDark: '#D48A96', // Sophisticated Dark Pink
+                        brandPinkDark: '#D48A96',
                         brandPinkLight: '#F7C8D0',
                     },
                     letterSpacing: { luxury: '0.5em' }
@@ -36,6 +37,18 @@
         .form-container { display: none; }
         .form-active { display: block; animation: fadeIn 0.6s ease-out; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        
+        .password-wrapper { position: relative; }
+        .toggle-password {
+            position: absolute;
+            right: 0;
+            bottom: 12px;
+            cursor: pointer;
+            color: #D48A96;
+            font-size: 0.8rem;
+            transition: color 0.3s;
+        }
+        .toggle-password:hover { color: #000000; }
     </style>
 </head>
 <body class="min-h-screen flex items-center justify-center font-sans">
@@ -56,9 +69,10 @@
                 <label class="block text-[8px] uppercase tracking-[0.2em] text-brandPinkDark font-bold mb-2">Access ID</label>
                 <input type="email" id="login-email" required class="admin-input w-full py-3 text-sm text-brandBlack">
             </div>
-            <div>
+            <div class="password-wrapper">
                 <label class="block text-[8px] uppercase tracking-[0.2em] text-brandPinkDark font-bold mb-2">Secure Key</label>
-                <input type="password" id="login-password" required class="admin-input w-full py-3 text-sm text-brandBlack">
+                <input type="password" id="login-password" required class="admin-input w-full py-3 text-sm text-brandBlack pr-10">
+                <i class="fa-solid fa-eye toggle-password" onclick="togglePasswordVisibility('login-password', this)"></i>
             </div>
             <button type="submit" class="w-full bg-brandBlack text-white py-5 text-[9px] font-black uppercase tracking-[0.4em] hover:bg-brandPinkDark transition-all duration-500">
                 Authorize Access
@@ -74,9 +88,10 @@
                 <label class="block text-[8px] uppercase tracking-[0.2em] text-brandPinkDark font-bold mb-2">Admin Email</label>
                 <input type="email" id="reg-email" required class="admin-input w-full py-3 text-sm text-brandBlack">
             </div>
-            <div>
+            <div class="password-wrapper">
                 <label class="block text-[8px] uppercase tracking-[0.2em] text-brandPinkDark font-bold mb-2">Set Password</label>
-                <input type="password" id="reg-password" required class="admin-input w-full py-3 text-sm text-brandBlack">
+                <input type="password" id="reg-password" required class="admin-input w-full py-3 text-sm text-brandBlack pr-10">
+                <i class="fa-solid fa-eye toggle-password" onclick="togglePasswordVisibility('reg-password', this)"></i>
             </div>
             <button type="submit" class="w-full bg-brandPinkDark text-white py-5 text-[9px] font-black uppercase tracking-[0.4em] hover:bg-brandBlack transition-all duration-500">
                 Create Account
@@ -91,7 +106,21 @@
     </div>
 
     <script>
+        // Because of your netlify.toml redirect, /api/ maps to /.netlify/functions/api/
         const API_URL = '/api/admin';
+
+        function togglePasswordVisibility(inputId, icon) {
+            const input = document.getElementById(inputId);
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        }
 
         function switchTab(tab) {
             const loginForm = document.getElementById('admin-login-form');
@@ -143,7 +172,7 @@
                     showStatus(data.error || "Access Denied");
                 }
             } catch (err) {
-                showStatus("Connection Refused");
+                showStatus("System Connection Error");
             }
         };
 
@@ -163,13 +192,13 @@
                 });
                 const data = await res.json();
                 if(res.ok) {
-                    showStatus("Account Created. Please Login.", false);
+                    showStatus("Admin Created. Please Login.", false);
                     setTimeout(() => switchTab('login'), 2000);
                 } else {
                     showStatus(data.error || "Registration Failed");
                 }
             } catch (err) {
-                showStatus("System Error");
+                showStatus("System Enrollment Error");
             }
         };
     </script>
