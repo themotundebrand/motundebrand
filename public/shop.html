@@ -32,22 +32,20 @@
     <style>
         /* Modern Scrollbar */
         ::-webkit-scrollbar { width: 5px; }
-        ::-webkit-scrollbar-track { background: #f1f1f1; }
-        ::-webkit-scrollbar-thumb { background: #E2A9B3; }
+        ::-webkit-scrollbar-track { background: #000000; }
+        ::-webkit-scrollbar-thumb { background: #F7C8D0; }
 
-        /* Card Hover refinement */
         .product-card {
             transition: all 0.5s ease;
         }
         .product-card:hover {
             transform: translateY(-4px);
-            border-color: #000;
+            border-color: #F7C8D0;
         }
 
-        /* Mobile Adjustments */
         @media (max-width: 768px) {
             .logo-text {
-                font-size: 0.85rem !important; /* Smaller logo for mobile */
+                font-size: 0.85rem !important;
                 letter-spacing: 0.2em !important;
             }
             footer {
@@ -59,54 +57,58 @@
 </head>
 <body class="bg-white font-sans min-h-screen flex flex-col antialiased">
 
-    <nav class="fixed w-full z-50 bg-white/95 backdrop-blur-sm border-b border-gray-100">
+    <nav class="fixed w-full z-50 bg-brandBlack shadow-xl border-b border-brandPink/10">
         <div class="max-w-7xl mx-auto px-6 py-5 flex justify-between items-center">
-            <h1 class="logo-text text-brandBlack text-lg md:text-xl font-black tracking-luxury uppercase">
+            <h1 class="logo-text text-brandPink text-lg md:text-xl font-black tracking-luxury uppercase">
                 The Motunde Brand
             </h1>
             
-            <div class="hidden md:flex space-x-12 uppercase text-[10px] tracking-refined font-bold text-gray-500">
-                <a href="index.html" class="hover:text-brandBlack transition-colors">Home</a>
-                <a href="#" class="text-brandBlack border-b border-brandBlack pb-1">Shop</a>
-                <a href="#" class="hover:text-brandBlack transition-colors">Cart (0)</a>
+            <div class="hidden md:flex space-x-12 uppercase text-[10px] tracking-refined font-bold text-brandPink/70">
+                <a href="index.html" class="hover:text-brandPink transition-colors">Home</a>
+                <a href="#" class="text-brandPink border-b border-brandPink pb-1">Shop</a>
+                <a href="#" class="hover:text-brandPink transition-colors">Cart (0)</a>
             </div>
 
-            <div class="md:hidden text-brandBlack">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 8h16M4 16h16" stroke-width="1.5"></path></svg>
+            <div class="md:hidden text-brandPink">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path d="M4 8h16M4 16h16" stroke-width="2"></path>
+                </svg>
             </div>
         </div>
     </nav>
 
     <main class="flex-grow pt-40 pb-32 px-8">
         <div class="max-w-7xl mx-auto">
-            <header class="text-center mb-24"> <h2 class="text-brandBlack text-2xl md:text-4xl font-light uppercase tracking-[0.3em] mb-6">
+            <header class="text-center mb-24">
+                <h2 class="text-brandBlack text-2xl md:text-4xl font-light uppercase tracking-[0.3em] mb-6">
                     The Collection
                 </h2>
-                <div class="w-10 h-[1px] bg-brandBlack mx-auto opacity-20"></div>
+                <div class="w-10 h-[1px] bg-brandPinkDark mx-auto"></div>
             </header>
 
             <div id="product-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-8 gap-y-16">
                 <div class="col-span-full py-20 text-center uppercase tracking-widest text-[10px] text-gray-400">
-                    Awaiting the collection...
+                    Curating the collection...
                 </div>
             </div>
         </div>
     </main>
 
-    <footer class="bg-white border-t border-gray-50 py-12 px-8">
-        <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center space-y-6 md:space-y-0 text-center md:text-left">
+    <footer class="bg-brandBlack border-t border-brandPink/10 py-12 px-8">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center space-y-8 md:space-y-0 text-center md:text-left">
             <div class="space-y-1">
-                <h3 class="uppercase tracking-widest text-[10px] font-bold text-brandBlack">The Motunde Brand</h3>
-                <p class="text-[9px] text-gray-400 uppercase tracking-tighter">Defining your unique essence.</p>
+                <h3 class="uppercase tracking-widest text-[10px] font-bold text-brandPink">The Motunde Brand</h3>
+                <p class="text-[9px] text-brandPink/50 uppercase tracking-tighter">Defining your unique essence.</p>
             </div>
             
-            <div class="flex space-x-8 text-[9px] uppercase tracking-widest text-gray-400">
-                <a href="#" class="hover:text-brandBlack transition">Privacy</a>
-                <a href="#" class="hover:text-brandBlack transition">Terms</a>
+            <div class="flex space-x-8 text-[9px] uppercase tracking-widest text-brandPink/50">
+                <a href="#" class="hover:text-brandPink transition">Privacy</a>
+                <a href="#" class="hover:text-brandPink transition">Terms</a>
+                <a href="#" class="hover:text-brandPink transition">Contact</a>
             </div>
 
             <div>
-                <p class="text-[9px] uppercase tracking-[0.2em] text-gray-300">© 2025</p>
+                <p class="text-[9px] uppercase tracking-[0.2em] text-brandPink/30">© 2025</p>
             </div>
         </div>
     </footer>
@@ -124,7 +126,7 @@
                 }
 
                 grid.innerHTML = products.map(product => `
-                    <div class="product-card group bg-white border border-transparent p-4">
+                    <div class="product-card group bg-white border border-gray-50 p-4 hover:border-brandPink">
                         <div class="aspect-[3/4] overflow-hidden bg-gray-50 mb-8 relative">
                             <img src="${product.imageUrl}" alt="${product.name}" 
                                  class="w-full h-full object-cover grayscale-[20%] group-hover:grayscale-0 transition duration-1000">
@@ -133,7 +135,7 @@
                             <h3 class="uppercase font-bold tracking-widest text-[10px] text-brandBlack mb-2">${product.name}</h3>
                             <p class="text-gray-400 text-[10px] mb-8 tracking-widest">$${product.price}</p>
                             <button onclick="addToCart('${product._id}')" 
-                                    class="w-full border border-gray-100 bg-white text-brandBlack py-4 text-[9px] uppercase tracking-[0.3em] hover:bg-brandBlack hover:text-white transition-all duration-500">
+                                    class="w-full border border-gray-100 bg-brandBlack text-brandPink py-4 text-[9px] uppercase tracking-[0.3em] hover:bg-brandPink hover:text-brandBlack transition-all duration-500">
                                 Add to Bag
                             </button>
                         </div>
@@ -142,12 +144,12 @@
 
             } catch (error) {
                 console.error("Fetch error:", error);
-                document.getElementById('product-grid').innerHTML = `<p class="col-span-full text-center text-gray-300 py-10">System error. Please refresh.</p>`;
+                document.getElementById('product-grid').innerHTML = `<p class="col-span-full text-center text-gray-300 py-10 uppercase text-[9px] tracking-widest">Connection Error</p>`;
             }
         }
 
         function addToCart(id) {
-            alert("Item added to bag.");
+            alert("Scent added to bag.");
         }
 
         loadProducts();
