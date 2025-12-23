@@ -98,7 +98,6 @@ router.get('/products', async (req, res) => {
         res.json(items);
     } catch (e) { res.status(500).json({ error: "Fetch failed" }); }
 });
-
 router.post('/admin/products', authenticateAdmin, async (req, res) => {
     try {
         if (!s3) throw new Error("Storage not configured");
@@ -106,22 +105,50 @@ router.post('/admin/products', authenticateAdmin, async (req, res) => {
         const { name, price, size, description, category, imageBase64, fileName, contentType } = req.body;
 
         const buffer = Buffer.from(imageBase64, 'base64');
-        const uploadKey = `${category}/${Date.now()}-${fileName}`;
+        // Clean filename and create unique key
+        const cleanFileName = fileName.replace(/\s+/g, '-');
+        const uploadKey = `${category}/${Date.now()}-${cleanFileName}`;
 
-        const uploadResult = await s3.upload({
+        // 1. Upload to Private Bucket (No ACL line)
+        await s3.upload({
             Bucket: BUCKET_NAME,
             Key: uploadKey,
             Body: buffer,
-            ContentType: contentType,
-            ACL: 'public-read'
+            ContentType: contentType
+            // ACL: 'public-read' REMOVED because account is private
         }).promise();
 
-        const product = { name, price: parseFloat(price), size, description, category, imageUrl: uploadResult.Location, createdAt: new Date() };
-        await db.collection("products").insertOne(product);
-        res.status(201).json({ message: "Success", url: uploadResult.Location });
-    } catch (e) { res.status(500).json({ error: e.message }); }
-});
+        // 2. Generate a Presigned URL for the database
+        // This URL will allow anyone with the link to view the image for 24 hours
+        const signedUrl = s3.getSignedUrl('getObject', {
+            Bucket: BUCKET_NAME,
+            Key: uploadKey,
+            Expires: 86400 // 24 hours in seconds
+        });
 
+        // 3. Save to MongoDB
+        const product = { 
+            name, 
+            price: parseFloat(price), 
+            size, 
+            description, 
+            category, 
+            imageKey: uploadKey, // Store the key so we can refresh the link later
+            imageUrl: signedUrl, 
+            createdAt: new Date() 
+        };
+
+        await db.collection("products").insertOne(product);
+        
+        res.status(201).json({ 
+            message: "Product added securely", 
+            url: signedUrl 
+        });
+    } catch (e) { 
+        console.error("Upload Error:", e);
+        res.status(500).json({ error: e.message }); 
+    }
+});
 // --- EXPORT ---
 app.use('/.netlify/functions/api', router);
 app.use('/api', router); // Backup for local/redirect consistency
