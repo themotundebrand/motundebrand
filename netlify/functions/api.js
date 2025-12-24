@@ -107,30 +107,6 @@ router.get('/admin/refresh', authenticateAdmin, (req, res) => {
     res.json({ token: newToken });
 });
 
-// --- PRODUCT ROUTES ---
-
-router.get('/products', async (req, res) => {
-    try {
-        const db = await getDb();
-        const items = await db.collection("products").find({}).toArray();
-
-        // REFRESH IMAGE URLS ON THE FLY
-        // This ensures that even if a product was added 1 year ago, the link works now
-        const refreshedItems = items.map(item => {
-            if (s3 && item.imageKey) {
-                item.imageUrl = s3.getSignedUrl('getObject', {
-                    Bucket: BUCKET_NAME,
-                    Key: item.imageKey,
-                    Expires: 86400
-                });
-            }
-            return item;
-        });
-
-        res.json(refreshedItems);
-    } catch (e) { res.status(500).json({ error: "Fetch failed" }); }
-});
-
 router.post('/admin/products', authenticateAdmin, async (req, res) => {
     try {
         if (!s3) throw new Error("Storage not configured");
@@ -163,6 +139,125 @@ router.post('/admin/products', authenticateAdmin, async (req, res) => {
     } catch (e) { 
         res.status(500).json({ error: e.message }); 
     }
+});
+
+// --- UPDATE PRODUCT (PUT) ---
+router.put('/admin/products/:id', authenticateAdmin, async (req, res) => {
+    try {
+        if (!s3) throw new Error("Storage not configured");
+        const db = await getDb();
+        const productId = req.params.id;
+        const { name, price, size, description, category, imageBase64, fileName, contentType } = req.body;
+
+        // 1. Find the existing product to check for the old image
+        const existingProduct = await db.collection("products").findOne({ _id: new ObjectId(productId) });
+        if (!existingProduct) return res.status(404).json({ error: "Product not found" });
+
+        let updatedImageKey = existingProduct.imageKey;
+
+        // 2. If a new image is provided, upload it and (optionally) delete the old one
+        if (imageBase64 && fileName) {
+            const buffer = Buffer.from(imageBase64, 'base64');
+            const cleanFileName = fileName.replace(/\s+/g, '-');
+            updatedImageKey = `${category}/${Date.now()}-${cleanFileName}`;
+
+            // Upload new image
+            await s3.upload({
+                Bucket: BUCKET_NAME,
+                Key: updatedImageKey,
+                Body: buffer,
+                ContentType: contentType
+            }).promise();
+
+            // Optional: Delete old image from S3 to save space
+            if (existingProduct.imageKey) {
+                try {
+                    await s3.deleteObject({
+                        Bucket: BUCKET_NAME,
+                        Key: existingProduct.imageKey
+                    }).promise();
+                } catch (delErr) {
+                    console.error("Failed to delete old image:", delErr.message);
+                    // We don't block the update if deletion fails
+                }
+            }
+        }
+
+        // 3. Update the database
+        const updateDoc = {
+            $set: {
+                name,
+                price: parseFloat(price),
+                size,
+                description,
+                category,
+                imageKey: updatedImageKey,
+                updatedAt: new Date()
+            }
+        };
+
+        const result = await db.collection("products").updateOne(
+            { _id: new ObjectId(productId) },
+            updateDoc
+        );
+
+        if (result.modifiedCount === 0 && result.matchedCount === 1) {
+            return res.json({ message: "No changes detected, but product exists." });
+        }
+
+        res.json({ message: "Product updated successfully" });
+    } catch (e) {
+        console.error("Update Error:", e.message);
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// --- DELETE PRODUCT (Already exists in your logic, but ensure it cleans up S3) ---
+router.delete('/admin/products/:id', authenticateAdmin, async (req, res) => {
+    try {
+        const db = await getDb();
+        const productId = req.params.id;
+
+        const product = await db.collection("products").findOne({ _id: new ObjectId(productId) });
+        if (!product) return res.status(404).json({ error: "Product not found" });
+
+        // Remove image from S3
+        if (s3 && product.imageKey) {
+            await s3.deleteObject({
+                Bucket: BUCKET_NAME,
+                Key: product.imageKey
+            }).promise();
+        }
+
+        await db.collection("products").deleteOne({ _id: new ObjectId(productId) });
+        res.json({ message: "Product and image deleted successfully" });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// --- PRODUCT ROUTES ---
+
+router.get('/products', async (req, res) => {
+    try {
+        const db = await getDb();
+        const items = await db.collection("products").find({}).toArray();
+
+        // REFRESH IMAGE URLS ON THE FLY
+        // This ensures that even if a product was added 1 year ago, the link works now
+        const refreshedItems = items.map(item => {
+            if (s3 && item.imageKey) {
+                item.imageUrl = s3.getSignedUrl('getObject', {
+                    Bucket: BUCKET_NAME,
+                    Key: item.imageKey,
+                    Expires: 86400
+                });
+            }
+            return item;
+        });
+
+        res.json(refreshedItems);
+    } catch (e) { res.status(500).json({ error: "Fetch failed" }); }
 });
 
 app.use('/.netlify/functions/api', router);
