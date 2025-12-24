@@ -82,60 +82,58 @@
             </div>
         </aside>
 
-        <main class="flex-1 min-h-screen p-6 lg:p-12">
-            <div class="max-w-6xl mx-auto">
-                <div class="mb-12">
-                    <h2 class="text-2xl font-light tracking-tight mb-1">Men Scents Collection</h2>
-                    <p class="text-[9px] uppercase tracking-[0.3em] text-gray-400 font-bold">Inventory Management</p>
+        <main class="flex-1 min-h-screen p-6 lg:p-10">
+            <div class="mb-12">
+                <h2 class="text-2xl font-light tracking-tight mb-1">Men Scents Collection</h2>
+                <p class="text-[9px] uppercase tracking-[0.3em] text-gray-400 font-bold">Inventory Management</p>
+            </div>
+
+            <div id="formContainer" class="bg-white border p-8 mb-12 shadow-sm max-w-5xl">
+                <div class="flex justify-between items-center mb-6 border-b pb-4">
+                    <h3 id="formTitle" class="text-[10px] uppercase tracking-[0.2em] font-bold">Add New Fragrance</h3>
+                    <button id="cancelEdit" onclick="resetForm()" class="hidden text-[10px] uppercase text-red-500 font-bold">Cancel Edit</button>
                 </div>
-
-                <div id="formContainer" class="bg-white border p-8 mb-12">
-                    <div class="flex justify-between items-center mb-6 border-b pb-4">
-                        <h3 id="formTitle" class="text-[10px] uppercase tracking-[0.2em] font-bold">Add New Fragrance</h3>
-                        <button id="cancelEdit" onclick="resetForm()" class="hidden text-[10px] uppercase text-red-500 font-bold">Cancel Edit</button>
-                    </div>
-                    
-                    <form id="addScentForm" class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <input type="hidden" id="editProductId">
-                        <div class="space-y-4">
-                            <div>
-                                <label class="text-[9px] uppercase font-bold text-gray-400 block mb-2">Perfume Name</label>
-                                <input type="text" id="pName" placeholder="e.g. Ocean Blue" class="input-field" required>
-                            </div>
-
-                            <div class="border p-4 bg-gray-50 rounded-sm">
-                                <label class="text-[9px] uppercase font-bold text-gray-600 block mb-4">Price & Stock Variants</label>
-                                <div id="variantsContainer" class="space-y-3 mb-4">
-                                    </div>
-                                <button type="button" onclick="addVariantRow()" class="text-[9px] uppercase font-bold bg-white border border-black text-black px-3 py-2 hover:bg-black hover:text-white transition w-full">
-                                    <i class="fa-solid fa-plus mr-1"></i> Add Another Size
-                                </button>
-                            </div>
-
-                            <div>
-                                <label class="text-[9px] uppercase font-bold text-gray-400 block mb-2">Scent Description</label>
-                                <textarea id="pDesc" rows="3" placeholder="Describe the notes..." class="input-field"></textarea>
-                            </div>
+                
+                <form id="addScentForm" class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <input type="hidden" id="editProductId">
+                    <div class="space-y-4">
+                        <div>
+                            <label class="text-[9px] uppercase font-bold text-gray-400 block mb-2">Perfume Name</label>
+                            <input type="text" id="pName" placeholder="e.g. Ocean Blue" class="input-field" required>
                         </div>
 
-                        <div class="space-y-4">
-                            <label class="text-[9px] uppercase font-bold text-gray-400 block mb-2">Product Image</label>
-                            <div class="border-2 border-dashed border-gray-200 h-64 flex flex-col items-center justify-center relative hover:border-black transition-colors">
-                                <input type="file" class="absolute inset-0 opacity-0 cursor-pointer" id="imageUpload" accept="image/*">
-                                <i class="fa-solid fa-cloud-arrow-up text-2xl text-gray-300 mb-2"></i>
-                                <p id="fileNameDisplay" class="text-[10px] text-gray-400 uppercase tracking-widest text-center px-4">Click to upload image</p>
-                            </div>
-                            <button type="submit" id="submitBtn" class="w-full bg-brandBlack text-white text-[10px] uppercase tracking-[0.2em] py-4 font-bold hover:bg-gray-800 transition-colors">
-                                Update Men's Collection
+                        <div class="border p-4 bg-gray-50 rounded-sm">
+                            <label class="text-[9px] uppercase font-bold text-gray-600 block mb-4">Price & Stock Variants</label>
+                            <div id="variantsContainer" class="space-y-3 mb-4">
+                                </div>
+                            <button type="button" onclick="addVariantRow()" class="text-[9px] uppercase font-bold bg-white border border-black text-black px-3 py-2 hover:bg-black hover:text-white transition w-full">
+                                <i class="fa-solid fa-plus mr-1"></i> Add Another Size
                             </button>
                         </div>
-                    </form>
-                </div>
 
-                <h3 class="text-[10px] uppercase tracking-[0.2em] font-bold mb-6">Current Inventory</h3>
-                <div id="inventoryGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <p class="text-[10px] uppercase tracking-widest text-gray-400">Loading collection...</p>
-                </div>
+                        <div>
+                            <label class="text-[9px] uppercase font-bold text-gray-400 block mb-2">Scent Description</label>
+                            <textarea id="pDesc" rows="3" placeholder="Describe the notes..." class="input-field"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="space-y-4">
+                        <label class="text-[9px] uppercase font-bold text-gray-400 block mb-2">Product Image</label>
+                        <div class="border-2 border-dashed border-gray-200 h-64 flex flex-col items-center justify-center relative hover:border-black transition-colors bg-gray-50">
+                            <input type="file" class="absolute inset-0 opacity-0 cursor-pointer" id="imageUpload" accept="image/*">
+                            <i class="fa-solid fa-cloud-arrow-up text-2xl text-gray-300 mb-2"></i>
+                            <p id="fileNameDisplay" class="text-[10px] text-gray-400 uppercase tracking-widest text-center px-4">Click to upload image</p>
+                        </div>
+                        <button type="submit" id="submitBtn" class="w-full bg-brandBlack text-white text-[10px] uppercase tracking-[0.2em] py-4 font-bold hover:bg-gray-800 transition-colors">
+                            Update Men's Collection
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <h3 class="text-[10px] uppercase tracking-[0.2em] font-bold mb-6">Current Inventory</h3>
+            <div id="inventoryGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                <p class="text-[10px] uppercase tracking-widest text-gray-400">Loading collection...</p>
             </div>
         </main>
     </div>
@@ -207,7 +205,6 @@
             window.location.href = 'tmbadmin-login.html';
         }
 
-        // --- UPDATED VARIANT MANAGEMENT WITH STOCK ---
         function addVariantRow(size = '', price = '', stock = '0') {
             const container = document.getElementById('variantsContainer');
             const rowId = 'row-' + Math.random().toString(36).substr(2, 9);

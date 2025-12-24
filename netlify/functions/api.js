@@ -24,12 +24,12 @@ if (process.env.E2_ENDPOINT) {
         accessKeyId: process.env.E2_ACCESS_KEY,
         secretAccessKey: process.env.E2_SECRET_KEY,
         endpoint: new AWS.Endpoint(process.env.E2_ENDPOINT),
-        region: process.env.E2_REGION || 'us-west-1',
+        region: process.env.E2_REGION,
         s3ForcePathStyle: true,
         signatureVersion: 'v4'
     });
 }
-const BUCKET_NAME = process.env.E2_BUCKET || 'themotundebrand';
+const BUCKET_NAME = process.env.E2_BUCKET;
 
 let cachedDb = null;
 async function getDb() {
@@ -54,8 +54,70 @@ const authenticateAdmin = (req, res, next) => {
     });
 };
 
-// --- AUTH ROUTES ---
+// --- [NEW] DASHBOARD ANALYTICS ENDPOINT ---
+// This sums up all 'stock' values inside the 'variants' array for every product
+router.get('/admin/analytics/stock-overview', authenticateAdmin, async (req, res) => {
+    try {
+        const db = await getDb();
+        const products = await db.collection("products").find({}).toArray();
 
+        let womenTotalStock = 0;
+        let menTotalStock = 0;
+
+        products.forEach(product => {
+            const totalProductUnits = (product.variants || []).reduce((sum, v) => sum + (parseInt(v.stock) || 0), 0);
+            
+            if (product.category === 'women') {
+                womenTotalStock += totalProductUnits;
+            } else if (product.category === 'men') {
+                menTotalStock += totalProductUnits;
+            }
+        });
+
+        res.json({ womenTotalStock, menTotalStock });
+    } catch (e) {
+        res.status(500).json({ error: "Failed to calculate stock totals" });
+    }
+});
+
+// --- [NEW] ORDER PLACEMENT & STOCK DEDUCTION ---
+router.post('/orders', async (req, res) => {
+    try {
+        const db = await getDb();
+        const { items, customerDetails, totalPrice } = req.body; 
+        // items expected format: [{ productId: "...", size: "100ml", quantity: 1 }]
+
+        // 1. Save the Order Record
+        const orderRecord = {
+            customerDetails,
+            items,
+            totalPrice,
+            status: 'pending',
+            createdAt: new Date()
+        };
+        const result = await db.collection("orders").insertOne(orderRecord);
+
+        // 2. Deduct Stock for each item purchased
+        const updatePromises = items.map(item => {
+            return db.collection("products").updateOne(
+                { 
+                    _id: new ObjectId(item.productId),
+                    "variants.size": item.size 
+                },
+                { 
+                    $inc: { "variants.$.stock": -Math.abs(item.quantity) } 
+                }
+            );
+        });
+
+        await Promise.all(updatePromises);
+        res.status(201).json({ message: "Order successful and stock updated", orderId: result.insertedId });
+    } catch (e) {
+        res.status(500).json({ error: "Order failed: " + e.message });
+    }
+});
+
+// --- AUTH ROUTES ---
 router.post('/admin/login', async (req, res) => {
     try {
         const { email, password } = req.body;
@@ -76,14 +138,13 @@ router.post('/admin/login', async (req, res) => {
     } catch (e) { res.status(500).json({ error: "Login failed" }); }
 });
 
-// --- UPDATED PRODUCT CREATION (POST) WITH STOCK ---
+// --- PRODUCT CREATION ---
 router.post('/admin/products', authenticateAdmin, async (req, res) => {
     try {
         if (!s3) throw new Error("Storage not configured");
         const db = await getDb();
         const { name, variants, description, category, imageBase64, fileName, contentType } = req.body;
 
-        // Process Image
         const buffer = Buffer.from(imageBase64, 'base64');
         const cleanFileName = fileName.replace(/\s+/g, '-');
         const uploadKey = `${category}/${Date.now()}-${cleanFileName}`;
@@ -95,11 +156,10 @@ router.post('/admin/products', authenticateAdmin, async (req, res) => {
             ContentType: contentType
         }).promise();
 
-        // Format Variants: Ensure prices and stock are numbers
         const formattedVariants = variants.map(v => ({
             size: v.size,
             price: parseFloat(v.price),
-            stock: parseInt(v.stock) || 0 // New: Stock added as integer
+            stock: parseInt(v.stock) || 0 
         }));
 
         const product = { 
@@ -112,16 +172,13 @@ router.post('/admin/products', authenticateAdmin, async (req, res) => {
         };
 
         await db.collection("products").insertOne(product);
-        res.status(201).json({ message: "Product added with variants and stock" });
-    } catch (e) { 
-        res.status(500).json({ error: e.message }); 
-    }
+        res.status(201).json({ message: "Product added successfully" });
+    } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
-// --- UPDATED PRODUCT UPDATE (PUT) WITH STOCK ---
+// --- PRODUCT UPDATE ---
 router.put('/admin/products/:id', authenticateAdmin, async (req, res) => {
     try {
-        if (!s3) throw new Error("Storage not configured");
         const db = await getDb();
         const productId = req.params.id;
         const { name, variants, description, category, imageBase64, fileName, contentType } = req.body;
@@ -131,7 +188,6 @@ router.put('/admin/products/:id', authenticateAdmin, async (req, res) => {
 
         let updatedImageKey = existingProduct.imageKey;
 
-        // Handle New Image Upload
         if (imageBase64 && fileName) {
             const buffer = Buffer.from(imageBase64, 'base64');
             const cleanFileName = fileName.replace(/\s+/g, '-');
@@ -145,39 +201,24 @@ router.put('/admin/products/:id', authenticateAdmin, async (req, res) => {
             }).promise();
 
             if (existingProduct.imageKey) {
-                try {
-                    await s3.deleteObject({ Bucket: BUCKET_NAME, Key: existingProduct.imageKey }).promise();
-                } catch (delErr) { console.error("Old image cleanup failed"); }
+                try { await s3.deleteObject({ Bucket: BUCKET_NAME, Key: existingProduct.imageKey }).promise(); } 
+                catch (delErr) { console.error("Old image cleanup failed"); }
             }
         }
 
-        // Format Variants with Stock
         const formattedVariants = variants.map(v => ({
             size: v.size,
             price: parseFloat(v.price),
-            stock: parseInt(v.stock) || 0 // New: Stock updated here
+            stock: parseInt(v.stock) || 0 
         }));
-
-        const updateDoc = {
-            $set: {
-                name,
-                variants: formattedVariants,
-                description,
-                category,
-                imageKey: updatedImageKey,
-                updatedAt: new Date()
-            }
-        };
 
         await db.collection("products").updateOne(
             { _id: new ObjectId(productId) },
-            updateDoc
+            { $set: { name, variants: formattedVariants, description, category, imageKey: updatedImageKey, updatedAt: new Date() } }
         );
 
-        res.json({ message: "Product and stock levels updated successfully" });
-    } catch (e) {
-        res.status(500).json({ error: e.message });
-    }
+        res.json({ message: "Product and stock updated" });
+    } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
 // --- DELETE PRODUCT ---
@@ -186,7 +227,6 @@ router.delete('/admin/products/:id', authenticateAdmin, async (req, res) => {
         const db = await getDb();
         const productId = req.params.id;
         const product = await db.collection("products").findOne({ _id: new ObjectId(productId) });
-        
         if (!product) return res.status(404).json({ error: "Product not found" });
 
         if (s3 && product.imageKey) {
@@ -198,23 +238,21 @@ router.delete('/admin/products/:id', authenticateAdmin, async (req, res) => {
     } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
-// --- PUBLIC PRODUCT FETCH ---
+// --- PUBLIC FETCH ---
 router.get('/products', async (req, res) => {
     try {
         const db = await getDb();
         const items = await db.collection("products").find({}).toArray();
-
         const refreshedItems = items.map(item => {
             if (s3 && item.imageKey) {
                 item.imageUrl = s3.getSignedUrl('getObject', {
                     Bucket: BUCKET_NAME,
                     Key: item.imageKey,
-                    Expires: 86400 // 24 Hours
+                    Expires: 86400 
                 });
             }
             return item;
         });
-
         res.json(refreshedItems);
     } catch (e) { res.status(500).json({ error: "Fetch failed" }); }
 });
