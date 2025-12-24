@@ -17,7 +17,7 @@ app.use(express.json({ limit: '10mb' }));
 const uri = process.env.MONGODB_URI;
 const JWT_SECRET = process.env.JWT_SECRET;
 
-// --- IDRIVE E2 CONFIGURATION ---
+// --- IDRIVE E2 / S3 CONFIGURATION ---
 let s3 = null;
 if (process.env.E2_ENDPOINT) {
     s3 = new AWS.S3({
@@ -40,6 +40,7 @@ async function getDb() {
     return cachedDb;
 }
 
+// --- AUTHENTICATION MIDDLEWARE ---
 const authenticateAdmin = (req, res, next) => {
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1];
@@ -54,8 +55,7 @@ const authenticateAdmin = (req, res, next) => {
     });
 };
 
-// --- [UPDATED] DASHBOARD ANALYTICS ENDPOINT ---
-// Now includes kidTotalStock for the new category
+// --- DASHBOARD ANALYTICS ---
 router.get('/admin/analytics/stock-overview', authenticateAdmin, async (req, res) => {
     try {
         const db = await getDb();
@@ -63,61 +63,26 @@ router.get('/admin/analytics/stock-overview', authenticateAdmin, async (req, res
 
         let womenTotalStock = 0;
         let menTotalStock = 0;
-        let kidTotalStock = 0; // Added for kids
+        let kidTotalStock = 0;
+        let mistTotalStock = 0; // Added for Mists & Sprays
 
         products.forEach(product => {
             const totalProductUnits = (product.variants || []).reduce((sum, v) => sum + (parseInt(v.stock) || 0), 0);
+            const category = (product.category || "").toLowerCase().trim();
             
-            if (product.category === 'women') {
-                womenTotalStock += totalProductUnits;
-            } else if (product.category === 'men') {
-                menTotalStock += totalProductUnits;
-            } else if (product.category === 'kids') { // Added logic
-                kidTotalStock += totalProductUnits;
-            }
+            if (category === 'women') womenTotalStock += totalProductUnits;
+            else if (category === 'men') menTotalStock += totalProductUnits;
+            else if (category === 'kids') kidTotalStock += totalProductUnits;
+            else if (category === 'mist') mistTotalStock += totalProductUnits;
         });
 
-        res.json({ womenTotalStock, menTotalStock, kidTotalStock });
+        res.json({ womenTotalStock, menTotalStock, kidTotalStock, mistTotalStock });
     } catch (e) {
         res.status(500).json({ error: "Failed to calculate stock totals" });
     }
 });
 
-// --- ORDER PLACEMENT & STOCK DEDUCTION ---
-router.post('/orders', async (req, res) => {
-    try {
-        const db = await getDb();
-        const { items, customerDetails, totalPrice } = req.body; 
-
-        const orderRecord = {
-            customerDetails,
-            items,
-            totalPrice,
-            status: 'pending',
-            createdAt: new Date()
-        };
-        const result = await db.collection("orders").insertOne(orderRecord);
-
-        const updatePromises = items.map(item => {
-            return db.collection("products").updateOne(
-                { 
-                    _id: new ObjectId(item.productId),
-                    "variants.size": item.size 
-                },
-                { 
-                    $inc: { "variants.$.stock": -Math.abs(item.quantity) } 
-                }
-            );
-        });
-
-        await Promise.all(updatePromises);
-        res.status(201).json({ message: "Order successful and stock updated", orderId: result.insertedId });
-    } catch (e) {
-        res.status(500).json({ error: "Order failed: " + e.message });
-    }
-});
-
-// --- AUTH ROUTES ---
+// --- ADMIN LOGIN ---
 router.post('/admin/login', async (req, res) => {
     try {
         const { email, password } = req.body;
@@ -138,12 +103,12 @@ router.post('/admin/login', async (req, res) => {
     } catch (e) { res.status(500).json({ error: "Login failed" }); }
 });
 
-// --- PRODUCT CREATION ---
+// --- PRODUCT MANAGEMENT (CREATE) ---
 router.post('/admin/products', authenticateAdmin, async (req, res) => {
     try {
         if (!s3) throw new Error("Storage not configured");
         const db = await getDb();
-        const { name, variants, description, category, imageBase64, fileName, contentType } = req.body;
+        const { name, variants, description, category, subCategory, imageBase64, fileName, contentType } = req.body;
 
         const buffer = Buffer.from(imageBase64, 'base64');
         const cleanFileName = fileName.replace(/\s+/g, '-');
@@ -156,7 +121,7 @@ router.post('/admin/products', authenticateAdmin, async (req, res) => {
             ContentType: contentType
         }).promise();
 
-        const formattedVariants = variants.map(v => ({
+        const formattedVariants = (variants || []).map(v => ({
             size: v.size,
             price: parseFloat(v.price),
             stock: parseInt(v.stock) || 0 
@@ -166,7 +131,8 @@ router.post('/admin/products', authenticateAdmin, async (req, res) => {
             name, 
             variants: formattedVariants,
             description, 
-            category, // Will correctly store 'kids', 'men', or 'women'
+            category: category.toLowerCase().trim(),
+            subCategory: subCategory || "", // Distinguishes between 'Body Mist' and 'Body Spray'
             imageKey: uploadKey,
             createdAt: new Date() 
         };
@@ -176,12 +142,12 @@ router.post('/admin/products', authenticateAdmin, async (req, res) => {
     } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
-// --- PRODUCT UPDATE ---
+// --- PRODUCT MANAGEMENT (UPDATE) ---
 router.put('/admin/products/:id', authenticateAdmin, async (req, res) => {
     try {
         const db = await getDb();
         const productId = req.params.id;
-        const { name, variants, description, category, imageBase64, fileName, contentType } = req.body;
+        const { name, variants, description, category, subCategory, imageBase64, fileName, contentType } = req.body;
 
         const existingProduct = await db.collection("products").findOne({ _id: new ObjectId(productId) });
         if (!existingProduct) return res.status(404).json({ error: "Product not found" });
@@ -214,14 +180,24 @@ router.put('/admin/products/:id', authenticateAdmin, async (req, res) => {
 
         await db.collection("products").updateOne(
             { _id: new ObjectId(productId) },
-            { $set: { name, variants: formattedVariants, description, category, imageKey: updatedImageKey, updatedAt: new Date() } }
+            { 
+                $set: { 
+                    name, 
+                    variants: formattedVariants, 
+                    description, 
+                    category: category.toLowerCase().trim(), 
+                    subCategory: subCategory || "",
+                    imageKey: updatedImageKey, 
+                    updatedAt: new Date() 
+                } 
+            }
         );
 
-        res.json({ message: "Product and stock updated" });
+        res.json({ message: "Product updated successfully" });
     } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
-// --- DELETE PRODUCT ---
+// --- PRODUCT MANAGEMENT (DELETE) ---
 router.delete('/admin/products/:id', authenticateAdmin, async (req, res) => {
     try {
         const db = await getDb();
@@ -238,51 +214,62 @@ router.delete('/admin/products/:id', authenticateAdmin, async (req, res) => {
     } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
+// --- ORDER HANDLING ---
+router.post('/orders', async (req, res) => {
+    try {
+        const db = await getDb();
+        const { items, customerDetails, totalPrice } = req.body; 
 
-// --- PUBLIC FETCH ---
-// Fetches all products, refreshes S3/IDrive URLs, and standardizes variants
+        const orderRecord = {
+            customerDetails,
+            items,
+            totalPrice,
+            status: 'pending',
+            createdAt: new Date()
+        };
+        const result = await db.collection("orders").insertOne(orderRecord);
+
+        const updatePromises = items.map(item => {
+            return db.collection("products").updateOne(
+                { _id: new ObjectId(item.productId), "variants.size": item.size },
+                { $inc: { "variants.$.stock": -Math.abs(item.quantity) } }
+            );
+        });
+
+        await Promise.all(updatePromises);
+        res.status(201).json({ message: "Order successful", orderId: result.insertedId });
+    } catch (e) { res.status(500).json({ error: "Order failed: " + e.message }); }
+});
+
+// --- PUBLIC COLLECTION FETCH ---
 router.get('/products', async (req, res) => {
     try {
         const db = await getDb();
-        
-        // Fetch all products, newest first based on createdAt or MongoDB _id
         const items = await db.collection("products")
             .find({})
             .sort({ createdAt: -1, _id: -1 }) 
             .toArray();
         
         const refreshedItems = items.map(item => {
-            // 1. IMAGE URL REFRESH
+            // 1. Image URL Handling
             if (s3 && item.imageKey) {
                 try {
                     item.imageUrl = s3.getSignedUrl('getObject', {
                         Bucket: BUCKET_NAME,
                         Key: item.imageKey,
-                        Expires: 86400 // 24 Hours
+                        Expires: 86400 
                     });
                 } catch (urlErr) {
-                    console.error(`URL Error for ${item.name}:`, urlErr);
-                    item.imageUrl = "https://i.imgur.com/CVKXV7R.png"; // Brand Logo Fallback
+                    item.imageUrl = "https://i.imgur.com/CVKXV7R.png"; 
                 }
             } else {
                 item.imageUrl = item.imageUrl || "https://i.imgur.com/CVKXV7R.png";
             }
 
-            // 2. VARIANT STANDARDIZATION
-            // If the product has no variants array, we create one using the base price
-            // This prevents the frontend dropdown from being empty
+            // 2. Data Normalization
             if (!item.variants || !Array.isArray(item.variants) || item.variants.length === 0) {
-                item.variants = [
-                    { 
-                        size: "100ml", 
-                        price: item.price || 0, 
-                        stock: item.stock || 0 
-                    }
-                ];
+                item.variants = [{ size: "Default", price: item.price || 0, stock: item.stock || 0 }];
             }
-
-            // 3. CATEGORY NORMALIZATION
-            // Ensures "Women", "WOMEN", and "women" all work correctly
             item.category = item.category ? item.category.toLowerCase().trim() : "unassigned";
 
             return item;
@@ -290,11 +277,11 @@ router.get('/products', async (req, res) => {
 
         res.json(refreshedItems);
     } catch (e) { 
-        console.error("Critical Fetch Error:", e);
-        res.status(500).json({ error: "Failed to load the collection." }); 
+        res.status(500).json({ error: "Failed to load collection" }); 
     }
 });
 
+// --- EXPORTS ---
 app.use('/.netlify/functions/api', router);
 app.use('/api', router);
 module.exports.handler = serverless(app);

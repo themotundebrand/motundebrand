@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mist & Spray Stock | TMB Management</title>
+    <link rel="icon" type="image/png" href="https://i.imgur.com/CVKXV7R.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brandWhite: '#FFFFFF',
+                        brandBlack: '#000000',
+                        brandMist: '#8AB6D4',
+                        brandMistLight: '#F0F7FC',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #FBFBFB; }
+        .sidebar { transition: all 0.3s ease; }
+        .nav-link:hover { background-color: #F0F7FC; color: #000; }
+        .mobile-overlay { background: rgba(0,0,0,0.5); display: none; }
+        .mobile-overlay.active { display: block; }
+    </style>
+</head>
+<body class="text-brandBlack">
+
+    <div class="lg:hidden bg-white border-b p-4 flex justify-between items-center sticky top-0 z-50">
+        <span class="font-bold tracking-widest text-xs uppercase">TMB Admin</span>
+        <button onclick="toggleSidebar()" class="text-brandBlack text-xl">
+            <i class="fa-solid fa-bars-staggered"></i>
+        </button>
+    </div>
+
+    <div class="flex">
+        <div id="overlay" onclick="toggleSidebar()" class="mobile-overlay fixed inset-0 z-40 lg:hidden"></div>
+        
+        <aside id="sidebar" class="sidebar fixed lg:static inset-y-0 left-0 z-50 w-64 bg-white border-r transform -translate-x-full lg:translate-x-0 h-screen flex flex-col">
+            <div class="p-8 border-b">
+                <a href="tmbdashboard.html"><h1 class="font-bold tracking-[0.3em] text-sm text-center hover:text-brandMist transition">TMB SYSTEM</h1></a>
+            </div>
+
+            <nav class="flex-1 px-4 py-8 space-y-1">
+                <p class="text-[9px] uppercase tracking-[0.2em] text-gray-400 px-4 mb-4 font-bold">Main</p>
+                <a href="tmbdashboard.html" class="nav-link flex items-center px-4 py-3 text-[10px] tracking-widest uppercase font-semibold transition-all">
+                    <i class="fa-solid fa-gauge-high mr-3 w-5 text-gray-400"></i> Dashboard
+                </a>
+
+                <p class="text-[9px] uppercase tracking-[0.2em] text-gray-400 px-4 mt-8 mb-4 font-bold">Inventory</p>
+                <a href="womenscents.html" class="nav-link flex items-center px-4 py-3 text-[10px] tracking-widest uppercase font-semibold transition-all">
+                    <i class="fa-solid fa-venus mr-3 w-5 text-gray-400"></i> Women Scents
+                </a>
+                <a href="menscents.html" class="nav-link flex items-center px-4 py-3 text-[10px] tracking-widest uppercase font-semibold transition-all">
+                    <i class="fa-solid fa-mars mr-3 w-5 text-gray-400"></i> Men Scents
+                </a>
+                <a href="bodymistspray.html" class="nav-link active-link bg-brandMist text-white flex items-center px-4 py-3 text-[10px] tracking-widest uppercase font-semibold transition-all">
+                    <i class="fa-solid fa-spray-can mr-3 w-5 text-white"></i> Mists & Sprays
+                </a>
+                <a href="kidscents.html" class="nav-link flex items-center px-4 py-3 text-[10px] tracking-widest uppercase font-semibold transition-all">
+                    <i class="fa-solid fa-child mr-3 w-5 text-gray-400"></i> Kids Scents
+                </a>
+            </nav>
+
+            <div class="p-4 border-t">
+                <button onclick="logout()" class="w-full flex items-center justify-center px-4 py-3 text-[10px] uppercase tracking-widest font-bold bg-brandBlack text-white hover:bg-red-900 transition-all">
+                    <i class="fa-solid fa-power-off mr-2"></i> System Exit
+                </button>
+            </div>
+        </aside>
+
+        <main class="flex-1 min-h-screen p-6 lg:p-12">
+            <div class="max-w-6xl mx-auto">
+                <div class="flex justify-between items-center mb-12">
+                    <div>
+                        <h2 class="text-2xl font-light tracking-tight mb-1">Mists & Sprays Stock</h2>
+                        <p class="text-[9px] uppercase tracking-[0.3em] text-brandMist font-bold">Detailed Inventory Breakdown</p>
+                    </div>
+                    <a href="bodymistspray.html" class="bg-brandBlack text-white px-6 py-3 text-[10px] uppercase tracking-widest font-bold hover:bg-brandMist transition">
+                        Add New Item
+                    </a>
+                </div>
+
+                <div class="mb-16">
+                    <div class="flex items-center mb-6">
+                        <div class="h-[1px] bg-gray-200 flex-1"></div>
+                        <h3 class="mx-4 text-[10px] uppercase tracking-[0.4em] font-bold text-brandMist">Section I: Body Mists</h3>
+                        <div class="h-[1px] bg-gray-200 flex-1"></div>
+                    </div>
+                    <div class="bg-white border shadow-sm overflow-hidden">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-gray-50 border-b">
+                                    <th class="px-6 py-4 text-[9px] uppercase tracking-widest font-bold text-gray-400">Product</th>
+                                    <th class="px-6 py-4 text-[9px] uppercase tracking-widest font-bold text-gray-400">Sizes & Stock</th>
+                                    <th class="px-6 py-4 text-[9px] uppercase tracking-widest font-bold text-gray-400">Status</th>
+                                    <th class="px-6 py-4 text-[9px] uppercase tracking-widest font-bold text-gray-400 text-right">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="mist-list">
+                                <tr><td colspan="4" class="p-12 text-center text-xs uppercase tracking-widest text-gray-400">Scanning Mists...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="flex items-center mb-6">
+                        <div class="h-[1px] bg-gray-200 flex-1"></div>
+                        <h3 class="mx-4 text-[10px] uppercase tracking-[0.4em] font-bold text-gray-400">Section II: Body Sprays</h3>
+                        <div class="h-[1px] bg-gray-200 flex-1"></div>
+                    </div>
+                    <div class="bg-white border shadow-sm overflow-hidden">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-gray-50 border-b">
+                                    <th class="px-6 py-4 text-[9px] uppercase tracking-widest font-bold text-gray-400">Product</th>
+                                    <th class="px-6 py-4 text-[9px] uppercase tracking-widest font-bold text-gray-400">Sizes & Stock</th>
+                                    <th class="px-6 py-4 text-[9px] uppercase tracking-widest font-bold text-gray-400">Status</th>
+                                    <th class="px-6 py-4 text-[9px] uppercase tracking-widest font-bold text-gray-400 text-right">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="spray-list">
+                                <tr><td colspan="4" class="p-12 text-center text-xs uppercase tracking-widest text-gray-400">Scanning Sprays...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const API_URL = '/api';
+
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('-translate-x-full');
+            document.getElementById('overlay').classList.toggle('active');
+        }
+
+        async function fetchMistSprayInventory() {
+            try {
+                const res = await fetch(`${API_URL}/products`);
+                const products = await res.json();
+                
+                // Filter by Main Category first
+                const collection = products.filter(p => p.category === 'mist');
+                
+                // Split by Sub-Category (Type)
+                const bodyMists = collection.filter(p => p.subCategory === 'Body Mist');
+                const bodySprays = collection.filter(p => p.subCategory === 'Body Spray');
+
+                renderTable('mist-list', bodyMists, "No Body Mists in inventory");
+                renderTable('spray-list', bodySprays, "No Body Sprays in inventory");
+
+            } catch (err) {
+                console.error("Fetch Error:", err);
+                const errorHtml = '<tr><td colspan="4" class="p-12 text-center text-xs text-red-400">System Link Failure</td></tr>';
+                document.getElementById('mist-list').innerHTML = errorHtml;
+                document.getElementById('spray-list').innerHTML = errorHtml;
+            }
+        }
+
+        function renderTable(elementId, items, emptyMsg) {
+            const container = document.getElementById(elementId);
+            container.innerHTML = '';
+
+            if (items.length === 0) {
+                container.innerHTML = `<tr><td colspan="4" class="p-12 text-center text-xs text-gray-400 uppercase tracking-widest">${emptyMsg}</td></tr>`;
+                return;
+            }
+
+            items.forEach(product => {
+                const totalStock = (product.variants || []).reduce((sum, v) => sum + (parseInt(v.stock) || 0), 0);
+                
+                const variantsHtml = (product.variants || []).map(v => `
+                    <div class="flex justify-between items-center mb-1 border-b border-gray-50 pb-1 last:border-0">
+                        <span class="text-[9px] font-bold text-gray-400 uppercase">${v.size}</span>
+                        <span class="text-[10px] ${v.stock < 5 ? 'text-red-500 font-bold' : 'text-gray-700'}">${v.stock} pcs</span>
+                    </div>
+                `).join('');
+
+                const row = `
+                    <tr class="border-b hover:bg-gray-50 transition-colors">
+                        <td class="px-6 py-5">
+                            <div class="flex items-center">
+                                <img src="${product.imageUrl || 'https://via.placeholder.com/40'}" class="w-12 h-12 object-cover mr-4 border border-gray-100 bg-gray-50">
+                                <div>
+                                    <p class="text-[11px] font-bold uppercase tracking-wider mb-0.5">${product.name}</p>
+                                    <p class="text-[9px] text-gray-400 uppercase">Total: ${totalStock} units</p>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-5 min-w-[160px]">
+                            ${variantsHtml}
+                        </td>
+                        <td class="px-6 py-5">
+                            ${totalStock > 0 
+                                ? `<span class="text-[8px] font-bold px-2 py-1 uppercase tracking-widest text-green-600 bg-green-50 border border-green-100">Active</span>`
+                                : `<span class="text-[8px] font-bold px-2 py-1 uppercase tracking-widest text-red-600 bg-red-50 border border-red-100">Empty</span>`
+                            }
+                        </td>
+                        <td class="px-6 py-5 text-right">
+                            <div class="flex justify-end gap-3">
+                                <a href="bodymistspray.html" class="text-gray-300 hover:text-brandMist transition"><i class="fa-solid fa-pen-to-square"></i></a>
+                                <button onclick="deleteProduct('${product._id}')" class="text-gray-300 hover:text-red-600 transition"><i class="fa-solid fa-trash-can"></i></button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+                container.innerHTML += row;
+            });
+        }
+
+        async function deleteProduct(id) {
+            if(!confirm("Permanently delete this product and its stock records?")) return;
+            const token = localStorage.getItem('tmb_admin_token');
+            try {
+                const res = await fetch(`${API_URL}/admin/products/${id}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if(res.ok) fetchMistSprayInventory();
+            } catch (err) { alert("Action failed."); }
+        }
+
+        function logout() {
+            localStorage.removeItem('tmb_admin_token');
+            window.location.href = 'tmbadmin-login.html';
+        }
+
+        window.onload = fetchMistSprayInventory;
+    </script>
+</body>
+</html>

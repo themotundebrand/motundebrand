@@ -15,8 +15,8 @@
                         brandWhite: '#FFFFFF',
                         brandBlack: '#000000',
                         brandPinkDark: '#D48A96',
-                        brandPinkLight: '#F7C8D0',
-                        brandKidsBlue: '#5BA4B5', // Matching the kidstock theme
+                        brandMist: '#8AB6D4',
+                        brandKidsBlue: '#5BA4B5',
                     }
                 }
             }
@@ -26,9 +26,9 @@
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700&display=swap');
         body { font-family: 'Inter', sans-serif; background-color: #FBFBFB; }
         .sidebar { transition: all 0.3s ease; }
-        .nav-link:hover { background-color: #F7C8D0; color: #000; }
-        .stat-card { transition: transform 0.2s ease, border-color 0.2s ease; min-height: 180px; display: flex; flex-direction: column; justify-content: center; }
-        .stat-card:hover { transform: translateY(-2px); border-color: #F7C8D0; }
+        .nav-link:hover { background-color: #FBFBFB; color: #000; border-left: 4px solid #D48A96; }
+        .stat-card { transition: transform 0.2s ease, border-color 0.2s ease; min-height: 160px; display: flex; flex-direction: column; justify-content: center; }
+        .stat-card:hover { transform: translateY(-3px); }
         .mobile-overlay { background: rgba(0,0,0,0.5); display: none; }
         .mobile-overlay.active { display: block; }
     </style>
@@ -44,32 +44,33 @@
 
     <div class="flex">
         <div id="overlay" onclick="toggleSidebar()" class="mobile-overlay fixed inset-0 z-40 lg:hidden"></div>
+        
         <aside id="sidebar" class="sidebar fixed lg:static inset-y-0 left-0 z-50 w-64 bg-white border-r transform -translate-x-full lg:translate-x-0 h-screen flex flex-col">
-            <div class="p-8 border-b">
-                <h1 class="font-bold tracking-[0.3em] text-sm text-center">TMB SYSTEM</h1>
+            <div class="p-8 border-b text-center">
+                <h1 class="font-bold tracking-[0.3em] text-sm italic">TMB SYSTEM</h1>
             </div>
 
             <nav class="flex-1 px-4 py-8 space-y-1">
                 <p class="text-[9px] uppercase tracking-[0.2em] text-gray-400 px-4 mb-4 font-bold">Inventory</p>
-                <a href="womenscents.html" class="nav-link flex items-center px-4 py-3 text-[10px] tracking-widest uppercase font-semibold transition-all">
+                <a href="womenscents.html" class="nav-link flex items-center px-4 py-3 text-[10px] tracking-widest uppercase font-semibold">
                     <i class="fa-solid fa-venus mr-3 w-5 text-brandPinkDark"></i> Women Scents
                 </a>
-                <a href="menscents.html" class="nav-link flex items-center px-4 py-3 text-[10px] tracking-widest uppercase font-semibold transition-all">
+                <a href="menscents.html" class="nav-link flex items-center px-4 py-3 text-[10px] tracking-widest uppercase font-semibold">
                     <i class="fa-solid fa-mars mr-3 w-5 text-gray-400"></i> Men Scents
                 </a>
-                <a href="bodymistspray.html" class="nav-link flex items-center px-4 py-3 text-[10px] tracking-widest uppercase font-semibold transition-all">
-                    <i class="fa-solid fa-spray-can mr-3 w-5 text-gray-400"></i> Mists & Sprays
+                <a href="bodymistspray.html" class="nav-link flex items-center px-4 py-3 text-[10px] tracking-widest uppercase font-semibold">
+                    <i class="fa-solid fa-spray-can mr-3 w-5 text-brandMist"></i> Mists & Sprays
                 </a>
-                 <a href="kidscents.html" class="nav-link flex items-center px-4 py-3 text-[10px] tracking-widest uppercase font-semibold transition-all">
+                <a href="kidscents.html" class="nav-link flex items-center px-4 py-3 text-[10px] tracking-widest uppercase font-semibold">
                     <i class="fa-solid fa-child mr-3 w-5 text-brandKidsBlue"></i> Kids Scents
                 </a>
                 
                 <div class="pt-8">
                     <p class="text-[9px] uppercase tracking-[0.2em] text-gray-400 px-4 mb-4 font-bold">Business</p>
-                    <a href="orders.html" class="nav-link flex items-center px-4 py-3 text-[10px] tracking-widest uppercase font-semibold transition-all">
+                    <a href="orders.html" class="nav-link flex items-center px-4 py-3 text-[10px] tracking-widest uppercase font-semibold">
                         <i class="fa-solid fa-bag-shopping mr-3 w-5 text-gray-400"></i> Orders
                     </a>
-                    <a href="analytics.html" class="nav-link flex items-center px-4 py-3 text-[10px] tracking-widest uppercase font-semibold transition-all">
+                    <a href="analytics.html" class="nav-link flex items-center px-4 py-3 text-[10px] tracking-widest uppercase font-semibold">
                         <i class="fa-solid fa-chart-simple mr-3 w-5 text-gray-400"></i> Analytics
                     </a>
                 </div>
@@ -83,7 +84,7 @@
         </aside>
 
         <main class="flex-1 min-h-screen p-6 lg:p-12">
-            <div class="max-w-6xl mx-auto">
+            <div class="max-w-7xl mx-auto">
                 <div class="flex justify-between items-end mb-12">
                     <div>
                         <h2 class="text-2xl font-light tracking-tight mb-1">Management Terminal</h2>
@@ -94,36 +95,42 @@
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6 mb-12">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 mb-12">
                     
-                    <a href="womenstock.html" class="stat-card bg-white p-6 border shadow-sm flex flex-col items-center text-center group">
-                        <span class="text-[9px] uppercase tracking-widest text-gray-400 mb-4 font-bold group-hover:text-brandPinkDark">Women Stock (Units)</span>
-                        <span id="women-count" class="text-3xl font-light mb-2">...</span>
-                        <span class="text-[8px] uppercase tracking-tighter text-brandPinkDark font-bold">Manage Scents <i class="fa-solid fa-arrow-right ml-1"></i></span>
+                    <a href="womenstock.html" class="stat-card bg-white p-6 border shadow-sm flex flex-col items-center text-center group hover:border-brandPinkDark">
+                        <span class="text-[8px] uppercase tracking-widest text-gray-400 mb-4 font-bold group-hover:text-brandPinkDark">Women Scents</span>
+                        <span id="women-count" class="text-2xl font-light mb-2">...</span>
+                        <span class="text-[7px] uppercase tracking-widest text-brandPinkDark font-bold">Manage <i class="fa-solid fa-arrow-right ml-1"></i></span>
                     </a>
 
-                    <a href="menstock.html" class="stat-card bg-white p-6 border shadow-sm flex flex-col items-center text-center group">
-                        <span class="text-[9px] uppercase tracking-widest text-gray-400 mb-4 font-bold group-hover:text-brandBlack">Men Stock (Units)</span>
-                        <span id="men-count" class="text-3xl font-light mb-2">...</span>
-                        <span class="text-[8px] uppercase tracking-tighter text-gray-400 font-bold">Manage Scents <i class="fa-solid fa-arrow-right ml-1"></i></span>
+                    <a href="menstock.html" class="stat-card bg-white p-6 border shadow-sm flex flex-col items-center text-center group hover:border-brandBlack">
+                        <span class="text-[8px] uppercase tracking-widest text-gray-400 mb-4 font-bold group-hover:text-brandBlack">Men Scents</span>
+                        <span id="men-count" class="text-2xl font-light mb-2">...</span>
+                        <span class="text-[7px] uppercase tracking-widest text-gray-400 font-bold">Manage <i class="fa-solid fa-arrow-right ml-1"></i></span>
+                    </a>
+
+                    <a href="bodymistspraystock.html" class="stat-card bg-white p-6 border shadow-sm flex flex-col items-center text-center group hover:border-brandMist">
+                        <span class="text-[8px] uppercase tracking-widest text-gray-400 mb-4 font-bold group-hover:text-brandMist">Mists & Sprays</span>
+                        <span id="mist-count" class="text-2xl font-light mb-2">...</span>
+                        <span class="text-[7px] uppercase tracking-widest text-brandMist font-bold">Manage <i class="fa-solid fa-arrow-right ml-1"></i></span>
                     </a>
 
                     <a href="kidstock.html" class="stat-card bg-white p-6 border shadow-sm flex flex-col items-center text-center group hover:border-brandKidsBlue">
-                        <span class="text-[9px] uppercase tracking-widest text-gray-400 mb-4 font-bold group-hover:text-brandKidsBlue">Kids Stock (Units)</span>
-                        <span id="kids-count" class="text-3xl font-light mb-2">...</span>
-                        <span class="text-[8px] uppercase tracking-tighter text-brandKidsBlue font-bold">Manage Scents <i class="fa-solid fa-arrow-right ml-1"></i></span>
+                        <span class="text-[8px] uppercase tracking-widest text-gray-400 mb-4 font-bold group-hover:text-brandKidsBlue">Kids Scents</span>
+                        <span id="kids-count" class="text-2xl font-light mb-2">...</span>
+                        <span class="text-[7px] uppercase tracking-widest text-brandKidsBlue font-bold">Manage <i class="fa-solid fa-arrow-right ml-1"></i></span>
                     </a>
 
-                    <a href="orders.html" class="stat-card bg-white p-6 border shadow-sm flex flex-col items-center text-center group">
-                        <span class="text-[9px] uppercase tracking-widest text-gray-400 mb-4 font-bold">Pending Orders</span>
-                        <span id="pending-orders" class="text-3xl font-light text-brandPinkDark mb-2">...</span>
-                        <span class="text-[8px] uppercase tracking-tighter text-gray-400 font-bold">View Queue <i class="fa-solid fa-arrow-right ml-1"></i></span>
+                    <a href="orders.html" class="stat-card bg-white p-6 border shadow-sm flex flex-col items-center text-center group hover:border-brandPinkDark">
+                        <span class="text-[8px] uppercase tracking-widest text-gray-400 mb-4 font-bold">Pending Orders</span>
+                        <span id="pending-orders" class="text-2xl font-light text-brandPinkDark mb-2">...</span>
+                        <span class="text-[7px] uppercase tracking-widest text-gray-400 font-bold">Review <i class="fa-solid fa-arrow-right ml-1"></i></span>
                     </a>
 
                     <a href="analytics.html" class="stat-card bg-white p-6 border shadow-sm flex flex-col items-center text-center group">
-                        <span class="text-[9px] uppercase tracking-widest text-gray-400 mb-4 font-bold">Total Sales</span>
-                        <span id="revenue-mtd" class="text-3xl font-light mb-2">...</span>
-                        <span class="text-[8px] uppercase tracking-tighter text-gray-400 font-bold">Analytics <i class="fa-solid fa-arrow-right ml-1"></i></span>
+                        <span class="text-[8px] uppercase tracking-widest text-gray-400 mb-4 font-bold">Total Sales</span>
+                        <span id="revenue-mtd" class="text-2xl font-light mb-2">...</span>
+                        <span class="text-[7px] uppercase tracking-widest text-gray-400 font-bold">Insights <i class="fa-solid fa-arrow-right ml-1"></i></span>
                     </a>
 
                 </div>
@@ -135,8 +142,8 @@
                     </div>
                     <h3 class="text-xs uppercase tracking-[0.3em] font-bold mb-4">Central Control</h3>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-2xl mx-auto">
-                        <a href="inventory-report.html" class="border p-4 text-[10px] uppercase tracking-widest hover:bg-brandBlack hover:text-white transition">Generate Inventory Report</a>
-                        <a href="customer-list.html" class="border p-4 text-[10px] uppercase tracking-widest hover:bg-brandBlack hover:text-white transition">View Customer Database</a>
+                        <a href="inventory-report.html" class="border p-4 text-[10px] uppercase tracking-widest hover:bg-brandBlack hover:text-white transition">Full Inventory Report</a>
+                        <a href="customer-list.html" class="border p-4 text-[10px] uppercase tracking-widest hover:bg-brandBlack hover:text-white transition">Customer CRM</a>
                     </div>
                 </div>
             </div>
@@ -158,17 +165,11 @@
             window.location.href = 'tmbadmin-login.html';
         }
 
-        function updateActivity() {
-            localStorage.setItem('tmb_last_active', Date.now().toString());
-        }
-
         async function fetchDashboardStats() {
             try {
-                // 1. Fetch Products
                 const pRes = await fetch(`${API_URL}/products`);
                 const products = await pRes.json();
                 
-                // Unified calculation logic
                 const calculateCategoryStock = (cat) => {
                     return products
                         .filter(p => p.category === cat)
@@ -178,19 +179,19 @@
                         }, 0);
                 };
 
-                // Update UI for all three categories
+                // Populate all stock counts
                 document.getElementById('women-count').innerText = calculateCategoryStock('women');
                 document.getElementById('men-count').innerText = calculateCategoryStock('men');
+                document.getElementById('mist-count').innerText = calculateCategoryStock('mist'); // Added Mist Logic
                 document.getElementById('kids-count').innerText = calculateCategoryStock('kids');
 
-                // 2. Fetch Orders for Pending & Revenue
+                // Fetch Orders
                 const oRes = await fetch(`${API_URL}/admin/orders`, {
                     headers: { 'Authorization': `Bearer ${localStorage.getItem('tmb_admin_token')}` }
                 });
                 
                 if (oRes.ok) {
                     const orders = await oRes.json();
-                    
                     const pending = orders.filter(o => o.status === 'pending').length;
                     const totalRevenue = orders
                         .filter(o => o.status === 'completed' || o.status === 'paid')
@@ -201,44 +202,17 @@
                 }
             } catch (err) {
                 console.error("Dashboard Sync Error:", err);
-                ['women-count', 'men-count', 'kids-count', 'pending-orders', 'revenue-mtd'].forEach(id => {
-                    const el = document.getElementById(id);
-                    if(el && (el.innerText === '...' || el.innerText === '')) el.innerText = '0';
-                });
-            }
-        }
-
-        function checkSession() {
-            const token = localStorage.getItem('tmb_admin_token');
-            const lastActive = localStorage.getItem('tmb_last_active');
-            const now = Date.now();
-
-            if (!token) { logout(); return; }
-
-            if (lastActive && (now - parseInt(lastActive) > INACTIVITY_LIMIT)) {
-                alert("Session expired due to inactivity.");
-                logout();
-                return;
             }
         }
 
         window.onload = () => {
-            checkSession();
-            updateActivity();
             fetchDashboardStats();
-
             const dateEl = document.getElementById('current-date');
             if(dateEl) {
                 dateEl.innerText = new Date().toLocaleDateString('en-US', {
                     weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
                 });
             }
-
-            ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart'].forEach(name => {
-                document.addEventListener(name, updateActivity, true);
-            });
-
-            setInterval(checkSession, 5 * 60 * 1000);
         };
     </script>
 </body>
