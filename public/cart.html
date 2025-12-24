@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shopping Bag | The Motunde Brand</title>
+    <link rel="icon" type="image/png" href="https://i.imgur.com/CVKXV7R.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brandBlack: '#000000',
+                        brandPink: '#F7C8D0',
+                        brandPinkDark: '#E2A9B3',
+                    },
+                    letterSpacing: { luxury: '0.4em', refined: '0.15em' }
+                }
+            }
+        }
+    </script>
+    <style>
+        .glass-card { background: rgba(255, 255, 255, 0.02); backdrop-filter: blur(10px); border: 1px solid rgba(247, 200, 208, 0.1); }
+        input, select { background: transparent !important; border-bottom: 1px solid #eee !important; transition: border-color 0.3s; }
+        input:focus { border-color: #F7C8D0 !important; outline: none; }
+    </style>
+</head>
+<body class="bg-white font-sans antialiased">
+
+    <nav class="w-full z-[150] bg-brandBlack px-4 md:px-8 py-6 flex justify-between items-center border-b border-brandPink/10">
+        <div class="flex items-center gap-4">
+            <h1 class="text-brandPink text-xs md:text-lg font-black tracking-luxury uppercase">The Motunde Brand</h1>
+        </div>
+        <div class="flex items-center gap-5 text-brandPink">
+            <a href="shop.html" class="text-[10px] uppercase tracking-widest hover:text-white transition">Continue Shopping</a>
+        </div>
+    </nav>
+
+ <main class="max-w-7xl mx-auto px-4 md:px-12 py-12 md:py-20">
+    <div class="mb-12">
+        <h2 class="text-brandBlack text-xl md:text-3xl font-light uppercase tracking-luxury">Checkout</h2>
+        <div class="w-12 h-[1px] bg-brandPink mt-4"></div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-16">
+        
+        <div class="lg:col-span-2 space-y-12">
+            <div id="cart-items-container" class="space-y-8">
+                </div>
+
+            <section class="space-y-8 pt-8 border-t border-gray-100">
+                <h3 class="text-[11px] font-bold uppercase tracking-widest text-brandBlack">1. Delivery & Contact Details</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <input type="text" id="cust-name" placeholder="FULL NAME" class="w-full py-3 text-[10px] tracking-widest uppercase">
+                    <input type="email" id="cust-email" placeholder="EMAIL ADDRESS" class="w-full py-3 text-[10px] tracking-widest uppercase">
+                    <input type="tel" id="cust-phone" placeholder="PHONE NUMBER" class="w-full py-3 text-[10px] tracking-widest uppercase">
+                    <input type="tel" id="cust-whatsapp" placeholder="WHATSAPP NUMBER" class="w-full py-3 text-[10px] tracking-widest uppercase">
+                    <div class="md:col-span-2">
+                        <input type="text" id="cust-address" placeholder="DELIVERY ADDRESS" class="w-full py-3 text-[10px] tracking-widest uppercase">
+                    </div>
+                    <input type="text" id="cust-zip" placeholder="POSTAL / ZIP CODE (OPTIONAL)" class="w-full py-3 text-[10px] tracking-widest uppercase">
+                    <select id="shipping-select" onchange="updateTotals()" class="w-full py-3 text-[10px] tracking-widest uppercase">
+                        <option value="0">SELECT REGION (SHIPPING FEE)</option>
+                        <option value="3000">Lagos Mainland (₦3,000)</option>
+                        <option value="5000">Lagos Island (₦5,000)</option>
+                        <option value="7000">Outside Lagos (₦7,000)</option>
+                    </select>
+                </div>
+            </section>
+        </div>
+
+        <div class="lg:col-span-1">
+            <div class="sticky top-28 space-y-8">
+                <section class="bg-gray-50 p-6 md:p-8 space-y-6">
+                    <h3 class="text-[11px] font-bold uppercase tracking-widest text-brandBlack">2. Payment Method</h3>
+                    
+                    <div class="space-y-3">
+                        <label class="flex items-center gap-3 cursor-pointer group">
+                            <input type="radio" name="pay-method" value="online" checked onchange="togglePaymentUI()" class="accent-brandBlack">
+                            <span class="text-[10px] tracking-widest uppercase">Online Payment (Card/Transfer)</span>
+                        </label>
+                        <label class="flex items-center gap-3 cursor-pointer group">
+                            <input type="radio" name="pay-method" value="bank" onchange="togglePaymentUI()" class="accent-brandBlack">
+                            <span class="text-[10px] tracking-widest uppercase">Direct Bank Transfer</span>
+                        </label>
+                    </div>
+
+                    <div id="bank-details" class="hidden space-y-4 pt-4 border-t border-gray-200">
+                        <div class="bg-white p-4 border border-brandPink/20">
+                            <p class="text-[9px] uppercase tracking-widest text-gray-400 mb-1">Bank Name</p>
+                            <p class="text-[10px] font-bold tracking-widest mb-3">GTBANK (GUARANTY TRUST)</p>
+                            <p class="text-[9px] uppercase tracking-widest text-gray-400 mb-1">Account Number</p>
+                            <p class="text-[10px] font-bold tracking-widest mb-3">0123456789</p>
+                            <p class="text-[9px] uppercase tracking-widest text-gray-400 mb-1">Account Name</p>
+                            <p class="text-[10px] font-bold tracking-widest uppercase">The Motunde Brand Ltd</p>
+                        </div>
+                        <div class="space-y-2">
+                            <label class="text-[9px] uppercase tracking-widest text-brandPinkDark font-bold">Upload Payment Receipt</label>
+                            <input type="file" id="receipt-upload" accept="image/*" class="w-full text-[9px] file:mr-4 file:py-2 file:px-4 file:border-0 file:text-[9px] file:uppercase file:tracking-widest file:bg-brandPink file:text-brandBlack">
+                        </div>
+                    </div>
+
+                    <div class="h-[1px] bg-gray-200 my-6"></div>
+
+                    <div class="space-y-3">
+                        <div class="flex justify-between text-[10px] tracking-widest uppercase text-gray-500">
+                            <span>Subtotal</span>
+                            <span id="subtotal">₦0</span>
+                        </div>
+                        <div class="flex justify-between text-[10px] tracking-widest uppercase text-gray-500">
+                            <span>Shipping</span>
+                            <span id="shipping-fee">₦0</span>
+                        </div>
+                        <div class="flex justify-between text-xs font-bold tracking-widest uppercase text-brandBlack pt-2">
+                            <span>Total</span>
+                            <span id="total-price">₦0</span>
+                        </div>
+                    </div>
+
+                    <button onclick="handleCheckout()" class="w-full bg-brandBlack text-brandPink py-4 mt-4 uppercase tracking-[0.3em] text-[10px] hover:bg-brandPink hover:text-brandBlack transition-all">
+                        Place Order
+                    </button>
+                </section>
+            </div>
+        </div>
+    </div>
+</main>
+
+<script>
+    let cart = JSON.parse(localStorage.getItem('tmb_cart')) || [];
+
+    function togglePaymentUI() {
+        const method = document.querySelector('input[name="pay-method"]:checked').value;
+        const bankUI = document.getElementById('bank-details');
+        if (method === 'bank') {
+            bankUI.classList.remove('hidden');
+        } else {
+            bankUI.classList.add('hidden');
+        }
+    }
+
+    function renderCart() {
+        const container = document.getElementById('cart-items-container');
+        if (cart.length === 0) {
+            container.innerHTML = `<div class="py-10 text-center uppercase tracking-widest text-[10px]">Your bag is empty</div>`;
+            return;
+        }
+
+        container.innerHTML = cart.map((item, index) => `
+            <div class="flex gap-6 pb-6 border-b border-gray-50">
+                <div class="w-20 h-24 bg-gray-50"><img src="${item.image}" class="w-full h-full object-cover"></div>
+                <div class="flex-1">
+                    <div class="flex justify-between">
+                        <h4 class="text-[10px] font-bold uppercase tracking-widest">${item.name}</h4>
+                        <button onclick="removeItem(${index})" class="text-gray-300">×</button>
+                    </div>
+                    <p class="text-[9px] text-brandPinkDark uppercase mb-4">${item.size}</p>
+                    <div class="flex justify-between items-center">
+                        <div class="flex border border-gray-100 text-[10px]">
+                            <button onclick="updateQty(${index},-1)" class="px-2 border-r border-gray-100">-</button>
+                            <span class="px-3">${item.quantity}</span>
+                            <button onclick="updateQty(${index},1)" class="px-2 border-l border-gray-100">+</button>
+                        </div>
+                        <p class="text-[10px] font-bold">₦${(item.price * item.quantity).toLocaleString()}</p>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+        updateTotals();
+    }
+
+    function updateTotals() {
+        const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+        const shipping = parseInt(document.getElementById('shipping-select').value) || 0;
+        
+        document.getElementById('subtotal').innerText = `₦${subtotal.toLocaleString()}`;
+        document.getElementById('shipping-fee').innerText = `₦${shipping.toLocaleString()}`;
+        document.getElementById('total-price').innerText = `₦${(subtotal + shipping).toLocaleString()}`;
+    }
+
+    function handleCheckout() {
+        const method = document.querySelector('input[name="pay-method"]:checked').value;
+        const name = document.getElementById('cust-name').value;
+        const email = document.getElementById('cust-email').value;
+
+        if(!name || !email) {
+            alert("Please complete your contact details.");
+            return;
+        }
+
+        if (method === 'bank') {
+            const receipt = document.getElementById('receipt-upload').files[0];
+            if (!receipt) {
+                alert("Please upload your payment receipt image.");
+                return;
+            }
+            alert("Order Submitted! Our team will verify your payment receipt shortly via WhatsApp/Email.");
+        } else {
+            alert("Redirecting to Secure Online Payment...");
+        }
+    }
+
+    function updateQty(i, d) { cart[i].quantity = Math.max(1, cart[i].quantity + d); save(); }
+    function removeItem(i) { cart.splice(i, 1); save(); }
+    function save() { localStorage.setItem('tmb_cart', JSON.stringify(cart)); renderCart(); }
+
+    renderCart();
+</script>
+</body>
+</html>
