@@ -236,6 +236,91 @@ router.get('/products', async (req, res) => {
     } catch (e) { res.status(500).json({ error: "Load failed" }); }
 });
 
+// --- USER REGISTRATION ---
+router.post('/register', async (req, res) => {
+    try {
+        const db = await getDb();
+        const { name, email, password, phone, whatsapp, address } = req.body;
+
+        // Check if user already exists
+        const existingUser = await db.collection("users").findOne({ email: email.toLowerCase() });
+        if (existingUser) return res.status(400).json({ error: "Email already registered" });
+
+        // Hash password
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        const newUser = {
+            name,
+            email: email.toLowerCase(),
+            password: hashedPassword,
+            phone,
+            whatsapp,
+            address, // { street, city, state, country }
+            createdAt: new Date(),
+            isAdmin: false
+        };
+
+        const result = await db.collection("users").insertOne(newUser);
+        
+        // Generate Token
+        const token = jwt.sign(
+            { id: result.insertedId, email: newUser.email, isAdmin: false },
+            JWT_SECRET,
+            { expiresIn: '7d' }
+        );
+
+        // Remove password from user object before sending
+        delete newUser.password;
+        res.status(201).json({ token, user: newUser });
+    } catch (e) {
+        res.status(500).json({ error: "Registration failed: " + e.message });
+    }
+});
+
+// --- USER LOGIN ---
+router.post('/login', async (req, res) => {
+    try {
+        const db = await getDb();
+        const { email, password } = req.body;
+
+        const user = await db.collection("users").findOne({ email: email.toLowerCase() });
+        if (!user) return res.status(401).json({ error: "Invalid email or password" });
+
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) return res.status(401).json({ error: "Invalid email or password" });
+
+        const token = jwt.sign(
+            { id: user._id, email: user.email, isAdmin: user.isAdmin || false },
+            JWT_SECRET,
+            { expiresIn: '7d' }
+        );
+
+        delete user.password;
+        res.json({ token, user });
+    } catch (e) {
+        res.status(500).json({ error: "Login failed" });
+    }
+});
+
+// --- GET USER PROFILE (Optional: for account page) ---
+router.get('/profile', async (req, res) => {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+    if (!token) return res.status(401).json({ error: "Not logged in" });
+
+    try {
+        const decoded = jwt.verify(token, JWT_SECRET);
+        const db = await getDb();
+        const user = await db.collection("users").findOne({ _id: new ObjectId(decoded.id) });
+        if (!user) return res.status(404).json({ error: "User not found" });
+        
+        delete user.password;
+        res.json(user);
+    } catch (e) {
+        res.status(401).json({ error: "Session expired" });
+    }
+});
+
 app.use('/.netlify/functions/api', router);
 app.use('/api', router);
 module.exports.handler = serverless(app);
