@@ -26,10 +26,36 @@
         body { font-family: 'Inter', sans-serif; background-color: #FBFBFB; }
         .sidebar { transition: all 0.3s ease; }
         .nav-link:hover { background-color: #F7C8D0; color: #000; }
-        .product-card { transition: all 0.2s ease; }
-        .product-card:hover { border-color: #000000; }
         .mobile-overlay { background: rgba(0,0,0,0.5); display: none; }
         .mobile-overlay.active { display: block; }
+
+        /* Responsive Table Adjustments */
+        @media (max-width: 640px) {
+            .responsive-table thead { display: none; }
+            .responsive-table tr { 
+                display: block; 
+                margin-bottom: 1rem; 
+                border: 1px solid #e5e7eb;
+                background: white;
+                border-radius: 8px;
+            }
+            .responsive-table td { 
+                display: flex; 
+                justify-content: space-between; 
+                align-items: center;
+                padding: 1rem !important; 
+                border-bottom: 1px solid #f3f4f6;
+            }
+            .responsive-table td:last-child { border-bottom: none; }
+            .responsive-table td::before {
+                content: attr(data-label);
+                font-weight: 700;
+                text-transform: uppercase;
+                font-size: 9px;
+                color: #9ca3af;
+                letter-spacing: 0.1em;
+            }
+        }
     </style>
 </head>
 <body class="text-brandBlack">
@@ -74,30 +100,26 @@
             </div>
         </aside>
 
-        <main class="flex-1 min-h-screen p-6 lg:p-12">
+        <main class="flex-1 min-h-screen p-4 md:p-12">
             <div class="max-w-6xl mx-auto">
-                <div class="flex justify-between items-center mb-12">
+                <div class="flex justify-between items-center mb-8">
                     <div>
                         <h2 class="text-2xl font-light tracking-tight mb-1">Men's Collection</h2>
-                        <p class="text-[9px] uppercase tracking-[0.3em] text-gray-400 font-bold">Inventory & Stock Levels</p>
+                        <p class="text-[9px] uppercase tracking-[0.3em] text-gray-400 font-bold">Inventory Status</p>
                     </div>
-                    <button onclick="openAddModal()" class="bg-brandBlack text-white px-6 py-3 text-[10px] uppercase tracking-widest font-bold hover:bg-gray-800 transition">
-                        Add New Scent
-                    </button>
                 </div>
 
-                <div class="bg-white border shadow-sm overflow-hidden">
-                    <table class="w-full text-left border-collapse">
+                <div class="bg-white border shadow-sm rounded-sm overflow-hidden">
+                    <table class="w-full text-left border-collapse responsive-table">
                         <thead>
                             <tr class="bg-gray-50 border-b">
-                                <th class="px-6 py-4 text-[9px] uppercase tracking-widest font-bold text-gray-400">Product</th>
-                                <th class="px-6 py-4 text-[9px] uppercase tracking-widest font-bold text-gray-400">Variant Sizes</th>
-                                <th class="px-6 py-4 text-[9px] uppercase tracking-widest font-bold text-gray-400">Stock Status</th>
-                                <th class="px-6 py-4 text-[9px] uppercase tracking-widest font-bold text-gray-400 text-right">Actions</th>
+                                <th class="px-6 py-4 text-[9px] uppercase tracking-widest font-bold text-gray-400 w-1/2">Product Information</th>
+                                <th class="px-6 py-4 text-[9px] uppercase tracking-widest font-bold text-gray-400 w-1/4">Size & Stock</th>
+                                <th class="px-6 py-4 text-[9px] uppercase tracking-widest font-bold text-gray-400 w-1/4 text-right">Inventory Label</th>
                             </tr>
                         </thead>
-                        <tbody id="stock-list">
-                            <tr><td colspan="4" class="p-12 text-center text-xs uppercase tracking-widest text-gray-400">Syncing database...</td></tr>
+                        <tbody id="stock-list" class="divide-y divide-gray-100">
+                            <tr><td colspan="3" class="p-12 text-center text-xs uppercase tracking-widest text-gray-400">Loading Warehouse Data...</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -117,24 +139,21 @@
             try {
                 const res = await fetch(`${API_URL}/products`);
                 const products = await res.json();
-                
-                // FILTER FOR MEN ONLY
                 const menScents = products.filter(p => p.category === 'men');
                 
                 const listContainer = document.getElementById('stock-list');
                 listContainer.innerHTML = '';
 
                 if (menScents.length === 0) {
-                    listContainer.innerHTML = '<tr><td colspan="4" class="p-12 text-center text-xs text-gray-400 uppercase tracking-widest">No products found in Men category</td></tr>';
+                    listContainer.innerHTML = '<tr><td colspan="3" class="p-12 text-center text-xs text-gray-400 uppercase tracking-widest">No inventory found for Men</td></tr>';
                     return;
                 }
 
                 menScents.forEach(product => {
-                    // Loop through variants for size-specific stock
                     const variantsHtml = product.variants.map(v => `
-                        <div class="flex justify-between items-center mb-1 border-b border-gray-100 pb-1 last:border-0">
-                            <span class="text-[10px] font-bold text-gray-500 uppercase">${v.size}</span>
-                            <span class="text-[11px] font-medium ${v.stock < 5 ? 'text-red-500 font-bold' : 'text-gray-700'}">
+                        <div class="flex justify-between items-center mb-1 pb-1 border-b border-gray-50 last:border-0 last:pb-0">
+                            <span class="text-[9px] font-bold text-gray-400 uppercase">${v.size}</span>
+                            <span class="text-[10px] font-bold ${v.stock < 5 ? 'text-red-500' : 'text-gray-700'}">
                                 ${v.stock} pcs
                             </span>
                         </div>
@@ -143,28 +162,26 @@
                     const totalStock = product.variants.reduce((sum, v) => sum + (parseInt(v.stock) || 0), 0);
 
                     const row = `
-                        <tr class="border-b hover:bg-gray-50 transition-colors">
-                            <td class="px-6 py-6">
+                        <tr class="hover:bg-gray-50/50 transition-colors">
+                            <td class="px-6 py-6" data-label="Product">
                                 <div class="flex items-center">
-                                    <img src="${product.imageUrl || 'https://via.placeholder.com/40'}" class="w-10 h-10 object-cover mr-4 border">
-                                    <div>
-                                        <p class="text-xs font-bold uppercase tracking-wider">${product.name}</p>
-                                        <p class="text-[9px] text-gray-400 uppercase tracking-tighter">Total units: ${totalStock}</p>
+                                    <img src="${product.imageUrl || 'https://via.placeholder.com/60'}" class="w-12 h-12 object-cover rounded-sm border grayscale-[20%]">
+                                    <div class="ml-4">
+                                        <p class="text-[11px] font-bold uppercase tracking-widest">${product.name}</p>
+                                        <p class="text-[8px] text-gray-400 uppercase font-medium">Total: ${totalStock} Units</p>
                                     </div>
                                 </div>
                             </td>
-                            <td class="px-6 py-6 min-w-[150px]">
-                                ${variantsHtml}
+                            <td class="px-6 py-6" data-label="Sizes">
+                                <div class="w-full md:max-w-[120px]">
+                                    ${variantsHtml}
+                                </div>
                             </td>
-                            <td class="px-6 py-6">
+                            <td class="px-6 py-6 text-right" data-label="Status">
                                 ${totalStock > 0 
-                                    ? `<span class="bg-gray-100 text-gray-800 text-[8px] font-bold px-2 py-1 uppercase tracking-widest border border-gray-200">In Stock</span>`
-                                    : `<span class="bg-red-50 text-red-600 text-[8px] font-bold px-2 py-1 uppercase tracking-widest border border-red-100">Sold Out</span>`
+                                    ? `<span class="bg-black text-white text-[8px] font-bold px-3 py-1 uppercase tracking-[0.2em] rounded-full">Available</span>`
+                                    : `<span class="bg-red-50 text-red-600 text-[8px] font-bold px-3 py-1 uppercase tracking-[0.2em] border border-red-100 rounded-full">Out of Stock</span>`
                                 }
-                            </td>
-                            <td class="px-6 py-6 text-right">
-                                <button onclick="editProduct('${product._id}')" class="text-gray-400 hover:text-brandBlack mr-4 transition"><i class="fa-solid fa-pen-to-square"></i></button>
-                                <button onclick="deleteProduct('${product._id}')" class="text-gray-400 hover:text-red-600 transition"><i class="fa-solid fa-trash-can"></i></button>
                             </td>
                         </tr>
                     `;
@@ -172,6 +189,7 @@
                 });
             } catch (err) {
                 console.error("Fetch Error:", err);
+                document.getElementById('stock-list').innerHTML = '<tr><td colspan="3" class="p-12 text-center text-red-400 text-xs">System Error: Could not load inventory</td></tr>';
             }
         }
 

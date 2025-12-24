@@ -26,10 +26,17 @@
         body { font-family: 'Inter', sans-serif; background-color: #FBFBFB; }
         .sidebar { transition: all 0.3s ease; }
         .nav-link:hover { background-color: #F7C8D0; color: #000; }
-        .product-card { transition: all 0.2s ease; }
-        .product-card:hover { border-color: #D48A96; }
         .mobile-overlay { background: rgba(0,0,0,0.5); display: none; }
         .mobile-overlay.active { display: block; }
+        
+        /* Table responsiveness for very small screens */
+        @media (max-width: 640px) {
+            .hide-mobile { display: none; }
+            table, thead, tbody, th, td, tr { display: block; }
+            thead tr { position: absolute; top: -9999px; left: -9999px; }
+            tr { border: 1px solid #edf2f7; margin-bottom: 1rem; background: white; border-radius: 4px; padding: 8px; }
+            td { border: none; position: relative; padding-left: 0 !important; padding-right: 0 !important; }
+        }
     </style>
 </head>
 <body class="text-brandBlack">
@@ -74,32 +81,31 @@
             </div>
         </aside>
 
-        <main class="flex-1 min-h-screen p-6 lg:p-12">
+        <main class="flex-1 min-h-screen p-4 md:p-12">
             <div class="max-w-6xl mx-auto">
-                <div class="flex justify-between items-center mb-12">
-                    <div>
-                        <h2 class="text-2xl font-light tracking-tight mb-1">Women's Collection</h2>
-                        <p class="text-[9px] uppercase tracking-[0.3em] text-brandPinkDark font-bold">Inventory & Stock Levels</p>
-                    </div>
-                    <button onclick="openAddModal()" class="bg-brandBlack text-white px-6 py-3 text-[10px] uppercase tracking-widest font-bold hover:bg-brandPinkDark transition">
-                        Add New Scent
-                    </button>
+                <div class="mb-10">
+                    <h2 class="text-2xl font-light tracking-tight mb-1">Women's Collection</h2>
+                    <p class="text-[9px] uppercase tracking-[0.3em] text-brandPinkDark font-bold">Live Inventory Monitor</p>
                 </div>
 
-                <div class="bg-white border shadow-sm overflow-hidden">
+                <div class="bg-white border shadow-sm rounded-sm overflow-hidden">
                     <table class="w-full text-left border-collapse">
                         <thead>
                             <tr class="bg-gray-50 border-b">
-                                <th class="px-6 py-4 text-[9px] uppercase tracking-widest font-bold text-gray-400">Product</th>
-                                <th class="px-6 py-4 text-[9px] uppercase tracking-widest font-bold text-gray-400">Variant Sizes</th>
-                                <th class="px-6 py-4 text-[9px] uppercase tracking-widest font-bold text-gray-400">Stock Status</th>
-                                <th class="px-6 py-4 text-[9px] uppercase tracking-widest font-bold text-gray-400 text-right">Actions</th>
+                                <th class="px-6 py-4 text-[9px] uppercase tracking-widest font-bold text-gray-400 w-1/3">Product Details</th>
+                                <th class="px-6 py-4 text-[9px] uppercase tracking-widest font-bold text-gray-400 w-1/3">Stock by Size</th>
+                                <th class="px-6 py-4 text-[9px] uppercase tracking-widest font-bold text-gray-400 text-right w-1/3">Availability</th>
                             </tr>
                         </thead>
-                        <tbody id="stock-list">
-                            <tr><td colspan="4" class="p-12 text-center text-xs uppercase tracking-widest text-gray-400">Syncing database...</td></tr>
+                        <tbody id="stock-list" class="divide-y divide-gray-100">
+                            <tr><td colspan="3" class="p-12 text-center text-xs uppercase tracking-widest text-gray-400 italic">Syncing live database...</td></tr>
                         </tbody>
                     </table>
+                </div>
+                
+                <div class="mt-6 flex items-center justify-between text-[9px] uppercase tracking-widest text-gray-400 font-bold px-2">
+                    <span>© TMB Management System</span>
+                    <span id="product-count">0 Items Listed</span>
                 </div>
             </div>
         </main>
@@ -120,19 +126,21 @@
                 const womenScents = products.filter(p => p.category === 'women');
                 
                 const listContainer = document.getElementById('stock-list');
+                const countDisplay = document.getElementById('product-count');
                 listContainer.innerHTML = '';
+                countDisplay.innerText = `${womenScents.length} Items Listed`;
 
                 if (womenScents.length === 0) {
-                    listContainer.innerHTML = '<tr><td colspan="4" class="p-12 text-center text-xs text-gray-400 uppercase tracking-widest">No products found in Women category</td></tr>';
+                    listContainer.innerHTML = '<tr><td colspan="3" class="p-12 text-center text-xs text-gray-400 uppercase tracking-widest">No products currently in stock</td></tr>';
                     return;
                 }
 
                 womenScents.forEach(product => {
                     const variantsHtml = product.variants.map(v => `
-                        <div class="flex justify-between items-center mb-1 border-b border-gray-100 pb-1 last:border-0">
-                            <span class="text-[10px] font-bold text-gray-500 uppercase">${v.size}</span>
-                            <span class="text-[11px] font-medium ${v.stock < 5 ? 'text-red-500 font-bold' : 'text-gray-700'}">
-                                ${v.stock} pcs
+                        <div class="flex justify-between items-center mb-1 border-b border-gray-50 last:border-0 pb-1">
+                            <span class="text-[9px] font-bold text-gray-400 uppercase">${v.size}</span>
+                            <span class="text-[10px] font-bold ${v.stock < 5 ? 'text-red-500' : 'text-gray-700'}">
+                                ${v.stock} <span class="text-[8px] font-normal text-gray-400">UNITS</span>
                             </span>
                         </div>
                     `).join('');
@@ -140,28 +148,33 @@
                     const totalStock = product.variants.reduce((sum, v) => sum + (parseInt(v.stock) || 0), 0);
 
                     const row = `
-                        <tr class="border-b hover:bg-gray-50 transition-colors">
+                        <tr class="hover:bg-gray-50/50 transition-colors">
                             <td class="px-6 py-6">
                                 <div class="flex items-center">
-                                    <img src="${product.imageUrl || 'https://via.placeholder.com/40'}" class="w-10 h-10 object-cover mr-4 border">
-                                    <div>
-                                        <p class="text-xs font-bold uppercase tracking-wider">${product.name}</p>
-                                        <p class="text-[9px] text-gray-400 uppercase tracking-tighter">Total units: ${totalStock}</p>
+                                    <div class="relative">
+                                        <img src="${product.imageUrl || 'https://via.placeholder.com/100'}" class="w-12 h-12 md:w-14 md:h-14 object-cover rounded-sm border grayscale-[20%] hover:grayscale-0 transition-all">
+                                    </div>
+                                    <div class="ml-4">
+                                        <p class="text-[11px] font-black uppercase tracking-widest mb-1">${product.name}</p>
+                                        <div class="flex items-center">
+                                            <span class="w-2 h-2 rounded-full ${totalStock > 0 ? 'bg-green-400' : 'bg-red-400'} mr-2"></span>
+                                            <p class="text-[8px] text-gray-400 uppercase font-bold tracking-tighter">Inventory: ${totalStock} Total Pieces</p>
+                                        </div>
                                     </div>
                                 </div>
                             </td>
-                            <td class="px-6 py-6 min-w-[150px]">
-                                ${variantsHtml}
-                            </td>
                             <td class="px-6 py-6">
-                                ${totalStock > 0 
-                                    ? `<span class="bg-green-50 text-green-600 text-[8px] font-bold px-2 py-1 uppercase tracking-widest border border-green-100">In Stock</span>`
-                                    : `<span class="bg-red-50 text-red-600 text-[8px] font-bold px-2 py-1 uppercase tracking-widest border border-red-100">Out of Stock</span>`
-                                }
+                                <div class="max-w-[180px]">
+                                    ${variantsHtml}
+                                </div>
                             </td>
                             <td class="px-6 py-6 text-right">
-                                <button onclick="editProduct('${product._id}')" class="text-gray-400 hover:text-brandPinkDark mr-4 transition"><i class="fa-solid fa-pen-to-square"></i></button>
-                                <button onclick="deleteProduct('${product._id}')" class="text-gray-400 hover:text-red-600 transition"><i class="fa-solid fa-trash-can"></i></button>
+                                ${totalStock > 10 
+                                    ? `<span class="text-green-600 text-[8px] font-black px-3 py-1 uppercase tracking-[0.2em] bg-green-50 rounded-full border border-green-100">Optimal</span>`
+                                    : (totalStock > 0 
+                                        ? `<span class="text-orange-500 text-[8px] font-black px-3 py-1 uppercase tracking-[0.2em] bg-orange-50 rounded-full border border-orange-100">Low Stock</span>`
+                                        : `<span class="text-red-600 text-[8px] font-black px-3 py-1 uppercase tracking-[0.2em] bg-red-50 rounded-full border border-red-100">Restock</span>`)
+                                }
                             </td>
                         </tr>
                     `;
@@ -169,6 +182,7 @@
                 });
             } catch (err) {
                 console.error("Fetch Error:", err);
+                document.getElementById('stock-list').innerHTML = '<tr><td colspan="3" class="p-12 text-center text-xs text-red-400 uppercase tracking-widest">Network Error: Failed to sync database</td></tr>';
             }
         }
 
