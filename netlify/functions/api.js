@@ -239,22 +239,41 @@ router.delete('/admin/products/:id', authenticateAdmin, async (req, res) => {
 });
 
 // --- PUBLIC FETCH ---
+// Fetches all products and generates temporary signed URLs for images
 router.get('/products', async (req, res) => {
     try {
         const db = await getDb();
-        const items = await db.collection("products").find({}).toArray();
+        // Sort by newest first
+        const items = await db.collection("products").find({}).sort({ createdAt: -1 }).toArray();
+        
         const refreshedItems = items.map(item => {
+            // Provide a default empty array if variants don't exist
+            if (!item.variants) item.variants = [];
+            
+            // Generate a signed URL from IDrive E2 if an imageKey exists
             if (s3 && item.imageKey) {
-                item.imageUrl = s3.getSignedUrl('getObject', {
-                    Bucket: BUCKET_NAME,
-                    Key: item.imageKey,
-                    Expires: 86400 
-                });
+                try {
+                    item.imageUrl = s3.getSignedUrl('getObject', {
+                        Bucket: BUCKET_NAME,
+                        Key: item.imageKey,
+                        Expires: 86400 // URL valid for 24 hours
+                    });
+                } catch (urlErr) {
+                    console.error("Error generating signed URL for:", item.imageKey);
+                    item.imageUrl = null;
+                }
+            } else {
+                item.imageUrl = null; // Fallback for products without images
             }
+            
             return item;
         });
+
         res.json(refreshedItems);
-    } catch (e) { res.status(500).json({ error: "Fetch failed" }); }
+    } catch (e) { 
+        console.error("Fetch Products Error:", e);
+        res.status(500).json({ error: "Fetch failed: " + e.message }); 
+    }
 });
 
 app.use('/.netlify/functions/api', router);
