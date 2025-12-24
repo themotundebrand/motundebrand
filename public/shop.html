@@ -26,22 +26,18 @@
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #F7C8D0; }
 
-        /* Hero Slider Styles */
         .slide-fade { transition: opacity 1.2s ease-in-out; position: absolute; inset: 0; width: 100%; height: 100%; }
         .slide-hidden { opacity: 0; pointer-events: none; }
         .slide-active { opacity: 1; pointer-events: auto; }
         .glass-overlay { background: rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px); border: 1px solid rgba(247, 200, 208, 0.1); }
 
-        /* Sidebar Styles */
         #sidebar { transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
         .sidebar-open { transform: translateX(0); }
         .sidebar-closed { transform: translateX(-100%); }
 
-        /* Modal Animation */
         #product-modal { transition: opacity 0.3s ease-out; }
         .modal-content { transition: transform 0.3s ease-out; }
 
-        /* Collection Grid */
         .collection-grid {
             display: grid;
             grid-auto-flow: column;
@@ -53,6 +49,16 @@
             padding-bottom: 1rem;
         }
         .collection-grid::-webkit-scrollbar { display: none; }
+        /* Custom Notification Toast */
+        #custom-toast {
+        transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        transform: translateY(100px);
+      opacity: 0;
+        }
+        #custom-toast.show {
+    transform: translateY(0);
+    opacity: 1;
+    }
         
         @media (min-width: 768px) {
             .collection-grid { grid-auto-columns: calc(20% - 1rem); }
@@ -69,7 +75,6 @@
             background-size: 0.6em; 
         }
 
-        /* Floating WhatsApp Pulse */
         @keyframes pulse-border {
             0% { transform: scale(1); opacity: 0.8; }
             100% { transform: scale(1.4); opacity: 0; }
@@ -221,6 +226,7 @@
         </div>
         <div id="kids-grid" class="collection-grid"></div>
     </section>
+
     <section id="mist" class="mb-16 md:mb-24 px-4 md:px-12 relative">
         <div class="flex justify-between items-end mb-6 md:mb-8">
             <div>
@@ -235,17 +241,22 @@
     </section>
 </main>
 
-    <footer class="bg-brandBlack pt-16 pb-10 px-6 md:px-12 border-t border-brandPink/5">
+<div id="custom-toast" class="fixed bottom-10 left-1/2 -translate-x-1/2 z-[300] pointer-events-none">
+    <div class="bg-brandBlack text-brandPink px-8 py-4 shadow-2xl border border-brandPink/20 flex items-center gap-4">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7" stroke-width="2"/></svg>
+        <span id="toast-message" class="text-[10px] uppercase tracking-[0.2em] font-bold">Item added to bag</span>
+    </div>
+</div>
+
+<footer class="bg-brandBlack pt-16 pb-10 px-6 md:px-12 border-t border-brandPink/5">
     <div class="max-w-7xl mx-auto mb-16">
         <div class="grid grid-cols-1 md:grid-cols-4 gap-12">
-            
             <div class="col-span-1">
                 <h2 class="text-brandPink text-sm font-black tracking-luxury uppercase mb-6">The Motunde Brand</h2>
                 <p class="text-brandPink/50 text-[10px] leading-relaxed tracking-widest uppercase max-w-xs">
                     Timeless elegance for the modern individual. Redefining fashion through quality and luxury.
                 </p>
             </div>
-
             <div class="col-span-1 md:col-span-2 grid grid-cols-2 gap-4">
                 <div>
                     <h4 class="text-brandPink text-[10px] font-bold tracking-widest uppercase mb-6">Collections</h4>
@@ -255,7 +266,6 @@
                         <li><a href="#kids" class="hover:text-brandPink transition">Kids</a></li>
                     </ul>
                 </div>
-
                 <div>
                     <h4 class="text-brandPink text-[10px] font-bold tracking-widest uppercase mb-6">Support</h4>
                     <ul class="text-brandPink/60 text-[9px] space-y-4 tracking-widest uppercase">
@@ -265,7 +275,6 @@
                     </ul>
                 </div>
             </div>
-
             <div class="col-span-1">
                 <h4 class="text-brandPink text-[10px] font-bold tracking-widest uppercase mb-6">Newsletter</h4>
                 <div class="flex border-b border-brandPink/20 pb-2">
@@ -275,12 +284,10 @@
             </div>
         </div>
     </div>
-
     <div class="border-t border-brandPink/10 pt-8 flex flex-col md:flex-row justify-between items-center gap-6">
         <p class="text-brandPink/30 text-[8px] tracking-[0.3em] uppercase order-2 md:order-1">
             © 2026 The Motunde Brand. All Rights Reserved.
         </p>
-        
         <div class="flex flex-wrap justify-center gap-5 md:gap-6 order-1 md:order-2">
             <a href="#" class="text-brandPink/40 hover:text-brandPink transition uppercase text-[8px] tracking-widest">Instagram</a>
             <a href="#" class="text-brandPink/40 hover:text-brandPink transition uppercase text-[8px] tracking-widest">TikTok</a>
@@ -301,22 +308,79 @@
                 <p id="modal-cat" class="text-[10px] uppercase tracking-widest text-brandPinkDark mb-2">Collection</p>
                 <h2 id="modal-name" class="text-2xl font-light uppercase tracking-[0.2em] mb-4">Product Name</h2>
                 <p id="modal-price" class="text-xl font-medium mb-8">₦0</p>
-                
                 <div class="mb-8">
                     <label class="block text-[10px] uppercase tracking-widest mb-3">Select Size</label>
-                    <div id="modal-sizes" class="flex flex-wrap gap-2">
-                        </div>
+                    <div id="modal-sizes" class="flex flex-wrap gap-2"></div>
                 </div>
-
                 <button id="modal-add-btn" class="w-full bg-brandBlack text-brandPink py-4 uppercase tracking-[0.3em] text-xs hover:bg-brandPink hover:text-brandBlack transition-all">Add to Bag</button>
             </div>
         </div>
     </div>
 
     <script>
+        // --- 1. Initialize Cart & Global State ---
         let currentProducts = [];
+        let cart = JSON.parse(localStorage.getItem('tmb_cart')) || [];
+        
+        // --- 1. NEW NOTIFICATION HELPER ---
+    function showNotification(message) {
+    const toast = document.getElementById('custom-toast');
+    const toastMsg = document.getElementById('toast-message');
+    
+    toastMsg.innerText = message;
+    toast.classList.add('show');
+    
+    // Hide after 3 seconds
+    setTimeout(() => {
+        toast.classList.remove('show');
+    }, 3000);
+}
 
-        // Sidebar logic
+        // Sync the red bubble count on page load
+        function updateCartBadge() {
+            const count = cart.reduce((sum, item) => sum + item.quantity, 0);
+            document.getElementById('cart-count').innerText = count;
+        }
+        updateCartBadge();
+
+// --- 2. UPDATE addToCart (Main Grid) ---
+function addToCart(productId) {
+    const p = currentProducts.find(prod => prod._id === productId);
+    if (!p) return;
+
+    const sizeSelect = document.querySelector(`select[data-id="${productId}"]`);
+    let selectedSize = "Default";
+    let selectedPrice = p.variants ? p.variants[0].price : p.price;
+
+    if (sizeSelect) {
+        selectedSize = sizeSelect.value;
+        selectedPrice = sizeSelect.options[sizeSelect.selectedIndex].dataset.price;
+    }
+
+    const cartItem = {
+        id: p._id,
+        name: p.name,
+        price: Number(selectedPrice),
+        size: selectedSize,
+        image: p.imageUrl,
+        quantity: 1
+    };
+
+    const existingItemIndex = cart.findIndex(item => item.id === productId && item.size === selectedSize);
+
+    if (existingItemIndex > -1) {
+        cart[existingItemIndex].quantity += 1;
+    } else {
+        cart.push(cartItem);
+    }
+
+    localStorage.setItem('tmb_cart', JSON.stringify(cart));
+    updateCartBadge();
+    
+    // REPLACED alert() WITH showNotification
+    showNotification(`${p.name} added to bag`);
+}
+        // --- 3. UI Interactions ---
         function toggleSidebar(open) {
             const sidebar = document.getElementById('sidebar');
             const overlay = document.getElementById('sidebar-overlay');
@@ -330,38 +394,71 @@
         }
 
         function openCart() {
-        window.location.href = 'cart.html';
+            window.location.href = 'cart.html';
         }
 
-        // Modal Logic
-        function openModal(productId) {
-            const p = currentProducts.find(prod => prod._id === productId);
-            if (!p) return;
+        // --- 4. Modal Logic (Updated with variant selection) ---
+       // --- 3. UPDATE openModal (Add Button inside Modal) ---
+function openModal(productId) {
+    const p = currentProducts.find(prod => prod._id === productId);
+    if (!p) return;
 
-            document.getElementById('modal-img').src = p.imageUrl;
-            document.getElementById('modal-name').innerText = p.name;
-            document.getElementById('modal-cat').innerText = p.category + " Collection";
-            
-            const variants = p.variants || [{size: 'Default', price: p.price || 0}];
-            document.getElementById('modal-price').innerText = `₦${Number(variants[0].price).toLocaleString()}`;
-            
-            const sizeContainer = document.getElementById('modal-sizes');
-            sizeContainer.innerHTML = variants.map((v, i) => `
-                <button onclick="updateModalPrice('${v.price}', this)" class="size-btn px-4 py-2 border ${i===0?'border-brandPink bg-brandPink/5':'border-gray-200'} text-[10px] uppercase transition-all">
-                    ${v.size}
-                </button>
-            `).join('');
+    document.getElementById('modal-img').src = p.imageUrl;
+    document.getElementById('modal-name').innerText = p.name;
+    document.getElementById('modal-cat').innerText = p.category + " Collection";
+    
+    const variants = p.variants || [{size: 'Default', price: p.price || 0}];
+    document.getElementById('modal-price').innerText = `₦${Number(variants[0].price).toLocaleString()}`;
+    
+    let selectedModalSize = variants[0].size;
+    let selectedModalPrice = variants[0].price;
 
-            document.getElementById('modal-add-btn').onclick = () => {
-                addToCart(p._id);
-                closeModal();
-            };
+    const sizeContainer = document.getElementById('modal-sizes');
+    sizeContainer.innerHTML = variants.map((v, i) => `
+        <button onclick="updateModalSelection('${v.price}', '${v.size}', this)" class="size-btn px-4 py-2 border ${i===0?'border-brandPink bg-brandPink/5':'border-gray-200'} text-[10px] uppercase transition-all">
+            ${v.size}
+        </button>
+    `).join('');
 
-            const modal = document.getElementById('product-modal');
-            modal.classList.remove('invisible', 'opacity-0', 'pointer-events-none');
-            modal.querySelector('.modal-content').classList.remove('scale-95');
-            document.body.style.overflow = 'hidden';
-        }
+    window.updateModalSelection = (price, size, btn) => {
+        selectedModalSize = size;
+        selectedModalPrice = price;
+        document.getElementById('modal-price').innerText = `₦${Number(price).toLocaleString()}`;
+        document.querySelectorAll('.size-btn').forEach(b => {
+            b.classList.remove('border-brandPink', 'bg-brandPink/5');
+            b.classList.add('border-gray-200');
+        });
+        btn.classList.replace('border-gray-200', 'border-brandPink');
+        btn.classList.add('bg-brandPink/5');
+    };
+
+         document.getElementById('modal-add-btn').onclick = () => {
+        const item = {
+            id: p._id,
+            name: p.name,
+            price: Number(selectedModalPrice),
+            size: selectedModalSize,
+            image: p.imageUrl,
+            quantity: 1
+        };
+        
+        const idx = cart.findIndex(i => i.id === p._id && i.size === selectedModalSize);
+        if(idx > -1) cart[idx].quantity += 1;
+        else cart.push(item);
+        
+        localStorage.setItem('tmb_cart', JSON.stringify(cart));
+        updateCartBadge();
+        
+        // UX: Close modal first, then show notification
+        closeModal();
+        showNotification("Added to bag");
+    };
+
+    const modal = document.getElementById('product-modal');
+    modal.classList.remove('invisible', 'opacity-0', 'pointer-events-none');
+    modal.querySelector('.modal-content').classList.remove('scale-95');
+    document.body.style.overflow = 'hidden';
+}
 
         function closeModal() {
             const modal = document.getElementById('product-modal');
@@ -370,37 +467,7 @@
             document.body.style.overflow = '';
         }
 
-        function updateModalPrice(price, btn) {
-            document.getElementById('modal-price').innerText = `₦${Number(price).toLocaleString()}`;
-            document.querySelectorAll('.size-btn').forEach(b => b.classList.replace('border-brandPink', 'border-gray-200'));
-            btn.classList.replace('border-gray-200', 'border-brandPink');
-        }
-
-        // Hero Slider Logic
-        let currentSlide = 1;
-        setInterval(() => {
-            const s1 = document.getElementById(`slide-group-1`);
-            const s2 = document.getElementById(`slide-group-2`);
-            if (currentSlide === 1) {
-                s1.classList.replace('slide-active', 'slide-hidden');
-                s2.classList.replace('slide-hidden', 'slide-active');
-                currentSlide = 2;
-            } else {
-                s2.classList.replace('slide-active', 'slide-hidden');
-                s1.classList.replace('slide-hidden', 'slide-active');
-                currentSlide = 1;
-            }
-        }, 5000);
-
-        // Shopping Bag count
-        let cartItems = 0;
-        function addToCart(id) { 
-            cartItems++;
-            document.getElementById('cart-count').innerText = cartItems;
-            alert("Added to your collection."); 
-        }
-
-// Updated Fetch and Render
+        // --- 5. Rendering & Data Fetching ---
         async function loadProducts() {
             try {
                 const response = await fetch('/api/products');
@@ -416,7 +483,7 @@
                         <div class="text-center">
                             <h3 class="uppercase font-bold text-[8px] tracking-widest mb-1 truncate">${p.name}</h3>
                             <p id="price-${p._id}" class="text-brandPinkDark font-medium text-[10px] mb-3">₦${Number(variants[0].price).toLocaleString()}</p>
-                            <select onchange="handleSizeChange(this, '${p._id}')" class="size-select w-full border border-gray-100 text-[8px] uppercase py-1.5 px-2 mb-2 focus:outline-none">
+                            <select data-id="${p._id}" onchange="handleSizeChange(this, '${p._id}')" class="size-select w-full border border-gray-100 text-[8px] uppercase py-1.5 px-2 mb-2 focus:outline-none">
                                 ${variants.map(v => `<option value="${v.size}" data-price="${v.price}">${v.size}</option>`).join('')}
                             </select>
                             <button onclick="addToCart('${p._id}')" class="w-full bg-brandBlack text-brandPink text-[8px] py-2.5 uppercase tracking-widest hover:bg-brandPink hover:text-brandBlack transition-all">Add to Bag</button>
@@ -424,39 +491,47 @@
                     </div>`;
                 };
 
-                // Standard population for Women, Men, Kids (Limit 5)
                 const populateGrid = (cat, elementId) => {
                     const filtered = currentProducts.filter(p => p.category?.toLowerCase() === cat).slice(0, 5);
                     document.getElementById(elementId).innerHTML = filtered.length > 0 ? filtered.map(renderCard).join('') : `<p class="text-[10px] uppercase text-gray-400 py-10">Vault Opening Soon...</p>`;
                 };
 
-                // SPECIAL LOGIC FOR MISTS & SPRAYS (Limit 6: 3 Mists + 3 Sprays)
                 const populateMistGrid = (elementId) => {
                     const allMistsInDb = currentProducts.filter(p => p.category?.toLowerCase() === 'mist');
-                    
                     const mists = allMistsInDb.filter(p => p.subCategory === 'Body Mist').slice(0, 3);
                     const sprays = allMistsInDb.filter(p => p.subCategory === 'Body Spray').slice(0, 3);
-                    
                     const combined = [...mists, ...sprays];
-                    
-                    document.getElementById(elementId).innerHTML = combined.length > 0 
-                        ? combined.map(renderCard).join('') 
-                        : `<p class="text-[10px] uppercase text-gray-400 py-10">Vault Opening Soon...</p>`;
+                    document.getElementById(elementId).innerHTML = combined.length > 0 ? combined.map(renderCard).join('') : `<p class="text-[10px] uppercase text-gray-400 py-10">Vault Opening Soon...</p>`;
                 };
 
-                // Execute populations
                 populateGrid('women', 'women-grid');
                 populateGrid('men', 'men-grid');
                 populateGrid('kids', 'kids-grid');
-                populateMistGrid('mist-grid'); // New Mist Grid call
+                populateMistGrid('mist-grid');
 
-            } catch (err) { console.error("Error:", err); }
+            } catch (err) { console.error("Error loading products:", err); }
         }
 
         function handleSizeChange(select, productId) {
             const price = select.options[select.selectedIndex].getAttribute('data-price');
             document.getElementById(`price-${productId}`).innerText = `₦${Number(price).toLocaleString()}`;
         }
+
+        // --- 6. Slider Interval ---
+        let currentSlide = 1;
+        setInterval(() => {
+            const s1 = document.getElementById(`slide-group-1`);
+            const s2 = document.getElementById(`slide-group-2`);
+            if (currentSlide === 1) {
+                s1.classList.replace('slide-active', 'slide-hidden');
+                s2.classList.replace('slide-hidden', 'slide-active');
+                currentSlide = 2;
+            } else {
+                s2.classList.replace('slide-active', 'slide-hidden');
+                s1.classList.replace('slide-hidden', 'slide-active');
+                currentSlide = 1;
+            }
+        }, 5000);
 
         loadProducts();
     </script>

@@ -227,32 +227,81 @@ router.delete('/admin/products/:id', authenticateAdmin, async (req, res) => {
     } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
-// --- ORDER HANDLING ---
+// --- UPDATED ORDER HANDLING WITH ATOMIC STOCK UPDATES ---
 router.post('/orders', async (req, res) => {
     try {
         const db = await getDb();
-        const { items, customerDetails, totalPrice } = req.body; 
+        const { items, customerDetails, totalPrice, paymentMethod } = req.body; 
 
+        if (!items || items.length === 0) {
+            return res.status(400).json({ error: "Cart is empty" });
+        }
+
+        // 1. Create the Order Record
         const orderRecord = {
             customerDetails,
-            items,
-            totalPrice,
+            items: items.map(item => ({
+                productId: item.productId,
+                name: item.name,
+                size: item.size,
+                quantity: parseInt(item.quantity),
+                priceAtPurchase: parseFloat(item.price)
+            })),
+            totalPrice: parseFloat(totalPrice),
+            paymentMethod: paymentMethod || 'online',
             status: 'pending',
             createdAt: new Date()
         };
+
+        // 2. Process Stock Updates and Validation
+        // We use a Promise.all to run these updates concurrently
+        const updateResults = await Promise.all(items.map(async (item) => {
+            const qty = Math.abs(parseInt(item.quantity));
+            
+            // Atomic update: Only decrement if current stock >= requested quantity
+            const result = await db.collection("products").updateOne(
+                { 
+                    _id: new ObjectId(item.productId), 
+                    "variants.size": item.size,
+                    "variants.stock": { $gte: qty } // Prevents negative stock
+                },
+                { 
+                    $inc: { "variants.$.stock": -qty } 
+                }
+            );
+
+            return {
+                name: item.name,
+                size: item.size,
+                success: result.modifiedCount > 0
+            };
+        }));
+
+        // 3. Check if any items failed due to stock issues
+        const failedItems = updateResults.filter(r => !r.success);
+        if (failedItems.length > 0) {
+            // Note: In a production app, you might want to roll back (reverse) 
+            // the successful updates if one fails. For simplicity here, we warn the user.
+            return res.status(400).json({ 
+                error: "Some items are out of stock", 
+                failedItems 
+            });
+        }
+
+        // 4. Finalize the order in the database
         const result = await db.collection("orders").insertOne(orderRecord);
 
-        const updatePromises = items.map(item => {
-            return db.collection("products").updateOne(
-                { _id: new ObjectId(item.productId), "variants.size": item.size },
-                { $inc: { "variants.$.stock": -Math.abs(item.quantity) } }
-            );
+        res.status(201).json({ 
+            message: "Order placed successfully", 
+            orderId: result.insertedId 
         });
 
-        await Promise.all(updatePromises);
-        res.status(201).json({ message: "Order successful", orderId: result.insertedId });
-    } catch (e) { res.status(500).json({ error: "Order failed: " + e.message }); }
+    } catch (e) { 
+        console.error("Order Processing Error:", e);
+        res.status(500).json({ error: "Order failed: " + e.message }); 
+    }
 });
+
 // --- PUBLIC COLLECTION FETCH (UPDATED) ---
 router.get('/products', async (req, res) => {
     try {

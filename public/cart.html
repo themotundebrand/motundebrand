@@ -22,190 +22,265 @@
     </script>
     <style>
         .glass-card { background: rgba(255, 255, 255, 0.02); backdrop-filter: blur(10px); border: 1px solid rgba(247, 200, 208, 0.1); }
-        input, select { background: transparent !important; border-bottom: 1px solid #eee !important; transition: border-color 0.3s; }
+        input { background: transparent !important; border-bottom: 1px solid #eee !important; transition: border-color 0.3s; }
         input:focus { border-color: #F7C8D0 !important; outline: none; }
+        .sidebar-closed { transform: translateX(-100%); transition: transform 0.3s ease-in-out; }
+        .sidebar-open { transform: translateX(0); transition: transform 0.3s ease-in-out; }
+        
+        /* Toast Animation */
+        #notification-toast {
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
     </style>
 </head>
 <body class="bg-white font-sans antialiased">
 
-    <nav class="w-full z-[150] bg-brandBlack px-4 md:px-8 py-6 flex justify-between items-center border-b border-brandPink/10">
+    <div id="notification-toast" class="fixed bottom-10 left-1/2 -translate-x-1/2 z-[200] opacity-0 translate-y-10 pointer-events-none">
+        <div class="bg-brandBlack text-brandPink px-8 py-4 shadow-2xl flex items-center gap-4 min-w-[300px] border border-brandPink/20">
+            <span id="toast-message" class="text-[10px] uppercase tracking-widest font-bold text-center w-full"></span>
+        </div>
+    </div>
+
+    <nav class="w-full z-[150] bg-brandBlack px-4 md:px-8 py-6 flex justify-between items-center border-b border-brandPink/10 sticky top-0">
         <div class="flex items-center gap-4">
+            <button onclick="toggleSidebar(true)" class="text-brandPink md:hidden">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16" stroke-width="2"></path></svg>
+            </button>
             <h1 class="text-brandPink text-xs md:text-lg font-black tracking-luxury uppercase">The Motunde Brand</h1>
         </div>
+
+        <div class="hidden md:flex space-x-8 text-[10px] tracking-widest uppercase text-white/90">
+            <a href="index.html" class="hover:text-brandPink transition">Home</a>
+            <a href="shop.html#women" class="hover:text-brandPink transition">Women</a>
+            <a href="shop.html#men" class="hover:text-brandPink transition">Men</a>
+            <a href="shop.html#kids" class="hover:text-brandPink transition">Kids</a>
+        </div>
+
         <div class="flex items-center gap-5 text-brandPink">
-            <a href="shop.html" class="text-[10px] uppercase tracking-widest hover:text-white transition">Continue Shopping</a>
+            <a href="account.html" class="hover:text-white transition">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" stroke-width="1.5"></path></svg>
+            </a>
+            <button class="relative hover:text-white transition">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" stroke-width="1.5"></path></svg>
+                <span id="cart-count" class="absolute -top-2 -right-2 bg-brandPink text-brandBlack text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center">0</span>
+            </button>
         </div>
     </nav>
 
- <main class="max-w-7xl mx-auto px-4 md:px-12 py-12 md:py-20">
-    <div class="mb-12">
-        <h2 class="text-brandBlack text-xl md:text-3xl font-light uppercase tracking-luxury">Checkout</h2>
-        <div class="w-12 h-[1px] bg-brandPink mt-4"></div>
-    </div>
+    <div id="sidebar-overlay" onclick="toggleSidebar(false)" class="fixed inset-0 bg-black/60 z-[110] hidden backdrop-blur-sm"></div>
+    <aside id="sidebar" class="fixed top-0 left-0 h-full w-64 bg-brandBlack z-[120] sidebar-closed p-6 flex flex-col">
+        <button onclick="toggleSidebar(false)" class="self-end text-brandPink mb-10">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" stroke-width="2"></path></svg>
+        </button>
+        <div class="flex flex-col space-y-6 text-[10px] tracking-[0.25em] uppercase text-brandPink/80">
+            <a href="index.html" class="hover:text-brandPink transition-colors">Home</a>
+            <a href="shop.html#women" class="hover:text-brandPink transition-colors">Women</a>
+            <a href="shop.html#men" class="hover:text-brandPink transition-colors">Men</a>
+            <a href="shop.html#kids" class="hover:text-brandPink transition-colors">Kids</a>
+        </div>
+    </aside>
 
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-16">
-        
-        <div class="lg:col-span-2 space-y-12">
-            <div id="cart-items-container" class="space-y-8">
-                </div>
-
-            <section class="space-y-8 pt-8 border-t border-gray-100">
-                <h3 class="text-[11px] font-bold uppercase tracking-widest text-brandBlack">1. Delivery & Contact Details</h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <input type="text" id="cust-name" placeholder="FULL NAME" class="w-full py-3 text-[10px] tracking-widest uppercase">
-                    <input type="email" id="cust-email" placeholder="EMAIL ADDRESS" class="w-full py-3 text-[10px] tracking-widest uppercase">
-                    <input type="tel" id="cust-phone" placeholder="PHONE NUMBER" class="w-full py-3 text-[10px] tracking-widest uppercase">
-                    <input type="tel" id="cust-whatsapp" placeholder="WHATSAPP NUMBER" class="w-full py-3 text-[10px] tracking-widest uppercase">
-                    <div class="md:col-span-2">
-                        <input type="text" id="cust-address" placeholder="DELIVERY ADDRESS" class="w-full py-3 text-[10px] tracking-widest uppercase">
-                    </div>
-                    <input type="text" id="cust-zip" placeholder="POSTAL / ZIP CODE (OPTIONAL)" class="w-full py-3 text-[10px] tracking-widest uppercase">
-                    <select id="shipping-select" onchange="updateTotals()" class="w-full py-3 text-[10px] tracking-widest uppercase">
-                        <option value="0">SELECT REGION (SHIPPING FEE)</option>
-                        <option value="3000">Lagos Mainland (₦3,000)</option>
-                        <option value="5000">Lagos Island (₦5,000)</option>
-                        <option value="7000">Outside Lagos (₦7,000)</option>
-                    </select>
-                </div>
-            </section>
+    <main class="max-w-7xl mx-auto px-4 md:px-12 py-12 md:py-20">
+        <div class="mb-12">
+            <h2 class="text-brandBlack text-xl md:text-3xl font-light uppercase tracking-luxury">Your Bag</h2>
+            <div class="w-12 h-[1px] bg-brandPink mt-4"></div>
         </div>
 
-        <div class="lg:col-span-1">
-            <div class="sticky top-28 space-y-8">
-                <section class="bg-gray-50 p-6 md:p-8 space-y-6">
-                    <h3 class="text-[11px] font-bold uppercase tracking-widest text-brandBlack">2. Payment Method</h3>
-                    
-                    <div class="space-y-3">
-                        <label class="flex items-center gap-3 cursor-pointer group">
-                            <input type="radio" name="pay-method" value="online" checked onchange="togglePaymentUI()" class="accent-brandBlack">
-                            <span class="text-[10px] tracking-widest uppercase">Online Payment (Card/Transfer)</span>
-                        </label>
-                        <label class="flex items-center gap-3 cursor-pointer group">
-                            <input type="radio" name="pay-method" value="bank" onchange="togglePaymentUI()" class="accent-brandBlack">
-                            <span class="text-[10px] tracking-widest uppercase">Direct Bank Transfer</span>
-                        </label>
-                    </div>
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-16">
+            <div class="lg:col-span-2 space-y-12">
+                <div id="cart-items-container" class="space-y-8"></div>
 
-                    <div id="bank-details" class="hidden space-y-4 pt-4 border-t border-gray-200">
-                        <div class="bg-white p-4 border border-brandPink/20">
-                            <p class="text-[9px] uppercase tracking-widest text-gray-400 mb-1">Bank Name</p>
-                            <p class="text-[10px] font-bold tracking-widest mb-3">GTBANK (GUARANTY TRUST)</p>
-                            <p class="text-[9px] uppercase tracking-widest text-gray-400 mb-1">Account Number</p>
-                            <p class="text-[10px] font-bold tracking-widest mb-3">0123456789</p>
-                            <p class="text-[9px] uppercase tracking-widest text-gray-400 mb-1">Account Name</p>
-                            <p class="text-[10px] font-bold tracking-widest uppercase">The Motunde Brand Ltd</p>
-                        </div>
-                        <div class="space-y-2">
-                            <label class="text-[9px] uppercase tracking-widest text-brandPinkDark font-bold">Upload Payment Receipt</label>
-                            <input type="file" id="receipt-upload" accept="image/*" class="w-full text-[9px] file:mr-4 file:py-2 file:px-4 file:border-0 file:text-[9px] file:uppercase file:tracking-widest file:bg-brandPink file:text-brandBlack">
+                <section class="space-y-8 pt-8 border-t border-gray-100">
+                    <h3 class="text-[11px] font-bold uppercase tracking-widest text-brandBlack">1. Delivery & Contact Details</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <input type="text" id="cust-name" placeholder="FULL NAME" class="w-full py-3 text-[10px] tracking-widest uppercase">
+                        <input type="email" id="cust-email" placeholder="EMAIL ADDRESS" class="w-full py-3 text-[10px] tracking-widest uppercase">
+                        <input type="tel" id="cust-phone" placeholder="PHONE NUMBER" class="w-full py-3 text-[10px] tracking-widest uppercase">
+                        <input type="tel" id="cust-whatsapp" placeholder="WHATSAPP NUMBER" class="w-full py-3 text-[10px] tracking-widest uppercase">
+                        <div class="md:col-span-2">
+                            <input type="text" id="cust-address" placeholder="DELIVERY ADDRESS" class="w-full py-3 text-[10px] tracking-widest uppercase">
                         </div>
                     </div>
-
-                    <div class="h-[1px] bg-gray-200 my-6"></div>
-
-                    <div class="space-y-3">
-                        <div class="flex justify-between text-[10px] tracking-widest uppercase text-gray-500">
-                            <span>Subtotal</span>
-                            <span id="subtotal">₦0</span>
-                        </div>
-                        <div class="flex justify-between text-[10px] tracking-widest uppercase text-gray-500">
-                            <span>Shipping</span>
-                            <span id="shipping-fee">₦0</span>
-                        </div>
-                        <div class="flex justify-between text-xs font-bold tracking-widest uppercase text-brandBlack pt-2">
-                            <span>Total</span>
-                            <span id="total-price">₦0</span>
-                        </div>
-                    </div>
-
-                    <button onclick="handleCheckout()" class="w-full bg-brandBlack text-brandPink py-4 mt-4 uppercase tracking-[0.3em] text-[10px] hover:bg-brandPink hover:text-brandBlack transition-all">
-                        Place Order
-                    </button>
                 </section>
             </div>
-        </div>
-    </div>
-</main>
 
-<script>
-    let cart = JSON.parse(localStorage.getItem('tmb_cart')) || [];
-
-    function togglePaymentUI() {
-        const method = document.querySelector('input[name="pay-method"]:checked').value;
-        const bankUI = document.getElementById('bank-details');
-        if (method === 'bank') {
-            bankUI.classList.remove('hidden');
-        } else {
-            bankUI.classList.add('hidden');
-        }
-    }
-
-    function renderCart() {
-        const container = document.getElementById('cart-items-container');
-        if (cart.length === 0) {
-            container.innerHTML = `<div class="py-10 text-center uppercase tracking-widest text-[10px]">Your bag is empty</div>`;
-            return;
-        }
-
-        container.innerHTML = cart.map((item, index) => `
-            <div class="flex gap-6 pb-6 border-b border-gray-50">
-                <div class="w-20 h-24 bg-gray-50"><img src="${item.image}" class="w-full h-full object-cover"></div>
-                <div class="flex-1">
-                    <div class="flex justify-between">
-                        <h4 class="text-[10px] font-bold uppercase tracking-widest">${item.name}</h4>
-                        <button onclick="removeItem(${index})" class="text-gray-300">×</button>
-                    </div>
-                    <p class="text-[9px] text-brandPinkDark uppercase mb-4">${item.size}</p>
-                    <div class="flex justify-between items-center">
-                        <div class="flex border border-gray-100 text-[10px]">
-                            <button onclick="updateQty(${index},-1)" class="px-2 border-r border-gray-100">-</button>
-                            <span class="px-3">${item.quantity}</span>
-                            <button onclick="updateQty(${index},1)" class="px-2 border-l border-gray-100">+</button>
+            <div class="lg:col-span-1">
+                <div class="sticky top-28 space-y-8">
+                    <section class="bg-gray-50 p-6 md:p-8 space-y-6">
+                        <h3 class="text-[11px] font-bold uppercase tracking-widest text-brandBlack">2. Payment Method</h3>
+                        <div class="space-y-3">
+                            <label class="flex items-center gap-3 cursor-pointer">
+                                <input type="radio" name="pay-method" value="online" checked onchange="togglePaymentUI()" class="accent-brandBlack">
+                                <span class="text-[10px] tracking-widest uppercase">Online Payment (Card)</span>
+                            </label>
+                            <label class="flex items-center gap-3 cursor-pointer">
+                                <input type="radio" name="pay-method" value="bank" onchange="togglePaymentUI()" class="accent-brandBlack">
+                                <span class="text-[10px] tracking-widest uppercase">Bank Transfer</span>
+                            </label>
                         </div>
-                        <p class="text-[10px] font-bold">₦${(item.price * item.quantity).toLocaleString()}</p>
-                    </div>
+
+                        <div id="bank-details" class="hidden space-y-4 pt-4 border-t border-gray-200">
+                            <div class="bg-white p-4 border border-brandPink/20 text-[9px] uppercase tracking-widest leading-loose">
+                                <p>Account: <span class="text-brandBlack font-bold">The Motunde Brand Ltd</span></p>
+                                <p>Bank: <span class="text-brandBlack font-bold">GTBANK</span></p>
+                                <p>Number: <span class="text-brandBlack font-bold">0123456789</span></p>
+                            </div>
+                            <input type="file" id="receipt-upload" class="text-[9px] w-full">
+                        </div>
+
+                        <div class="border-t border-gray-200 pt-6 space-y-3">
+                            <div class="flex justify-between text-[10px] uppercase text-gray-500">
+                                <span>Subtotal</span>
+                                <span id="subtotal">₦0</span>
+                            </div>
+                            <div class="flex justify-between text-[10px] uppercase text-gray-500">
+                                <span>Flat Shipping Fee</span>
+                                <span id="shipping-fee">₦0</span>
+                            </div>
+                            <div class="flex justify-between text-xs font-bold uppercase text-brandBlack pt-2">
+                                <span>Total</span>
+                                <span id="total-price">₦0</span>
+                            </div>
+                        </div>
+
+                        <button onclick="handleCheckout()" class="w-full bg-brandBlack text-brandPink py-4 uppercase tracking-[0.3em] text-[10px] hover:bg-brandPink hover:text-brandBlack transition-all">
+                            Place Order
+                        </button>
+                    </section>
                 </div>
             </div>
-        `).join('');
-        updateTotals();
-    }
+        </div>
+    </main>
 
-    function updateTotals() {
-        const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-        const shipping = parseInt(document.getElementById('shipping-select').value) || 0;
-        
-        document.getElementById('subtotal').innerText = `₦${subtotal.toLocaleString()}`;
-        document.getElementById('shipping-fee').innerText = `₦${shipping.toLocaleString()}`;
-        document.getElementById('total-price').innerText = `₦${(subtotal + shipping).toLocaleString()}`;
-    }
+    <script>
+        let cart = JSON.parse(localStorage.getItem('tmb_cart')) || [];
+        const FLAT_SHIPPING_FEE = 5000; 
 
-    function handleCheckout() {
-        const method = document.querySelector('input[name="pay-method"]:checked').value;
-        const name = document.getElementById('cust-name').value;
-        const email = document.getElementById('cust-email').value;
-
-        if(!name || !email) {
-            alert("Please complete your contact details.");
-            return;
+        // New Custom Notification Logic
+        function showNotification(message) {
+            const toast = document.getElementById('notification-toast');
+            const msgSpan = document.getElementById('toast-message');
+            
+            msgSpan.innerText = message;
+            
+            // Show toast
+            toast.classList.remove('opacity-0', 'translate-y-10', 'pointer-events-none');
+            toast.classList.add('opacity-100', 'translate-y-0');
+            
+            // Hide toast after 3.5 seconds
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-10', 'pointer-events-none');
+                toast.classList.remove('opacity-100', 'translate-y-0');
+            }, 3500);
         }
 
-        if (method === 'bank') {
-            const receipt = document.getElementById('receipt-upload').files[0];
-            if (!receipt) {
-                alert("Please upload your payment receipt image.");
+        function toggleSidebar(open) {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+            sidebar.className = `fixed top-0 left-0 h-full w-64 bg-brandBlack z-[120] p-6 flex flex-col ${open ? 'sidebar-open' : 'sidebar-closed'}`;
+            overlay.classList.toggle('hidden', !open);
+        }
+
+        function togglePaymentUI() {
+            const method = document.querySelector('input[name="pay-method"]:checked').value;
+            document.getElementById('bank-details').classList.toggle('hidden', method !== 'bank');
+        }
+
+        function renderCart() {
+            const container = document.getElementById('cart-items-container');
+            const countBadge = document.getElementById('cart-count');
+            const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+            countBadge.innerText = totalItems;
+
+            if (cart.length === 0) {
+                container.innerHTML = `
+                    <div class="py-20 text-center uppercase tracking-widest text-[10px] text-gray-400">
+                        Your bag is empty. <br>
+                        <a href="shop.html" class="text-brandPinkDark mt-4 inline-block underline">Go Shopping</a>
+                    </div>`;
+                updateTotals();
                 return;
             }
-            alert("Order Submitted! Our team will verify your payment receipt shortly via WhatsApp/Email.");
-        } else {
-            alert("Redirecting to Secure Online Payment...");
+
+            container.innerHTML = cart.map((item, index) => `
+                <div class="flex gap-6 pb-6 border-b border-gray-50 items-center">
+                    <div class="w-24 h-32 bg-gray-50 overflow-hidden">
+                        <img src="${item.image}" class="w-full h-full object-cover" alt="${item.name}">
+                    </div>
+                    <div class="flex-1">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <h4 class="text-[11px] font-bold uppercase tracking-widest">${item.name}</h4>
+                                <p class="text-[10px] text-brandPinkDark uppercase mt-1">Size: ${item.size}</p>
+                            </div>
+                            <button onclick="removeItem(${index})" class="text-gray-300 hover:text-red-500 text-xl">&times;</button>
+                        </div>
+                        <div class="flex justify-between items-center mt-6">
+                            <div class="flex border border-gray-100 text-[10px]">
+                                <button onclick="updateQty(${index},-1)" class="px-3 py-1 hover:bg-gray-50">-</button>
+                                <span class="px-4 py-1 border-x border-gray-100">${item.quantity}</span>
+                                <button onclick="updateQty(${index},1)" class="px-3 py-1 hover:bg-gray-50">+</button>
+                            </div>
+                            <p class="text-[11px] font-bold">₦${(item.price * item.quantity).toLocaleString()}</p>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+            
+            updateTotals();
         }
-    }
 
-    function updateQty(i, d) { cart[i].quantity = Math.max(1, cart[i].quantity + d); save(); }
-    function removeItem(i) { cart.splice(i, 1); save(); }
-    function save() { localStorage.setItem('tmb_cart', JSON.stringify(cart)); renderCart(); }
+        function updateTotals() {
+            const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            const currentShipping = cart.length > 0 ? FLAT_SHIPPING_FEE : 0;
+            
+            document.getElementById('subtotal').innerText = `₦${subtotal.toLocaleString()}`;
+            document.getElementById('shipping-fee').innerText = `₦${currentShipping.toLocaleString()}`;
+            document.getElementById('total-price').innerText = `₦${(subtotal + currentShipping).toLocaleString()}`;
+        }
 
-    renderCart();
-</script>
+        function updateQty(i, delta) {
+            cart[i].quantity = Math.max(1, cart[i].quantity + delta);
+            saveCart();
+        }
+
+        function removeItem(i) {
+            if(confirm("Remove item from bag?")) {
+                cart.splice(i, 1);
+                saveCart();
+                showNotification("Item removed from bag");
+            }
+        }
+
+        function saveCart() {
+            localStorage.setItem('tmb_cart', JSON.stringify(cart));
+            renderCart();
+        }
+
+        function handleCheckout() {
+            if (cart.length === 0) return showNotification("Your bag is empty.");
+            
+            const name = document.getElementById('cust-name').value;
+            const email = document.getElementById('cust-email').value;
+            const address = document.getElementById('cust-address').value;
+
+            if(!name || !email || !address) {
+                return showNotification("Please fill in all delivery details.");
+            }
+
+            const method = document.querySelector('input[name="pay-method"]:checked').value;
+            if (method === 'bank' && !document.getElementById('receipt-upload').files[0]) {
+                return showNotification("Please upload your payment receipt.");
+            }
+
+            if(method === 'bank') {
+                showNotification("Order Submitted! Check your email for confirmation.");
+            } else {
+                showNotification("Redirecting to Secure Payment Gateway...");
+            }
+        }
+
+        renderCart();
+    </script>
 </body>
 </html>
