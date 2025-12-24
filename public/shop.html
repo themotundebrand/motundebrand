@@ -96,31 +96,31 @@
         </svg>
     </a>
 
-    <nav class="fixed w-full z-[100] bg-brandBlack px-4 md:px-8 py-4 flex justify-between items-center shadow-lg">
-        <div class="flex items-center gap-4">
-            <button onclick="toggleSidebar(true)" class="md:hidden text-brandPink">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 8h16M4 16h16" stroke-width="2"></path></svg>
-            </button>
-            <h1 class="text-brandPink text-xs md:text-lg font-black tracking-luxury uppercase">The Motunde Brand</h1>
-        </div>
+   <nav class="fixed w-full z-[150] bg-black/20 backdrop-blur-md px-4 md:px-8 py-4 flex justify-between items-center transition-all duration-300 border-b border-white/5">
+    <div class="flex items-center gap-4">
+        <button onclick="toggleSidebar(true)" class="md:hidden text-brandPink">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 8h16M4 16h16" stroke-width="2"></path></svg>
+        </button>
+        <h1 class="text-brandPink text-xs md:text-lg font-black tracking-luxury uppercase">The Motunde Brand</h1>
+    </div>
 
-        <div class="hidden md:flex space-x-8 text-[10px] tracking-widest uppercase text-brandPink/70">
-            <a href="index.html" class="hover:text-brandPink transition">Home</a>
-            <a href="#women" class="hover:text-brandPink transition">Women</a>
-            <a href="#men" class="hover:text-brandPink transition">Men</a>
-            <a href="#kids" class="hover:text-brandPink transition">Kids</a>
-        </div>
+    <div class="hidden md:flex space-x-8 text-[10px] tracking-widest uppercase text-white/90">
+        <a href="index.html" class="hover:text-brandPink transition">Home</a>
+        <a href="#women" class="hover:text-brandPink transition">Women</a>
+        <a href="#men" class="hover:text-brandPink transition">Men</a>
+        <a href="#kids" class="hover:text-brandPink transition">Kids</a>
+    </div>
 
-        <div class="flex items-center gap-5 text-brandPink">
-            <a href="account.html" class="hover:text-white transition">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" stroke-width="1.5"></path></svg>
-            </a>
-            <button onclick="openCart()" class="relative hover:text-white transition">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" stroke-width="1.5"></path></svg>
-                <span id="cart-count" class="absolute -top-2 -right-2 bg-white text-brandBlack text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center">0</span>
-            </button>
-        </div>
-    </nav>
+    <div class="flex items-center gap-5 text-brandPink">
+        <a href="account.html" class="hover:text-white transition">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" stroke-width="1.5"></path></svg>
+        </a>
+        <button onclick="openCart()" class="relative hover:text-white transition">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" stroke-width="1.5"></path></svg>
+            <span id="cart-count" class="absolute -top-2 -right-2 bg-brandPink text-brandBlack text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center">0</span>
+        </button>
+    </div>
+</nav>
 
     <div id="sidebar-overlay" onclick="toggleSidebar(false)" class="fixed inset-0 bg-black/60 z-[110] hidden backdrop-blur-sm"></div>
     
@@ -139,34 +139,48 @@
         </div>
     </aside>
 
-    <section class="pt-16 bg-brandBlack relative">
-        <div class="relative h-[300px] md:h-[450px] overflow-hidden">
-            <div id="slide-group-1" class="slide-fade slide-active flex flex-row h-full">
-                <div class="w-full md:w-1/2 h-full"><img src="https://i.imgur.com/Wp0HCu8.jpeg" class="w-full h-full object-cover"></div>
-                <div class="hidden md:block md:w-1/2 h-full"><img src="https://i.imgur.com/Wp0HCu8.jpeg" class="w-full h-full object-cover"></div>
+<section class="bg-brandBlack relative min-h-[500px] md:min-h-[750px]">
+    <div class="relative h-[70vh] md:h-[90vh] overflow-hidden">
+        
+        <div id="slide-group-1" class="slide-fade slide-active flex flex-row h-full">
+            <div class="w-full md:w-1/2 h-full">
+                <img src="https://i.imgur.com/Wp0HCu8.jpeg" class="w-full h-full object-cover object-top">
             </div>
-            <div id="slide-group-2" class="slide-fade slide-hidden flex flex-row h-full">
-                <div class="w-full md:w-1/2 h-full"><img src="https://i.imgur.com/mfXDwZG.jpeg" class="w-full h-full object-cover"></div>
-                <div class="hidden md:block md:w-1/2 h-full"><img src="https://i.imgur.com/BRl8AVs.jpeg" class="w-full h-full object-cover"></div>
+            <div class="hidden md:block md:w-1/2 h-full">
+                <img src="https://i.imgur.com/KQ2leiY.jpeg" class="w-full h-full object-cover object-top">
             </div>
         </div>
 
-        <div class="absolute inset-0 flex flex-col items-center justify-center z-10 pointer-events-none">
-            <div class="glass-overlay p-6 md:p-10 rounded-full border border-brandPink/20 pointer-events-auto relative group">
-                <button id="shop-dropdown-btn" class="text-brandPink uppercase tracking-[0.5em] text-[10px] md:text-xs font-bold flex items-center gap-4">
-                    Quick Access
-                    <svg class="w-3 h-3 transition-transform group-hover:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7" stroke-width="2"></path></svg>
-                </button>
-                <div id="shop-dropdown-menu" class="absolute top-full left-1/2 -translate-x-1/2 mt-4 w-64 bg-brandBlack/95 backdrop-blur-xl border border-brandPink/20 opacity-0 invisible transition-all duration-300 transform -translate-y-2">
-                    <div class="flex flex-col py-4">
-                        <a href="#women" class="px-6 py-3 text-[9px] text-brandPink/80 hover:text-brandPink uppercase tracking-widest transition">Women's Collection</a>
-                        <a href="#men" class="px-6 py-3 text-[9px] text-brandPink/80 hover:text-brandPink uppercase tracking-widest transition">Men's Collection</a>
-                        <a href="#kids" class="px-6 py-3 text-[9px] text-brandPink/80 hover:text-brandPink uppercase tracking-widest transition">Kids' Collection</a>
-                    </div>
-                </div>
+        <div id="slide-group-2" class="slide-fade slide-hidden flex flex-row h-full">
+            <div class="w-full md:w-1/2 h-full">
+                <img src="https://i.imgur.com/BRl8AVs.jpeg" class="w-full h-full object-cover object-top">
+            </div>
+            <div class="hidden md:block md:w-1/2 h-full">
+                <img src="https://i.imgur.com/Wp0HCu8.jpeg" class="w-full h-full object-cover object-top">
             </div>
         </div>
-    </section>
+    </div>
+
+ <div class="absolute inset-0 flex flex-col items-center justify-center z-10 pointer-events-none">
+    <div class="glass-overlay p-3 md:p-10 rounded-full border border-brandPink/20 pointer-events-auto relative group">
+        
+        <button id="shop-dropdown-btn" class="text-brandPink uppercase tracking-[0.3em] md:tracking-[0.5em] text-[8px] md:text-xs font-bold flex items-center gap-2 md:gap-4">
+            Quick Access
+            <svg class="w-2 h-2 md:w-3 md:h-3 transition-transform group-hover:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path d="M19 9l-7 7-7-7" stroke-width="2"></path>
+            </svg>
+        </button>
+
+        <div id="shop-dropdown-menu" class="absolute top-full left-1/2 -translate-x-1/2 mt-3 w-48 md:w-64 bg-brandBlack/95 backdrop-blur-xl border border-brandPink/20 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform -translate-y-2 group-hover:translate-y-0 shadow-2xl overflow-hidden rounded-lg">
+            <div class="flex flex-col py-2 md:py-4">
+                <a href="#women" class="px-4 py-2 md:px-6 md:py-3 text-[8px] md:text-[9px] text-brandPink/80 hover:text-brandPink hover:bg-white/5 uppercase tracking-widest transition">Women's Collection</a>
+                <a href="#men" class="px-4 py-2 md:px-6 md:py-3 text-[8px] md:text-[9px] text-brandPink/80 hover:text-brandPink hover:bg-white/5 uppercase tracking-widest transition">Men's Collection</a>
+                <a href="#kids" class="px-4 py-2 md:px-6 md:py-3 text-[8px] md:text-[9px] text-brandPink/80 hover:text-brandPink hover:bg-white/5 uppercase tracking-widest transition">Kids' Collection</a>
+            </div>
+        </div>
+    </div>
+</div>
+</section>
 
     <main class="py-20">
         <section id="women" class="mb-24 px-4 md:px-12 relative">
