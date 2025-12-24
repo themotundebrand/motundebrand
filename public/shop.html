@@ -338,15 +338,39 @@
     }
     updateCartBadge();
 
-    // --- 4. Quantity Controller ---
-    function updateQty(productId, change) {
-        const qtyElement = document.getElementById(`qty-${productId}`);
-        if (!qtyElement) return;
-        let currentQty = parseInt(qtyElement.innerText);
-        currentQty += change;
-        if (currentQty < 1) currentQty = 1;
-        qtyElement.innerText = currentQty;
+   // --- 4. Quantity Controller (With Stock Awareness) ---
+function updateQty(productId, change) {
+    const qtyElement = document.getElementById(`qty-${productId}`);
+    const sizeSelect = document.querySelector(`select[data-id="${productId}"]`);
+    
+    if (!qtyElement || !sizeSelect) return;
+
+    // 1. Get current value
+    let currentQty = parseInt(qtyElement.innerText);
+    
+    // 2. Find the product in our local data
+    const product = currentProducts.find(p => p._id === productId);
+    if (!product) return;
+
+    // 3. Find the stock for the currently selected size
+    const selectedSize = sizeSelect.value;
+    const variant = product.variants.find(v => v.size === selectedSize);
+    const maxStock = variant ? variant.stock : 0;
+
+    // 4. Calculate new quantity
+    let newQty = currentQty + change;
+
+    // 5. Constraints
+    if (newQty < 1) {
+        newQty = 1;
+    } else if (newQty > maxStock) {
+        newQty = maxStock;
+        showNotification(`Only ${maxStock} items available in this size`);
     }
+
+    // 6. Update UI
+    qtyElement.innerText = newQty;
+}
 
     // --- 5. Add to Cart with Live Stock Check ---
     async function handleAddToCart(productId) {
@@ -540,10 +564,25 @@
         } catch (err) { console.error("Error loading products:", err); }
     }
 
-    function handleSizeChange(select, productId) {
-        const price = select.options[select.selectedIndex].getAttribute('data-price');
-        document.getElementById(`price-${productId}`).innerText = `₦${Number(price).toLocaleString()}`;
+   function handleSizeChange(select, productId) {
+    // Update Price Display
+    const selectedOption = select.options[select.selectedIndex];
+    const price = selectedOption.getAttribute('data-price');
+    const stock = parseInt(selectedOption.getAttribute('data-stock'));
+    
+    document.getElementById(`price-${productId}`).innerText = `₦${Number(price).toLocaleString()}`;
+    
+    // Validate current quantity against new size's stock
+    const qtyElement = document.getElementById(`qty-${productId}`);
+    let currentQty = parseInt(qtyElement.innerText);
+    
+    if (currentQty > stock) {
+        qtyElement.innerText = stock > 0 ? stock : 1;
+        if (stock === 0) {
+            showNotification("This size is currently out of stock");
+        }
     }
+}
 
     // --- 9. Slider Logic ---
     let currentSlide = 1;
