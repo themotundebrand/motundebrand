@@ -37,6 +37,10 @@
         .sidebar-open { transform: translateX(0); }
         .sidebar-closed { transform: translateX(-100%); }
 
+        /* Modal Animation */
+        #product-modal { transition: opacity 0.3s ease-out; }
+        .modal-content { transition: transform 0.3s ease-out; }
+
         /* Collection Grid */
         .collection-grid {
             display: grid;
@@ -95,17 +99,18 @@
     </nav>
 
     <div id="sidebar-overlay" onclick="toggleSidebar(false)" class="fixed inset-0 bg-black/60 z-[110] hidden backdrop-blur-sm"></div>
-    <aside id="sidebar" class="fixed top-0 left-0 h-full w-72 bg-brandBlack z-[120] sidebar-closed p-8 flex flex-col">
-        <button onclick="toggleSidebar(false)" class="self-end text-brandPink mb-12">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" stroke-width="2"></path></svg>
+    
+    <aside id="sidebar" class="fixed top-0 left-0 h-full w-64 bg-brandBlack z-[120] sidebar-closed p-6 flex flex-col">
+        <button onclick="toggleSidebar(false)" class="self-end text-brandPink mb-10">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" stroke-width="2"></path></svg>
         </button>
-        <div class="flex flex-col space-y-8 text-sm tracking-[0.3em] uppercase text-brandPink/80">
-            <a href="index.html" onclick="toggleSidebar(false)">Home</a>
-            <a href="#women" onclick="toggleSidebar(false)">Women's Collection</a>
-            <a href="#men" onclick="toggleSidebar(false)">Men's Collection</a>
-            <a href="#kids" onclick="toggleSidebar(false)">Kids Collection</a>
-            <div class="pt-8 border-t border-brandPink/10">
-                <a href="account.html" class="text-[10px] opacity-60">My Account</a>
+        <div class="flex flex-col space-y-6 text-[10px] tracking-[0.25em] uppercase text-brandPink/80">
+            <a href="index.html" onclick="toggleSidebar(false)" class="hover:text-brandPink transition-colors">Home</a>
+            <a href="#women" onclick="toggleSidebar(false)" class="hover:text-brandPink transition-colors">Women</a>
+            <a href="#men" onclick="toggleSidebar(false)" class="hover:text-brandPink transition-colors">Men</a>
+            <a href="#kids" onclick="toggleSidebar(false)" class="hover:text-brandPink transition-colors">Kids</a>
+            <div class="pt-6 border-t border-brandPink/10 mt-4">
+                <a href="account.html" class="text-[9px] tracking-widest opacity-50 hover:opacity-100 transition-opacity">My Account</a>
             </div>
         </div>
     </aside>
@@ -113,16 +118,12 @@
     <section class="pt-16 bg-brandBlack relative">
         <div class="relative h-[300px] md:h-[450px] overflow-hidden">
             <div id="slide-group-1" class="slide-fade slide-active flex flex-row h-full">
-                <div class="w-full md:w-1/2 h-full"><img src="https://i.imgur.com/bO3iAss.jpeg" class="w-full h-full object-cover"></div>
-                <div class="hidden md:block md:w-1/2 h-full"><img src="https://i.imgur.com/OttTbfO.jpeg" class="w-full h-full object-cover"></div>
+                <div class="w-full md:w-1/2 h-full"><img src="https://i.imgur.com/Wp0HCu8.jpeg" class="w-full h-full object-cover"></div>
+                <div class="hidden md:block md:w-1/2 h-full"><img src="https://i.imgur.com/Wp0HCu8.jpeg" class="w-full h-full object-cover"></div>
             </div>
             <div id="slide-group-2" class="slide-fade slide-hidden flex flex-row h-full">
                 <div class="w-full md:w-1/2 h-full"><img src="https://i.imgur.com/mfXDwZG.jpeg" class="w-full h-full object-cover"></div>
-                <div class="hidden md:block md:w-1/2 h-full"><img src="https://i.imgur.com/LWxBC3K.jpeg" class="w-full h-full object-cover"></div>
-            </div>
-            <div id="slide-group-2" class="slide-fade slide-hidden flex flex-row h-full">
-                <div class="w-full md:w-1/2 h-full"><img src="https://i.imgur.com/KQ2leiY.jpeg" class="w-full h-full object-cover"></div>
-                <div class="hidden md:block md:w-1/2 h-full"><img src="https://i.imgur.com/Wp0HCu8.jpeg" class="w-full h-full object-cover"></div>
+                <div class="hidden md:block md:w-1/2 h-full"><img src="https://i.imgur.com/BRl8AVs.jpeg" class="w-full h-full object-cover"></div>
             </div>
         </div>
 
@@ -184,8 +185,34 @@
         </section>
     </main>
 
+    <div id="product-modal" class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/90 opacity-0 invisible pointer-events-none">
+        <div class="modal-content bg-white w-full max-w-4xl relative flex flex-col md:flex-row scale-95 shadow-2xl">
+            <button onclick="closeModal()" class="absolute top-4 right-4 z-10 text-brandBlack hover:text-brandPink">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" stroke-width="2"/></svg>
+            </button>
+            <div class="w-full md:w-1/2 bg-gray-100 aspect-square">
+                <img id="modal-img" src="" class="w-full h-full object-cover">
+            </div>
+            <div class="w-full md:w-1/2 p-8 md:p-12 flex flex-col justify-center">
+                <p id="modal-cat" class="text-[10px] uppercase tracking-widest text-brandPinkDark mb-2">Collection</p>
+                <h2 id="modal-name" class="text-2xl font-light uppercase tracking-[0.2em] mb-4">Product Name</h2>
+                <p id="modal-price" class="text-xl font-medium mb-8">₦0</p>
+                
+                <div class="mb-8">
+                    <label class="block text-[10px] uppercase tracking-widest mb-3">Select Size</label>
+                    <div id="modal-sizes" class="flex flex-wrap gap-2">
+                        </div>
+                </div>
+
+                <button id="modal-add-btn" class="w-full bg-brandBlack text-brandPink py-4 uppercase tracking-[0.3em] text-xs hover:bg-brandPink hover:text-brandBlack transition-all">Add to Bag</button>
+            </div>
+        </div>
+    </div>
+
     <script>
-        // Sidebar Navigation Logic
+        let currentProducts = [];
+
+        // Sidebar logic
         function toggleSidebar(open) {
             const sidebar = document.getElementById('sidebar');
             const overlay = document.getElementById('sidebar-overlay');
@@ -196,6 +223,49 @@
                 sidebar.classList.replace('sidebar-open', 'sidebar-closed');
                 overlay.classList.add('hidden');
             }
+        }
+
+        // Modal Logic
+        function openModal(productId) {
+            const p = currentProducts.find(prod => prod._id === productId);
+            if (!p) return;
+
+            document.getElementById('modal-img').src = p.imageUrl;
+            document.getElementById('modal-name').innerText = p.name;
+            document.getElementById('modal-cat').innerText = p.category + " Collection";
+            
+            const variants = p.variants || [{size: 'Default', price: p.price || 0}];
+            document.getElementById('modal-price').innerText = `₦${Number(variants[0].price).toLocaleString()}`;
+            
+            const sizeContainer = document.getElementById('modal-sizes');
+            sizeContainer.innerHTML = variants.map((v, i) => `
+                <button onclick="updateModalPrice('${v.price}', this)" class="size-btn px-4 py-2 border ${i===0?'border-brandPink bg-brandPink/5':'border-gray-200'} text-[10px] uppercase transition-all">
+                    ${v.size}
+                </button>
+            `).join('');
+
+            document.getElementById('modal-add-btn').onclick = () => {
+                addToCart(p._id);
+                closeModal();
+            };
+
+            const modal = document.getElementById('product-modal');
+            modal.classList.remove('invisible', 'opacity-0', 'pointer-events-none');
+            modal.querySelector('.modal-content').classList.remove('scale-95');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('product-modal');
+            modal.classList.add('invisible', 'opacity-0', 'pointer-events-none');
+            modal.querySelector('.modal-content').classList.add('scale-95');
+            document.body.style.overflow = '';
+        }
+
+        function updateModalPrice(price, btn) {
+            document.getElementById('modal-price').innerText = `₦${Number(price).toLocaleString()}`;
+            document.querySelectorAll('.size-btn').forEach(b => b.classList.replace('border-brandPink', 'border-gray-200'));
+            btn.classList.replace('border-gray-200', 'border-brandPink');
         }
 
         // Hero Slider Logic
@@ -214,23 +284,7 @@
             }
         }, 5000);
 
-        // Quick Access Dropdown
-        const shopBtn = document.getElementById('shop-dropdown-btn');
-        const shopMenu = document.getElementById('shop-dropdown-menu');
-        shopBtn.onclick = (e) => {
-            e.stopPropagation();
-            shopMenu.classList.toggle('opacity-0');
-            shopMenu.classList.toggle('invisible');
-            shopMenu.classList.toggle('-translate-y-2');
-        };
-        window.onclick = () => shopMenu.classList.add('opacity-0', 'invisible', '-translate-y-2');
-
-        // Product Rendering Logic
-        function handleSizeChange(select, productId) {
-            const price = select.options[select.selectedIndex].getAttribute('data-price');
-            document.getElementById(`price-${productId}`).innerText = `₦${Number(price).toLocaleString()}`;
-        }
-
+        // Shopping Bag count
         let cartItems = 0;
         function addToCart(id) { 
             cartItems++;
@@ -238,22 +292,22 @@
             alert("Added to your collection."); 
         }
 
+        // Fetch and Render
         async function loadProducts() {
             try {
                 const response = await fetch('/api/products');
-                const products = await response.json();
+                currentProducts = await response.json();
 
                 const renderCard = (p) => {
                     const variants = p.variants || [{size: 'Default', price: p.price || 0}];
-                    const firstPrice = variants[0].price;
                     return `
                     <div class="product-card bg-white p-3 group">
-                        <div class="aspect-[4/5] overflow-hidden mb-4 bg-gray-50">
+                        <div onclick="openModal('${p._id}')" class="aspect-[4/5] overflow-hidden mb-4 bg-gray-50 cursor-pointer">
                             <img src="${p.imageUrl}" class="w-full h-full object-cover transition duration-700 group-hover:scale-110">
                         </div>
                         <div class="text-center">
                             <h3 class="uppercase font-bold text-[8px] tracking-widest mb-1 truncate">${p.name}</h3>
-                            <p id="price-${p._id}" class="text-brandPinkDark font-medium text-[10px] mb-3">₦${Number(firstPrice).toLocaleString()}</p>
+                            <p id="price-${p._id}" class="text-brandPinkDark font-medium text-[10px] mb-3">₦${Number(variants[0].price).toLocaleString()}</p>
                             <select onchange="handleSizeChange(this, '${p._id}')" class="size-select w-full border border-gray-100 text-[8px] uppercase py-1.5 px-2 mb-2 focus:outline-none">
                                 ${variants.map(v => `<option value="${v.size}" data-price="${v.price}">${v.size}</option>`).join('')}
                             </select>
@@ -263,7 +317,7 @@
                 };
 
                 const populateGrid = (cat, elementId) => {
-                    const filtered = products.filter(p => p.category?.toLowerCase() === cat).slice(0, 5);
+                    const filtered = currentProducts.filter(p => p.category?.toLowerCase() === cat).slice(0, 5);
                     document.getElementById(elementId).innerHTML = filtered.length > 0 ? filtered.map(renderCard).join('') : `<p class="text-[10px] uppercase text-gray-400 py-10">Vault Opening Soon...</p>`;
                 };
 
@@ -271,6 +325,11 @@
                 populateGrid('men', 'men-grid');
                 populateGrid('kids', 'kids-grid');
             } catch (err) { console.error("Error:", err); }
+        }
+
+        function handleSizeChange(select, productId) {
+            const price = select.options[select.selectedIndex].getAttribute('data-price');
+            document.getElementById(`price-${productId}`).innerText = `₦${Number(price).toLocaleString()}`;
         }
 
         loadProducts();
