@@ -14,7 +14,7 @@
                     colors: {
                         brandWhite: '#FFFFFF',
                         brandBlack: '#000000',
-                        brandMist: '#8AB6D4', // A refreshing blue-tint for mists
+                        brandMist: '#8AB6D4',
                         brandPinkDark: '#D48A96',
                         brandPinkLight: '#F7C8D0',
                     }
@@ -28,7 +28,7 @@
         .sidebar { transition: all 0.3s ease; }
         .nav-link:hover { background-color: #F7C8D0; color: #000; }
         .active-link { background-color: #F7C8D0; color: #000; }
-        .input-field { border: 1px solid #e5e7eb; padding: 10px; font-size: 12px; width: 100%; transition: border-color 0.2s; }
+        .input-field { border: 1px solid #e5e7eb; padding: 10px; font-size: 12px; width: 100%; transition: border-color 0.2s; background: white; }
         .input-field:focus { outline: none; border-color: #8AB6D4; }
         .mobile-overlay { background: rgba(0,0,0,0.5); display: none; }
         .mobile-overlay.active { display: block; }
@@ -111,6 +111,15 @@
                                 <input type="text" id="pName" placeholder="e.g. Vanilla Shimmer Mist" class="input-field" required>
                             </div>
 
+                            <div>
+                                <label class="text-[9px] uppercase font-bold text-gray-400 block mb-2">Product Type</label>
+                                <select id="pSubCategory" class="input-field" required>
+                                    <option value="" disabled selected>Select Type (Mist or Spray)</option>
+                                    <option value="Body Mist">Body Mist</option>
+                                    <option value="Body Spray">Body Spray</option>
+                                </select>
+                            </div>
+
                             <div class="border p-4 bg-gray-50 rounded-sm">
                                 <label class="text-[9px] uppercase font-bold text-brandMist block mb-4">Variants (Size, Price & Stock)</label>
                                 <div id="variantsContainer" class="space-y-3 mb-4"></div>
@@ -174,8 +183,6 @@
         const API_URL = '/api'; 
         let globalProducts = [];
         let confirmResolve;
-
-        // Note: Category is set to 'mist' for this page
         const PAGE_CATEGORY = 'mist';
 
         function showAlert(message, isError = false) {
@@ -251,7 +258,9 @@
                         <div class="aspect-square bg-gray-50 mb-3 overflow-hidden relative border border-gray-100">
                             <img src="${product.imageUrl}" alt="${product.name}" class="w-full h-full object-cover">
                         </div>
-                        <h4 class="text-[10px] lg:text-xs font-bold uppercase tracking-wider mb-2 truncate-2 h-8 leading-tight">${product.name}</h4>
+                        <h4 class="text-[10px] lg:text-xs font-bold uppercase tracking-wider mb-1 truncate-2 h-8 leading-tight">${product.name}</h4>
+                        <p class="text-[8px] font-bold text-brandMist uppercase mb-2 italic">${product.subCategory || 'Mist/Spray'}</p>
+                        
                         <div class="space-y-1 mb-3">
                             ${(product.variants || []).map(v => {
                                 const stockStatus = Number(v.stock) <= 0 ? 'text-red-500 font-bold' : 'text-gray-400';
@@ -276,6 +285,7 @@
             if (!product) return;
             document.getElementById('editProductId').value = product._id;
             document.getElementById('pName').value = product.name;
+            document.getElementById('pSubCategory').value = product.subCategory || ''; // UPDATED FOR TYPE
             document.getElementById('pDesc').value = product.description || '';
             document.getElementById('variantsContainer').innerHTML = '';
             if (product.variants && product.variants.length > 0) {
@@ -328,6 +338,7 @@
 
             const payload = {
                 name: document.getElementById('pName').value,
+                subCategory: document.getElementById('pSubCategory').value, // ADDED SUB-CATEGORY TO PAYLOAD
                 description: document.getElementById('pDesc').value,
                 category: PAGE_CATEGORY,
                 variants: variants,
