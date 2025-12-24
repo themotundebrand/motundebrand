@@ -76,7 +76,7 @@ router.post('/admin/login', async (req, res) => {
     } catch (e) { res.status(500).json({ error: "Login failed" }); }
 });
 
-// --- UPDATED PRODUCT CREATION (POST) ---
+// --- UPDATED PRODUCT CREATION (POST) WITH STOCK ---
 router.post('/admin/products', authenticateAdmin, async (req, res) => {
     try {
         if (!s3) throw new Error("Storage not configured");
@@ -95,15 +95,16 @@ router.post('/admin/products', authenticateAdmin, async (req, res) => {
             ContentType: contentType
         }).promise();
 
-        // Format Variants: Ensure prices are numbers
+        // Format Variants: Ensure prices and stock are numbers
         const formattedVariants = variants.map(v => ({
             size: v.size,
-            price: parseFloat(v.price)
+            price: parseFloat(v.price),
+            stock: parseInt(v.stock) || 0 // New: Stock added as integer
         }));
 
         const product = { 
             name, 
-            variants: formattedVariants, // Store as array
+            variants: formattedVariants,
             description, 
             category, 
             imageKey: uploadKey,
@@ -111,13 +112,13 @@ router.post('/admin/products', authenticateAdmin, async (req, res) => {
         };
 
         await db.collection("products").insertOne(product);
-        res.status(201).json({ message: "Product added with variants" });
+        res.status(201).json({ message: "Product added with variants and stock" });
     } catch (e) { 
         res.status(500).json({ error: e.message }); 
     }
 });
 
-// --- UPDATED PRODUCT UPDATE (PUT) ---
+// --- UPDATED PRODUCT UPDATE (PUT) WITH STOCK ---
 router.put('/admin/products/:id', authenticateAdmin, async (req, res) => {
     try {
         if (!s3) throw new Error("Storage not configured");
@@ -150,10 +151,11 @@ router.put('/admin/products/:id', authenticateAdmin, async (req, res) => {
             }
         }
 
-        // Format Variants
+        // Format Variants with Stock
         const formattedVariants = variants.map(v => ({
             size: v.size,
-            price: parseFloat(v.price)
+            price: parseFloat(v.price),
+            stock: parseInt(v.stock) || 0 // New: Stock updated here
         }));
 
         const updateDoc = {
@@ -172,7 +174,7 @@ router.put('/admin/products/:id', authenticateAdmin, async (req, res) => {
             updateDoc
         );
 
-        res.json({ message: "Product updated successfully" });
+        res.json({ message: "Product and stock levels updated successfully" });
     } catch (e) {
         res.status(500).json({ error: e.message });
     }

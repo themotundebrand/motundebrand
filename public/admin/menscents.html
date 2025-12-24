@@ -104,8 +104,9 @@
                             </div>
 
                             <div class="border p-4 bg-gray-50 rounded-sm">
-                                <label class="text-[9px] uppercase font-bold text-gray-600 block mb-4">Price Variants (Size & Amount)</label>
-                                <div id="variantsContainer" class="space-y-3 mb-4"></div>
+                                <label class="text-[9px] uppercase font-bold text-gray-600 block mb-4">Price & Stock Variants</label>
+                                <div id="variantsContainer" class="space-y-3 mb-4">
+                                    </div>
                                 <button type="button" onclick="addVariantRow()" class="text-[9px] uppercase font-bold bg-white border border-black text-black px-3 py-2 hover:bg-black hover:text-white transition w-full">
                                     <i class="fa-solid fa-plus mr-1"></i> Add Another Size
                                 </button>
@@ -177,7 +178,6 @@
         let globalProducts = [];
         let confirmResolve;
 
-        // --- CUSTOM MODAL LOGIC ---
         function showAlert(message, isError = false) {
             const modal = document.getElementById('customAlert');
             const msgPara = document.getElementById('alertMessage');
@@ -207,18 +207,15 @@
             window.location.href = 'tmbadmin-login.html';
         }
 
-        // --- VARIANT MANAGEMENT ---
-        function addVariantRow(size = '', price = '') {
+        // --- UPDATED VARIANT MANAGEMENT WITH STOCK ---
+        function addVariantRow(size = '', price = '', stock = '0') {
             const container = document.getElementById('variantsContainer');
             const rowId = 'row-' + Math.random().toString(36).substr(2, 9);
             const html = `
                 <div class="flex gap-2 variant-row items-center" id="${rowId}">
-                    <div class="flex-1">
-                        <input type="text" placeholder="Size" class="input-field v-size" value="${size}" required>
-                    </div>
-                    <div class="flex-1">
-                        <input type="number" placeholder="Price (₦)" class="input-field v-price" value="${price}" required>
-                    </div>
+                    <input type="text" placeholder="Size" class="input-field v-size flex-[2]" value="${size}" required>
+                    <input type="number" placeholder="Price" class="input-field v-price flex-[2]" value="${price}" required>
+                    <input type="number" placeholder="Stock" class="input-field v-stock flex-[1]" value="${stock}" required>
                     <button type="button" onclick="removeVariantRow('${rowId}')" class="text-red-500 hover:text-red-700 p-2">
                         <i class="fa-solid fa-trash-can text-xs"></i>
                     </button>
@@ -232,7 +229,7 @@
             if(rows.length > 1) {
                 document.getElementById(id).remove();
             } else {
-                showAlert("A product must have at least one size variant.", true);
+                showAlert("A product must have at least one variant.", true);
             }
         }
 
@@ -253,18 +250,30 @@
                     return;
                 }
 
-                grid.innerHTML = globalProducts.map(product => `
+                grid.innerHTML = globalProducts.map(product => {
+                    const totalStock = (product.variants || []).reduce((acc, curr) => acc + Number(curr.stock || 0), 0);
+                    const stockStatus = totalStock > 10 ? 'bg-green-100 text-green-700' : (totalStock > 0 ? 'bg-orange-100 text-orange-700' : 'bg-red-100 text-red-700');
+                    const stockText = totalStock > 10 ? 'In Stock' : (totalStock > 0 ? 'Low Stock' : 'Out of Stock');
+
+                    return `
                     <div class="bg-white border p-4 group">
                         <div class="aspect-square bg-gray-50 mb-4 overflow-hidden relative">
                             <img src="${product.imageUrl}" alt="${product.name}" class="w-full h-full object-cover">
+                            <span class="absolute top-2 right-2 text-[8px] px-2 py-1 font-bold uppercase ${stockStatus}">
+                                ${stockText} (${totalStock})
+                            </span>
                         </div>
                         <h4 class="text-xs font-bold uppercase tracking-wider mb-3">${product.name}</h4>
                         
                         <div class="space-y-1 mb-4">
+                            <div class="flex justify-between text-[8px] text-gray-400 uppercase font-bold mb-1">
+                                <span>Size</span>
+                                <span>Price / Qty</span>
+                            </div>
                             ${(product.variants || []).map(v => `
                                 <div class="flex justify-between text-[10px] border-b border-gray-50 pb-1">
                                     <span class="text-gray-500">${v.size}</span>
-                                    <span class="font-bold">₦${Number(v.price).toLocaleString()}</span>
+                                    <span class="font-bold">₦${Number(v.price).toLocaleString()} <span class="text-gray-400 ml-1">(${v.stock || 0})</span></span>
                                 </div>
                             `).join('')}
                         </div>
@@ -276,7 +285,7 @@
                             <button onclick="deleteProduct('${product._id}')" class="text-[8px] uppercase tracking-widest text-red-500 hover:text-red-700 font-bold transition">Delete</button>
                         </div>
                     </div>
-                `).join('');
+                `}).join('');
             } catch (err) { console.error(err); }
         }
 
@@ -290,9 +299,9 @@
             
             document.getElementById('variantsContainer').innerHTML = '';
             if (product.variants && product.variants.length > 0) {
-                product.variants.forEach(v => addVariantRow(v.size, v.price));
+                product.variants.forEach(v => addVariantRow(v.size, v.price, v.stock));
             } else {
-                addVariantRow(product.size, product.price);
+                addVariantRow(product.size, product.price, 0);
             }
             
             document.getElementById('formTitle').innerText = "Edit Fragrance: " + product.name;
@@ -325,7 +334,8 @@
             const rows = document.querySelectorAll('.variant-row');
             const variants = Array.from(rows).map(row => ({
                 size: row.querySelector('.v-size').value,
-                price: row.querySelector('.v-price').value
+                price: row.querySelector('.v-price').value,
+                stock: row.querySelector('.v-stock').value
             }));
 
             submitBtn.disabled = true;
@@ -365,7 +375,7 @@
                     showAlert(editId ? "Product successfully updated." : "New fragrance added to collection.");
                     setTimeout(() => location.reload(), 1500);
                 } else {
-                    showAlert("Operation failed. Please check your admin session.", true);
+                    showAlert("Operation failed. Session may have expired.", true);
                 }
             } catch (err) { showAlert("Server error occurred.", true); }
             finally { submitBtn.disabled = false; submitBtn.innerText = "Update Men's Collection"; }

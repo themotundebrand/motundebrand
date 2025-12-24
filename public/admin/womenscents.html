@@ -82,11 +82,11 @@
             </div>
         </aside>
 
-        <main class="flex-1 min-h-screen p-6 lg:p-12">
-            <div class="max-w-6xl mx-auto">
+        <main class="flex-1 min-h-screen p-6 lg:py-12 lg:pl-8 lg:pr-12">
+            <div class="max-w-full lg:max-w-[1400px]">
                 <div class="mb-12">
                     <h2 class="text-2xl font-light tracking-tight mb-1">Women Scents Collection</h2>
-                    <p class="text-[9px] uppercase tracking-[0.3em] text-brandPinkDark font-bold">Inventory Management</p>
+                    <p class="text-[9px] uppercase tracking-[0.3em] text-brandPinkDark font-bold">Inventory & Stock Control</p>
                 </div>
 
                 <div id="formContainer" class="bg-white border p-8 mb-12">
@@ -104,10 +104,10 @@
                             </div>
 
                             <div class="border p-4 bg-gray-50 rounded-sm">
-                                <label class="text-[9px] uppercase font-bold text-brandPinkDark block mb-4">Price Variants (Size & Amount)</label>
+                                <label class="text-[9px] uppercase font-bold text-brandPinkDark block mb-4">Variants (Size, Price & Stock)</label>
                                 <div id="variantsContainer" class="space-y-3 mb-4"></div>
                                 <button type="button" onclick="addVariantRow()" class="text-[9px] uppercase font-bold bg-white border border-brandPinkDark text-brandPinkDark px-3 py-2 hover:bg-brandPinkDark hover:text-white transition w-full">
-                                    <i class="fa-solid fa-plus mr-1"></i> Add Another Size
+                                    <i class="fa-solid fa-plus mr-1"></i> Add Another Variant
                                 </button>
                             </div>
 
@@ -132,7 +132,7 @@
                 </div>
 
                 <h3 class="text-[10px] uppercase tracking-[0.2em] font-bold mb-6">Current Inventory</h3>
-                <div id="inventoryGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div id="inventoryGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                     <p class="text-[10px] uppercase tracking-widest text-gray-400">Loading collection...</p>
                 </div>
             </div>
@@ -177,7 +177,6 @@
         let globalProducts = [];
         let confirmResolve;
 
-        // --- MODAL SYSTEM FUNCTIONS ---
         function showAlert(message, isError = false) {
             const modal = document.getElementById('customAlert');
             const msgPara = document.getElementById('alertMessage');
@@ -207,21 +206,27 @@
             window.location.href = 'tmbadmin-login.html';
         }
 
-        // --- VARIANT ROW MANAGEMENT ---
-        function addVariantRow(size = '', price = '') {
+        function addVariantRow(size = '', price = '', stock = '') {
             const container = document.getElementById('variantsContainer');
             const rowId = Date.now() + Math.random();
             const html = `
-                <div class="flex gap-2 variant-row items-center" id="row-${rowId}">
-                    <div class="flex-1">
-                        <input type="text" placeholder="Size (e.g. 100ml)" class="input-field v-size" value="${size}" required>
+                <div class="variant-row border-b border-gray-100 pb-3" id="row-${rowId}">
+                    <div class="grid grid-cols-12 gap-2 mb-2">
+                        <div class="col-span-4">
+                            <input type="text" placeholder="Size" class="input-field v-size" value="${size}" required>
+                        </div>
+                        <div class="col-span-5">
+                            <input type="number" placeholder="Price (₦)" class="input-field v-price" value="${price}" required>
+                        </div>
+                        <div class="col-span-3">
+                            <input type="number" placeholder="Stock" class="input-field v-stock" value="${stock}" required>
+                        </div>
                     </div>
-                    <div class="flex-1">
-                        <input type="number" placeholder="Price (₦)" class="input-field v-price" value="${price}" required>
+                    <div class="flex justify-end">
+                        <button type="button" onclick="removeVariantRow('row-${rowId}')" class="text-[8px] uppercase font-bold text-red-400 hover:text-red-600 transition flex items-center">
+                            <i class="fa-solid fa-trash-can mr-1"></i> Remove Variant
+                        </button>
                     </div>
-                    <button type="button" onclick="removeVariantRow('row-${rowId}')" class="text-red-400 hover:text-red-600 p-2 transition">
-                        <i class="fa-solid fa-trash-can"></i>
-                    </button>
                 </div>
             `;
             container.insertAdjacentHTML('beforeend', html);
@@ -232,18 +237,13 @@
             if(rows.length > 1) {
                 document.getElementById(id).remove();
             } else {
-                showAlert("At least one size variant is required.", true);
+                showAlert("At least one variant is required.", true);
             }
         }
 
         window.onload = () => { 
             addVariantRow(); 
             loadProducts(); 
-        };
-
-        document.getElementById('imageUpload').onchange = function() {
-            const name = this.files[0]?.name || "Click to upload image";
-            document.getElementById('fileNameDisplay').innerText = name;
         };
 
         async function loadProducts() {
@@ -265,13 +265,21 @@
                         </div>
                         <h4 class="text-xs font-bold uppercase tracking-wider mb-3">${product.name}</h4>
                         
-                        <div class="space-y-1 mb-4">
-                            ${(product.variants || []).map(v => `
-                                <div class="flex justify-between text-[10px] border-b border-gray-50 pb-1">
-                                    <span class="font-medium text-gray-500">${v.size}</span>
-                                    <span class="font-bold">₦${Number(v.price).toLocaleString()}</span>
+                        <div class="space-y-2 mb-4">
+                            ${(product.variants || []).map(v => {
+                                const stockStatus = Number(v.stock) <= 0 ? 'text-red-500 font-bold' : 'text-gray-400';
+                                return `
+                                <div class="text-[10px] border-b border-gray-50 pb-1">
+                                    <div class="flex justify-between mb-0.5">
+                                        <span class="font-medium text-gray-500 uppercase">${v.size}</span>
+                                        <span class="font-bold">₦${Number(v.price).toLocaleString()}</span>
+                                    </div>
+                                    <div class="text-right">
+                                        <span class="${stockStatus}">${v.stock || 0} IN STOCK</span>
+                                    </div>
                                 </div>
-                            `).join('')}
+                                `;
+                            }).join('')}
                         </div>
 
                         <p class="text-[10px] text-gray-400 mb-4 line-clamp-2 italic">${product.description || 'Premium Fragrance'}</p>
@@ -295,9 +303,9 @@
             
             document.getElementById('variantsContainer').innerHTML = '';
             if (product.variants && product.variants.length > 0) {
-                product.variants.forEach(v => addVariantRow(v.size, v.price));
+                product.variants.forEach(v => addVariantRow(v.size, v.price, v.stock));
             } else {
-                addVariantRow(product.size, product.price);
+                addVariantRow(product.size, product.price, 0);
             }
             
             document.getElementById('formTitle').innerText = "Edit Fragrance: " + product.name;
@@ -330,7 +338,8 @@
             const rows = document.querySelectorAll('.variant-row');
             const variants = Array.from(rows).map(row => ({
                 size: row.querySelector('.v-size').value,
-                price: row.querySelector('.v-price').value
+                price: row.querySelector('.v-price').value,
+                stock: row.querySelector('.v-stock').value
             }));
 
             submitBtn.disabled = true;
@@ -377,10 +386,19 @@
             finally { submitBtn.disabled = false; submitBtn.innerText = "Update Collection"; }
         };
 
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('-translate-x-full');
+            document.getElementById('overlay').classList.toggle('active');
+        }
+        
+        document.getElementById('imageUpload').onchange = function() {
+            const name = this.files[0]?.name || "Click to upload image";
+            document.getElementById('fileNameDisplay').innerText = name;
+        };
+
         async function deleteProduct(id) {
             const confirmed = await showConfirm("Permanently remove this scent from inventory?");
             if(!confirmed) return;
-
             const token = localStorage.getItem('tmb_admin_token');
             try {
                 const res = await fetch(`${API_URL}/admin/products/${id}`, {
@@ -390,15 +408,8 @@
                 if(res.ok) {
                     showAlert("Deleted successfully.");
                     setTimeout(() => location.reload(), 1000);
-                } else {
-                    showAlert("Failed to delete.", true);
                 }
             } catch (err) { showAlert("Error deleting.", true); }
-        }
-
-        function toggleSidebar() {
-            document.getElementById('sidebar').classList.toggle('-translate-x-full');
-            document.getElementById('overlay').classList.toggle('active');
         }
     </script>
 </body>
