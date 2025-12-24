@@ -40,15 +40,23 @@ async function getDb() {
     return cachedDb;
 }
 
-// --- AUTH MIDDLEWARE ---
 const authenticateAdmin = (req, res, next) => {
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1];
-    if (!token) return res.status(401).json({ error: "Unauthorized" });
+    
+    if (!token) return res.status(401).json({ error: "Unauthorized: No token provided" });
 
-    jwt.verify(token, JWT_SECRET, (err, user) => {
-        if (err || !user.isAdmin) return res.status(403).json({ error: "Forbidden" });
-        req.user = user;
+    jwt.verify(token, JWT_SECRET, (err, decoded) => {
+        if (err) {
+            console.error("JWT Verify Error:", err.message);
+            return res.status(403).json({ error: "Forbidden: Invalid Token" });
+        }
+        
+        if (!decoded.isAdmin) {
+            return res.status(403).json({ error: "Forbidden: Not an Admin" });
+        }
+
+        req.user = decoded;
         next();
     });
 };
@@ -80,10 +88,17 @@ router.post('/admin/login', async (req, res) => {
             return res.status(401).json({ error: "Invalid credentials" });
         }
 
-        const token = jwt.sign({ id: admin._id, isAdmin: true }, JWT_SECRET, { expiresIn: '24h' });
+        // CHANGE: Explicitly use .toString() for the ID
+        const token = jwt.sign(
+            { id: admin._id.toString(), isAdmin: true }, 
+            JWT_SECRET, 
+            { expiresIn: '24h' }
+        );
+        
         res.json({ token, isAdmin: true });
     } catch (e) { res.status(500).json({ error: "Login failed" }); }
 });
+
 
 // NEW: Session Refresh Route
 // Frontend calls this periodically to get a fresh 24h token if the current one is still valid

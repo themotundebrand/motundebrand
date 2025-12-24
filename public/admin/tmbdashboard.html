@@ -26,7 +26,7 @@
         body { font-family: 'Inter', sans-serif; background-color: #FBFBFB; }
         .sidebar { transition: all 0.3s ease; }
         .nav-link:hover { background-color: #F7C8D0; color: #000; }
-        .stat-card { transition: transform 0.2s ease, border-color 0.2s ease; }
+        .stat-card { transition: transform 0.2s ease, border-color 0.2s ease; min-height: 180px; display: flex; flex-direction: column; justify-content: center; }
         .stat-card:hover { transform: translateY(-2px); border-color: #F7C8D0; }
         .mobile-overlay { background: rgba(0,0,0,0.5); display: none; }
         .mobile-overlay.active { display: block; }
@@ -88,27 +88,27 @@
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
                     
-                    <a href="womenstotalcents.html" class="stat-card bg-white p-8 border shadow-sm flex flex-col items-center text-center group">
+                    <a href="womenscents.html" class="stat-card bg-white p-8 border shadow-sm flex flex-col items-center text-center group">
                         <span class="text-[9px] uppercase tracking-widest text-gray-400 mb-4 font-bold group-hover:text-brandPinkDark">Women Collection</span>
-                        <span class="text-3xl font-light mb-2">24</span>
+                        <span id="women-count" class="text-3xl font-light mb-2">...</span>
                         <span class="text-[8px] uppercase tracking-tighter text-brandPinkDark font-bold">Manage Scents <i class="fa-solid fa-arrow-right ml-1"></i></span>
                     </a>
 
-                    <a href="menstotalcents.html" class="stat-card bg-white p-8 border shadow-sm flex flex-col items-center text-center group">
+                    <a href="menscents.html" class="stat-card bg-white p-8 border shadow-sm flex flex-col items-center text-center group">
                         <span class="text-[9px] uppercase tracking-widest text-gray-400 mb-4 font-bold group-hover:text-brandBlack">Men Collection</span>
-                        <span class="text-3xl font-light mb-2">18</span>
-                        <span class="text-[8px] uppercase tracking-tighter text-gray-400 font-bold font-bold">Manage Scents <i class="fa-solid fa-arrow-right ml-1"></i></span>
+                        <span id="men-count" class="text-3xl font-light mb-2">...</span>
+                        <span class="text-[8px] uppercase tracking-tighter text-gray-400 font-bold">Manage Scents <i class="fa-solid fa-arrow-right ml-1"></i></span>
                     </a>
 
                     <a href="orders.html" class="stat-card bg-white p-8 border shadow-sm flex flex-col items-center text-center group">
                         <span class="text-[9px] uppercase tracking-widest text-gray-400 mb-4 font-bold">Pending Orders</span>
-                        <span class="text-3xl font-light text-brandPinkDark mb-2">12</span>
+                        <span id="pending-orders" class="text-3xl font-light text-brandPinkDark mb-2">...</span>
                         <span class="text-[8px] uppercase tracking-tighter text-gray-400 font-bold">View Queue <i class="fa-solid fa-arrow-right ml-1"></i></span>
                     </a>
 
                     <a href="analytics.html" class="stat-card bg-white p-8 border shadow-sm flex flex-col items-center text-center group">
-                        <span class="text-[9px] uppercase tracking-widest text-gray-400 mb-4 font-bold">Revenue (MTD)</span>
-                        <span class="text-3xl font-light mb-2">₦ 450k</span>
+                        <span class="text-[9px] uppercase tracking-widest text-gray-400 mb-4 font-bold">Total Sales</span>
+                        <span id="revenue-mtd" class="text-3xl font-light mb-2">...</span>
                         <span class="text-[8px] uppercase tracking-tighter text-gray-400 font-bold">Analytics <i class="fa-solid fa-arrow-right ml-1"></i></span>
                     </a>
 
@@ -130,64 +130,95 @@
     </div>
 
     <script>
-   // Configuration
-const INACTIVITY_LIMIT = 30 * 60 * 1000; // 30 Minutes in milliseconds
-const SESSION_REFRESH_INTERVAL = 5 * 60 * 1000; // Check every 5 minutes
+        const API_URL = '/api'; 
+        const INACTIVITY_LIMIT = 30 * 60 * 1000; 
 
-function logout() {
-    localStorage.removeItem('tmb_admin_token');
-    localStorage.removeItem('tmb_last_active');
-    window.location.href = 'tmbadmin-login.html';
-}
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('-translate-x-full');
+            document.getElementById('overlay').classList.toggle('active');
+        }
 
-function updateActivity() {
-    // Update the timestamp whenever the user interacts with the page
-    localStorage.setItem('tmb_last_active', Date.now().toString());
-}
+        function logout() {
+            localStorage.removeItem('tmb_admin_token');
+            localStorage.removeItem('tmb_last_active');
+            window.location.href = 'tmbadmin-login.html';
+        }
 
-function checkSession() {
-    const token = localStorage.getItem('tmb_admin_token');
-    const lastActive = localStorage.getItem('tmb_last_active');
-    const now = Date.now();
+        function updateActivity() {
+            localStorage.setItem('tmb_last_active', Date.now().toString());
+        }
 
-    // 1. If no token, boot to login
-    if (!token) {
-        window.location.href = 'tmbadmin-login.html';
-        return;
-    }
+        async function fetchDashboardStats() {
+            try {
+                // Fetch Products for Inventory Counts
+                const pRes = await fetch(`${API_URL}/products`);
+                const products = await pRes.json();
+                
+                const womenCount = products.filter(p => p.category === 'women').length;
+                const menCount = products.filter(p => p.category === 'men').length;
+                
+                document.getElementById('women-count').innerText = womenCount;
+                document.getElementById('men-count').innerText = menCount;
 
-    // 2. Inactivity Check
-    if (lastActive && (now - parseInt(lastActive) > INACTIVITY_LIMIT)) {
-        alert("Session expired due to inactivity.");
-        logout();
-        return;
-    }
+                // Fetch Orders for Pending & Revenue
+                // Assumes your API has an /admin/orders endpoint
+                const oRes = await fetch(`${API_URL}/admin/orders`, {
+                    headers: { 'Authorization': `Bearer ${localStorage.getItem('tmb_admin_token')}` }
+                });
+                
+                if (oRes.ok) {
+                    const orders = await oRes.json();
+                    
+                    const pending = orders.filter(o => o.status === 'pending').length;
+                    const totalRevenue = orders
+                        .filter(o => o.status === 'completed' || o.status === 'paid')
+                        .reduce((sum, o) => sum + (o.totalPrice || 0), 0);
 
-    // 3. (Optional) You could add a fetch call here to /api/verify 
-    // to ensure the JWT hasn't been revoked on the server.
-}
+                    document.getElementById('pending-orders').innerText = pending;
+                    document.getElementById('revenue-mtd').innerText = `₦ ${(totalRevenue / 1000).toFixed(0)}k`;
+                }
+            } catch (err) {
+                console.error("Dashboard Sync Error:", err);
+                // Set fallback values if server fails
+                ['women-count', 'men-count', 'pending-orders', 'revenue-mtd'].forEach(id => {
+                    const el = document.getElementById(id);
+                    if(el.innerText === '...') el.innerText = '0';
+                });
+            }
+        }
 
-window.onload = () => {
-    // Initial Security Check
-    checkSession();
-    updateActivity();
+        function checkSession() {
+            const token = localStorage.getItem('tmb_admin_token');
+            const lastActive = localStorage.getItem('tmb_last_active');
+            const now = Date.now();
 
-    // Set the display date
-    const dateEl = document.getElementById('current-date');
-    if(dateEl) {
-        dateEl.innerText = new Date().toLocaleDateString('en-US', {
-            weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
-        });
-    }
+            if (!token) { logout(); return; }
 
-    // Listen for user activity to reset the timer
-    ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart'].forEach(name => {
-        document.addEventListener(name, updateActivity, true);
-    });
+            if (lastActive && (now - parseInt(lastActive) > INACTIVITY_LIMIT)) {
+                alert("Session expired due to inactivity.");
+                logout();
+                return;
+            }
+        }
 
-    // Run a background check every 5 minutes
-    setInterval(checkSession, SESSION_REFRESH_INTERVAL);
-};
+        window.onload = () => {
+            checkSession();
+            updateActivity();
+            fetchDashboardStats();
+
+            const dateEl = document.getElementById('current-date');
+            if(dateEl) {
+                dateEl.innerText = new Date().toLocaleDateString('en-US', {
+                    weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+                });
+            }
+
+            ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart'].forEach(name => {
+                document.addEventListener(name, updateActivity, true);
+            });
+
+            setInterval(checkSession, 5 * 60 * 1000);
+        };
     </script>
 </body>
 </html>
