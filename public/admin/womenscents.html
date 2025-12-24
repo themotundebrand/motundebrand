@@ -102,16 +102,16 @@
                                 <label class="text-[9px] uppercase font-bold text-gray-400 block mb-2">Perfume Name</label>
                                 <input type="text" id="pName" placeholder="e.g. Midnight Rose" class="input-field" required>
                             </div>
-                            <div class="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label class="text-[9px] uppercase font-bold text-gray-400 block mb-2">Bottle Size</label>
-                                    <input type="text" id="pSize" placeholder="e.g. 100ml" class="input-field" required>
-                                </div>
-                                <div>
-                                    <label class="text-[9px] uppercase font-bold text-gray-400 block mb-2">Price (₦)</label>
-                                    <input type="number" id="pPrice" placeholder="45000" class="input-field" required>
-                                </div>
+
+                            <div class="border p-4 bg-gray-50 rounded-sm">
+                                <label class="text-[9px] uppercase font-bold text-brandPinkDark block mb-4">Price Variants (Size & Amount)</label>
+                                <div id="variantsContainer" class="space-y-3 mb-4">
+                                    </div>
+                                <button type="button" onclick="addVariantRow()" class="text-[9px] uppercase font-bold bg-white border border-brandPinkDark text-brandPinkDark px-3 py-2 hover:bg-brandPinkDark hover:text-white transition w-full">
+                                    <i class="fa-solid fa-plus mr-1"></i> Add Another Size
+                                </button>
                             </div>
+
                             <div>
                                 <label class="text-[9px] uppercase font-bold text-gray-400 block mb-2">Scent Description</label>
                                 <textarea id="pDesc" rows="3" placeholder="Describe the notes..." class="input-field"></textarea>
@@ -119,11 +119,11 @@
                         </div>
 
                         <div class="space-y-4">
-                            <label class="text-[9px] uppercase font-bold text-gray-400 block mb-2">Product Image (Optional if editing)</label>
-                            <div class="border-2 border-dashed border-gray-200 h-48 flex flex-col items-center justify-center relative hover:border-brandPinkDark transition-colors">
+                            <label class="text-[9px] uppercase font-bold text-gray-400 block mb-2">Product Image</label>
+                            <div class="border-2 border-dashed border-gray-200 h-64 flex flex-col items-center justify-center relative hover:border-brandPinkDark transition-colors">
                                 <input type="file" class="absolute inset-0 opacity-0 cursor-pointer" id="imageUpload" accept="image/*">
                                 <i class="fa-solid fa-cloud-arrow-up text-2xl text-gray-300 mb-2"></i>
-                                <p id="fileNameDisplay" class="text-[10px] text-gray-400 uppercase tracking-widest text-center px-4">Click to upload new image</p>
+                                <p id="fileNameDisplay" class="text-[10px] text-gray-400 uppercase tracking-widest text-center px-4">Click to upload image</p>
                             </div>
                             <button type="submit" id="submitBtn" class="w-full bg-brandBlack text-white text-[10px] uppercase tracking-[0.2em] py-4 font-bold hover:bg-brandPinkDark transition-colors">
                                 Update Collection
@@ -142,14 +142,52 @@
 
     <script>
         const API_URL = '/api'; 
-        let globalProducts = []; // To store data for easy editing
+        let globalProducts = [];
 
         function logout() {
             localStorage.removeItem('tmb_admin_token');
             window.location.href = 'tmbadmin-login.html';
         }
 
-        window.onload = () => { loadProducts(); };
+        // --- VARIANT ROW MANAGEMENT ---
+        function addVariantRow(size = '', price = '') {
+            const container = document.getElementById('variantsContainer');
+            const rowId = Date.now() + Math.random();
+            const html = `
+                <div class="flex gap-2 variant-row items-center" id="row-${rowId}">
+                    <div class="flex-1">
+                        <input type="text" placeholder="Size (e.g. 100ml)" class="input-field v-size" value="${size}" required>
+                    </div>
+                    <div class="flex-1">
+                        <input type="number" placeholder="Price (₦)" class="input-field v-price" value="${price}" required>
+                    </div>
+                    <button type="button" onclick="removeVariantRow('row-${rowId}')" class="text-red-400 hover:text-red-600 p-2 transition">
+                        <i class="fa-solid fa-trash-can"></i>
+                    </button>
+                </div>
+            `;
+            container.insertAdjacentHTML('beforeend', html);
+        }
+
+        function removeVariantRow(id) {
+            const rows = document.querySelectorAll('.variant-row');
+            if(rows.length > 1) {
+                document.getElementById(id).remove();
+            } else {
+                alert("At least one size variant is required.");
+            }
+        }
+
+        window.onload = () => { 
+            addVariantRow(); // Add initial blank row
+            loadProducts(); 
+        };
+
+        // --- FILE DISPLAY ---
+        document.getElementById('imageUpload').onchange = function() {
+            const name = this.files[0]?.name || "Click to upload image";
+            document.getElementById('fileNameDisplay').innerText = name;
+        };
 
         async function loadProducts() {
             try {
@@ -168,11 +206,19 @@
                         <div class="aspect-square bg-gray-50 mb-4 overflow-hidden relative">
                             <img src="${product.imageUrl}" alt="${product.name}" class="w-full h-full object-cover">
                         </div>
-                        <div class="flex justify-between items-start mb-2">
-                            <h4 class="text-xs font-bold uppercase tracking-wider">${product.name}</h4>
-                            <span class="text-xs font-light">₦ ${Number(product.price).toLocaleString()}</span>
+                        <h4 class="text-xs font-bold uppercase tracking-wider mb-3">${product.name}</h4>
+                        
+                        <div class="space-y-1 mb-4">
+                            ${(product.variants || []).map(v => `
+                                <div class="flex justify-between text-[10px] border-b border-gray-50 pb-1">
+                                    <span class="font-medium text-gray-500">${v.size}</span>
+                                    <span class="font-bold">₦${Number(v.price).toLocaleString()}</span>
+                                </div>
+                            `).join('')}
                         </div>
-                        <p class="text-[10px] text-gray-500 mb-4 line-clamp-2 italic">${product.description || 'Premium Fragrance'}</p>
+
+                        <p class="text-[10px] text-gray-400 mb-4 line-clamp-2 italic">${product.description || 'Premium Fragrance'}</p>
+                        
                         <div class="flex justify-between items-center border-t pt-4">
                             <button onclick="editProduct('${product._id}')" class="text-[8px] uppercase tracking-widest text-brandPinkDark hover:underline font-bold">Edit Details</button>
                             <button onclick="deleteProduct('${product._id}')" class="text-[8px] uppercase tracking-widest text-red-400 hover:text-red-700 font-bold transition">Delete Item</button>
@@ -182,23 +228,26 @@
             } catch (err) { console.error(err); }
         }
 
-        // --- EDIT LOGIC ---
         function editProduct(id) {
             const product = globalProducts.find(p => p._id === id);
             if (!product) return;
 
-            // Fill Form
             document.getElementById('editProductId').value = product._id;
             document.getElementById('pName').value = product.name;
-            document.getElementById('pPrice').value = product.price;
-            document.getElementById('pSize').value = product.size;
             document.getElementById('pDesc').value = product.description || '';
             
-            // Change UI
+            // Rebuild Variant Rows
+            document.getElementById('variantsContainer').innerHTML = '';
+            if (product.variants && product.variants.length > 0) {
+                product.variants.forEach(v => addVariantRow(v.size, v.price));
+            } else {
+                addVariantRow(product.size, product.price); // Fallback for old data
+            }
+            
             document.getElementById('formTitle').innerText = "Edit Fragrance: " + product.name;
             document.getElementById('submitBtn').innerText = "Save Changes";
             document.getElementById('cancelEdit').classList.remove('hidden');
-            document.getElementById('imageUpload').required = false; // Optional when editing
+            document.getElementById('imageUpload').required = false;
             
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
@@ -206,6 +255,8 @@
         function resetForm() {
             document.getElementById('addScentForm').reset();
             document.getElementById('editProductId').value = '';
+            document.getElementById('variantsContainer').innerHTML = '';
+            addVariantRow();
             document.getElementById('formTitle').innerText = "Add New Fragrance";
             document.getElementById('submitBtn').innerText = "Update Collection";
             document.getElementById('cancelEdit').classList.add('hidden');
@@ -213,13 +264,19 @@
             document.getElementById('fileNameDisplay').innerText = "Click to upload image";
         }
 
-        // --- SUBMIT (CREATE OR UPDATE) ---
         document.getElementById('addScentForm').onsubmit = async (e) => {
             e.preventDefault();
             const editId = document.getElementById('editProductId').value;
             const submitBtn = document.getElementById('submitBtn');
             const file = document.getElementById('imageUpload').files[0];
             const token = localStorage.getItem('tmb_admin_token');
+
+            // Collect Variants
+            const rows = document.querySelectorAll('.variant-row');
+            const variants = Array.from(rows).map(row => ({
+                size: row.querySelector('.v-size').value,
+                price: row.querySelector('.v-price').value
+            }));
 
             submitBtn.disabled = true;
             submitBtn.innerText = "PROCESSING...";
@@ -235,10 +292,9 @@
 
             const payload = {
                 name: document.getElementById('pName').value,
-                price: document.getElementById('pPrice').value,
-                size: document.getElementById('pSize').value,
                 description: document.getElementById('pDesc').value,
                 category: 'women',
+                variants: variants, // Sent as array
                 ...(imageBase64 && { imageBase64, fileName: file.name, contentType: file.type })
             };
 
@@ -259,7 +315,8 @@
                     alert(editId ? "Product updated!" : "Product added!");
                     location.reload();
                 } else {
-                    alert("Operation failed. Check permissions.");
+                    const errData = await response.json();
+                    alert("Operation failed: " + (errData.error || "Check permissions"));
                 }
             } catch (err) { alert("Server error."); }
             finally { submitBtn.disabled = false; }
