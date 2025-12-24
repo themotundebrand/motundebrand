@@ -218,6 +218,16 @@
         </div>
     </main>
 
+    <div id="brand-modal" class="fixed inset-0 z-[300] hidden flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+    <div class="bg-white max-w-sm w-full p-8 text-center border border-brandPink/30">
+        <h3 id="modal-title" class="text-[12px] font-black uppercase tracking-[0.3em] text-brandBlack mb-4">Confirm Action</h3>
+        <p id="modal-message" class="text-[10px] uppercase tracking-widest text-gray-500 leading-relaxed mb-8"></p>
+        
+        <div id="modal-actions" class="flex flex-col gap-3">
+            </div>
+    </div>
+</div>
+
     <footer class="bg-brandBlack pt-16 pb-10 px-6 md:px-12 border-t border-brandPink/5 mt-20">
         <div class="max-w-7xl mx-auto mb-16">
             <div class="grid grid-cols-1 md:grid-cols-4 gap-12">
@@ -275,23 +285,61 @@
     </a>
 <script>
     let cart = JSON.parse(localStorage.getItem('tmb_cart')) || [];
-    const FLAT_SHIPPING_FEE = 5000; 
+    const FLAT_SHIPPING_FEE = 5000;
 
-    // --- LIVE DATABASE STOCK VALIDATION ---
+    // --- NEW MODAL CONTROLLER FUNCTIONS ---
+    function showAlert(title, message) {
+        const modal = document.getElementById('brand-modal');
+        document.getElementById('modal-title').innerText = title;
+        document.getElementById('modal-message').innerText = message;
+        
+        const actions = document.getElementById('modal-actions');
+        actions.innerHTML = `
+            <button onclick="closeModal()" class="w-full bg-brandBlack text-brandPink py-3 uppercase tracking-widest text-[9px] font-bold hover:bg-brandPink hover:text-brandBlack transition-all">
+                Understood
+            </button>
+        `;
+        modal.classList.remove('hidden');
+    }
+
+    function showConfirm(title, message, onConfirm) {
+        const modal = document.getElementById('brand-modal');
+        document.getElementById('modal-title').innerText = title;
+        document.getElementById('modal-message').innerText = message;
+        
+        const actions = document.getElementById('modal-actions');
+        actions.innerHTML = `
+            <button id="modal-confirm-btn" class="w-full bg-brandBlack text-brandPink py-3 uppercase tracking-widest text-[9px] font-bold hover:bg-brandPink hover:text-brandBlack transition-all">
+                Confirm
+            </button>
+            <button onclick="closeModal()" class="w-full border border-gray-200 text-gray-400 py-3 uppercase tracking-widest text-[9px] font-bold hover:bg-gray-50 transition-all">
+                Cancel
+            </button>
+        `;
+        
+        document.getElementById('modal-confirm-btn').onclick = () => {
+            onConfirm();
+            closeModal();
+        };
+        modal.classList.remove('hidden');
+    }
+
+    function closeModal() {
+        document.getElementById('brand-modal').classList.add('hidden');
+    }
+
+    // --- REMAINING UTILITIES ---
     async function fetchAvailableStock(productId, selectedSize) {
         try {
             const response = await fetch(`/api/products/${productId}/stock`);
             const data = await response.json();
-            
             if (data.variants) {
-                // Find the stock for the specific size the user chose
                 const variant = data.variants.find(v => v.size === selectedSize);
                 return variant ? variant.stock : 0;
             }
             return 0;
         } catch (error) {
-            console.error("Stock check failed:", error);
-            return 0; // Default to 0 if server is down to prevent overselling
+            return 0;
         }
     }
 
@@ -326,77 +374,66 @@
         countBadge.innerText = totalItems;
 
         if (cart.length === 0) {
-            container.innerHTML = `
-                <div class="py-20 text-center uppercase tracking-widest text-[10px] text-gray-400">
-                    Your bag is empty. <br>
-                    <a href="shop.html" class="text-brandPinkDark mt-4 inline-block underline">Go Shopping</a>
-                </div>`;
+            container.innerHTML = `<div class="py-20 text-center uppercase tracking-widest text-[10px] text-gray-400">Bag Empty. <a href="shop.html" class="text-brandPinkDark underline">Shop</a></div>`;
             updateTotals();
             return;
         }
 
         container.innerHTML = cart.map((item, index) => `
             <div class="flex gap-6 pb-10 border-b border-gray-100 items-center">
-                <div class="w-28 h-40 md:w-24 md:h-32 bg-gray-50 overflow-hidden flex-shrink-0">
-                    <img src="${item.image}" class="w-full h-full object-cover" alt="${item.name}">
+                <div class="w-28 h-40 bg-gray-50 overflow-hidden flex-shrink-0">
+                    <img src="${item.image}" class="w-full h-full object-cover">
                 </div>
                 <div class="flex-1">
-                    <div class="flex justify-between items-start">
+                    <div class="flex justify-between">
                         <div>
-                            <h4 class="cart-item-title text-[12px] uppercase tracking-widest">${item.name}</h4>
-                            <p class="text-[10px] text-brandPinkDark font-bold uppercase mt-1">Size: ${item.size}</p>
+                            <h4 class="text-[12px] uppercase tracking-widest font-bold">${item.name}</h4>
+                            <p class="text-[10px] text-brandPinkDark font-bold mt-1">Size: ${item.size}</p>
                         </div>
-                        <button onclick="removeItem(${index})" class="text-gray-300 hover:text-red-500 text-3xl md:text-xl transition-colors">&times;</button>
+                        <button onclick="removeItem(${index})" class="text-gray-300 hover:text-red-500 text-2xl">&times;</button>
                     </div>
-                    <div class="flex justify-between items-center mt-10 md:mt-6">
-                        <div class="qty-control flex border border-gray-200 text-[12px] md:text-[10px]">
-                            <button onclick="updateQty(${index},-1)" class="qty-btn px-4 py-2 md:px-3 md:py-1 hover:bg-gray-100 transition">-</button>
-                            <span class="px-5 py-2 md:px-4 md:py-1 border-x border-gray-200 font-black">${item.quantity}</span>
-                            <button onclick="updateQty(${index},1)" class="qty-btn px-4 py-2 md:px-3 md:py-1 hover:bg-gray-100 transition">+</button>
+                    <div class="flex justify-between items-center mt-6">
+                        <div class="flex border border-gray-200 text-[10px]">
+                            <button onclick="updateQty(${index},-1)" class="px-3 py-1 hover:bg-gray-100">-</button>
+                            <span class="px-4 py-1 border-x border-gray-200 font-black">${item.quantity}</span>
+                            <button onclick="updateQty(${index},1)" class="px-3 py-1 hover:bg-gray-100">+</button>
                         </div>
-                        <p class="cart-item-price">₦${(item.price * item.quantity).toLocaleString()}</p>
+                        <p class="font-bold">₦${(item.price * item.quantity).toLocaleString()}</p>
                     </div>
                 </div>
             </div>
         `).join('');
-        
         updateTotals();
     }
 
     function updateTotals() {
         const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-        const currentShipping = cart.length > 0 ? FLAT_SHIPPING_FEE : 0;
+        const shipping = cart.length > 0 ? FLAT_SHIPPING_FEE : 0;
         document.getElementById('subtotal').innerText = `₦${subtotal.toLocaleString()}`;
-        document.getElementById('shipping-fee').innerText = `₦${currentShipping.toLocaleString()}`;
-        document.getElementById('total-price').innerText = `₦${(subtotal + currentShipping).toLocaleString()}`;
+        document.getElementById('shipping-fee').innerText = `₦${shipping.toLocaleString()}`;
+        document.getElementById('total-price').innerText = `₦${(subtotal + shipping).toLocaleString()}`;
     }
 
-    // --- UPDATED QTY LOGIC WITH LIVE STOCK ---
     async function updateQty(i, delta) {
         const item = cart[i];
         const newQty = item.quantity + delta;
         if (newQty < 1) return;
-
-        // Visual feedback while checking
         showNotification("Checking availability...");
-        
-        const stockAvailable = await fetchAvailableStock(item.id, item.size);
-        
-        if (newQty > stockAvailable) {
-            showNotification(`Sorry, only ${stockAvailable} available in size ${item.size}.`);
+        const stock = await fetchAvailableStock(item.id, item.size);
+        if (newQty > stock) {
+            showAlert("Stock Limit", `Only ${stock} items available in size ${item.size}.`);
             return;
         }
-
         cart[i].quantity = newQty;
         saveCart();
     }
 
     function removeItem(i) {
-        if(confirm("Remove item from bag?")) {
+        showConfirm("Remove Item", "Remove this piece from your shopping bag?", () => {
             cart.splice(i, 1);
             saveCart();
-            showNotification("Item removed from bag");
-        }
+            showNotification("Item removed");
+        });
     }
 
     function saveCart() {
@@ -404,85 +441,49 @@
         renderCart();
     }
 
-    // --- UPDATED: POST ORDER TO BACKEND ---
-   async function handleCheckout() {
-    if (cart.length === 0) return showNotification("Your bag is empty.");
-    
-    // 1. Gather form data
-    const name = document.getElementById('cust-name').value.trim();
-    const email = document.getElementById('cust-email').value.trim();
-    const street = document.getElementById('cust-street').value.trim();
-    const city = document.getElementById('cust-city').value.trim();
-    const state = document.getElementById('cust-state').value.trim();
-    
-    // 2. Payment Method Check
-    const method = document.querySelector('input[name="pay-method"]:checked').value;
-    const receiptInput = document.getElementById('receipt-upload');
+    async function handleCheckout() {
+        if (cart.length === 0) return showAlert("Empty Bag", "Please add items before checking out.");
+        
+        const name = document.getElementById('cust-name').value;
+        const method = document.querySelector('input[name="pay-method"]:checked').value;
+        const receipt = document.getElementById('receipt-upload');
 
-    // 3. Security Check: Validate Contact/Shipping Info
-    if(!name || !email || !street || !city || !state) {
-        return showNotification("Please fill in all shipping details.");
-    }
-
-    // 4. Security Check: Validate Receipt for Bank Transfer
-    if (method === 'bank' && (!receiptInput.files || receiptInput.files.length === 0)) {
-        return showNotification("Please upload your payment receipt to proceed.");
-    }
-
-    // Prepare data for the backend
-    const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-    const orderData = {
-        customerDetails: { 
-            name, email,
-            phone: document.getElementById('cust-phone').value,
-            whatsapp: document.getElementById('cust-whatsapp').value,
-            shippingAddress: { street, city, state, country: "NIGERIA" }
-        },
-        items: cart.map(item => ({
-            productId: item.id,
-            name: item.name,
-            size: item.size,
-            quantity: item.quantity,
-            price: item.price
-        })),
-        totalPrice: subtotal + FLAT_SHIPPING_FEE,
-        paymentMethod: method
-    };
-
-    // UI Feedback: Disable button
-    const checkoutBtn = document.querySelector('button[onclick="handleCheckout()"]');
-    const originalText = checkoutBtn.innerText;
-    checkoutBtn.innerText = "VERIFYING...";
-    checkoutBtn.disabled = true;
-
-    try {
-        // If bank transfer, you would typically use FormData to upload the file
-        // For this example, we proceed with the JSON order data
-        const response = await fetch('/api/orders', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(orderData)
-        });
-
-        if (response.ok) {
-            showNotification("Order Placed Successfully!");
-            localStorage.removeItem('tmb_cart');
-            cart = [];
-            renderCart();
-            // Optional: window.location.href = "thank-you.html";
-        } else {
-            const result = await response.json();
-            showNotification("Order Failed: " + (result.error || "Check details."));
+        if(!name || !document.getElementById('cust-email').value) {
+            return showAlert("Details Required", "Please fill in your contact and shipping information.");
         }
-    } catch (error) {
-        showNotification("Connection error. Please try again.");
-    } finally {
-        checkoutBtn.innerText = originalText;
-        checkoutBtn.disabled = false;
-    }
-}
 
-    renderCart(); 
+        if (method === 'bank' && (!receipt.files || receipt.files.length === 0)) {
+            return showAlert("Receipt Required", "Please upload your payment screenshot to proceed.");
+        }
+
+        const checkoutBtn = document.querySelector('button[onclick="handleCheckout()"]');
+        checkoutBtn.innerText = "VERIFYING...";
+        checkoutBtn.disabled = true;
+
+        try {
+            const response = await fetch('/api/orders', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ items: cart, paymentMethod: method, customer: name })
+            });
+
+            if (response.ok) {
+                showAlert("Order Success", "Your order has been placed. We will contact you shortly via WhatsApp.");
+                localStorage.removeItem('tmb_cart');
+                cart = [];
+                renderCart();
+            } else {
+                showAlert("Order Failed", "There was an issue processing your order. Please check your details.");
+            }
+        } catch (error) {
+            showAlert("Error", "Could not connect to the server.");
+        } finally {
+            checkoutBtn.innerText = "PLACE ORDER";
+            checkoutBtn.disabled = false;
+        }
+    }
+
+    renderCart();
 </script>
 </body>
 </html>

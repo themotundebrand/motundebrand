@@ -296,26 +296,26 @@
     </div>
 </footer>
 
-   <div id="product-modal" class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/90 opacity-0 invisible pointer-events-none">
-    <div class="modal-content bg-white w-full max-w-4xl relative flex flex-col md:flex-row scale-95">
-        <button onclick="closeModal()" class="absolute top-4 right-4 z-10"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" stroke-width="2"/></svg></button>
-        <div class="w-full md:w-1/2"><img id="modal-img" src="" class="w-full h-full object-cover"></div>
-        <div class="w-full md:w-1/2 p-8 md:p-12">
-            <h2 id="modal-name" class="text-2xl font-light uppercase tracking-widest mb-4"></h2>
-            <p id="modal-price" class="text-xl mb-8">₦0</p>
-            <div class="mb-6">
-                <label class="block text-[10px] uppercase mb-2 tracking-widest">Quantity</label>
-                <div class="flex items-center border border-gray-200 w-max">
-                    <button onclick="updateQtyUI('modal-qty', -1)" class="px-3 py-2">-</button>
-                    <input type="number" id="modal-qty" value="1" min="1" class="w-12 text-center text-xs focus:outline-none qty-input">
-                    <button onclick="updateQtyUI('modal-qty', 1)" class="px-3 py-2">+</button>
-                </div>
+    <div id="product-modal" class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/90 opacity-0 invisible pointer-events-none">
+        <div class="modal-content bg-white w-full max-w-4xl relative flex flex-col md:flex-row scale-95 shadow-2xl">
+            <button onclick="closeModal()" class="absolute top-4 right-4 z-10 text-brandBlack hover:text-brandPink">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" stroke-width="2"/></svg>
+            </button>
+            <div class="w-full md:w-1/2 bg-gray-100 aspect-square">
+                <img id="modal-img" src="" class="w-full h-full object-cover">
             </div>
-            <div id="modal-sizes" class="flex gap-2 mb-8"></div>
-            <button id="modal-add-btn" class="w-full bg-brandBlack text-brandPink py-4 uppercase text-xs tracking-widest">Add to Bag</button>
+            <div class="w-full md:w-1/2 p-8 md:p-12 flex flex-col justify-center">
+                <p id="modal-cat" class="text-[10px] uppercase tracking-widest text-brandPinkDark mb-2">Collection</p>
+                <h2 id="modal-name" class="text-2xl font-light uppercase tracking-[0.2em] mb-4">Product Name</h2>
+                <p id="modal-price" class="text-xl font-medium mb-8">₦0</p>
+                <div class="mb-8">
+                    <label class="block text-[10px] uppercase tracking-widest mb-3">Select Size</label>
+                    <div id="modal-sizes" class="flex flex-wrap gap-2"></div>
+                </div>
+                <button id="modal-add-btn" class="w-full bg-brandBlack text-brandPink py-4 uppercase tracking-[0.3em] text-xs hover:bg-brandPink hover:text-brandBlack transition-all">Add to Bag</button>
+            </div>
         </div>
     </div>
-</div>
 
    <script>
     // --- 1. Initialize Cart & Global State ---
