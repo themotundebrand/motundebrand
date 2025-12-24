@@ -47,17 +47,23 @@
         
         <aside id="sidebar" class="sidebar fixed lg:static inset-y-0 left-0 z-50 w-64 bg-white border-r transform -translate-x-full lg:translate-x-0 h-screen flex flex-col">
             <div class="p-8 border-b">
-                <a href="dashboard.html"><h1 class="font-bold tracking-[0.3em] text-sm text-center">TMB SYSTEM</h1></a>
+                <a href="tmbdashboard.html"><h1 class="font-bold tracking-[0.3em] text-sm text-center hover:text-brandPinkDark transition">TMB SYSTEM</h1></a>
             </div>
 
             <nav class="flex-1 px-4 py-8 space-y-1">
-                <p class="text-[9px] uppercase tracking-[0.2em] text-gray-400 px-4 mb-4 font-bold">Inventory</p>
+                <p class="text-[9px] uppercase tracking-[0.2em] text-gray-400 px-4 mb-4 font-bold">Main</p>
+                <a href="tmbdashboard.html" class="nav-link flex items-center px-4 py-3 text-[10px] tracking-widest uppercase font-semibold transition-all">
+                    <i class="fa-solid fa-gauge-high mr-3 w-5 text-gray-400"></i> Dashboard
+                </a>
+
+                <p class="text-[9px] uppercase tracking-[0.2em] text-gray-400 px-4 mt-8 mb-4 font-bold">Inventory</p>
                 <a href="womenscents.html" class="nav-link active-link flex items-center px-4 py-3 text-[10px] tracking-widest uppercase font-semibold transition-all">
                     <i class="fa-solid fa-venus mr-3 w-5 text-brandPinkDark"></i> Women Scents
                 </a>
                 <a href="menscents.html" class="nav-link flex items-center px-4 py-3 text-[10px] tracking-widest uppercase font-semibold transition-all">
                     <i class="fa-solid fa-mars mr-3 w-5 text-gray-400"></i> Men Scents
                 </a>
+                
                 <div class="pt-8">
                     <p class="text-[9px] uppercase tracking-[0.2em] text-gray-400 px-4 mb-4 font-bold">Business</p>
                     <a href="orders.html" class="nav-link flex items-center px-4 py-3 text-[10px] tracking-widest uppercase font-semibold transition-all">
@@ -130,36 +136,71 @@
     </div>
 
     <script>
-        // Security Check
-        window.onload = () => {
+        const API_URL = '/api'; // Adjusted for your redirect
+        const INACTIVITY_LIMIT = 30 * 60 * 1000; 
+
+        // --- SESSION MANAGEMENT ---
+        function logout() {
+            localStorage.removeItem('tmb_admin_token');
+            localStorage.removeItem('tmb_last_active');
+            window.location.href = 'tmbadmin-login.html';
+        }
+
+        function updateActivity() {
+            localStorage.setItem('tmb_last_active', Date.now().toString());
+        }
+
+        async function checkSession() {
             const token = localStorage.getItem('tmb_admin_token');
-            if (!token) {
-                window.location.href = 'tmbadmin-login.html';
+            const lastActive = localStorage.getItem('tmb_last_active');
+            const now = Date.now();
+
+            if (!token) { logout(); return; }
+
+            if (lastActive && (now - parseInt(lastActive) > INACTIVITY_LIMIT)) {
+                alert("Session expired due to inactivity.");
+                logout();
+                return;
             }
+
+            // Periodically refresh the JWT on the backend
+            try {
+                const res = await fetch(`${API_URL}/admin/refresh`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    localStorage.setItem('tmb_admin_token', data.token);
+                }
+            } catch (e) { console.error("Session refresh failed"); }
+        }
+
+        // --- CORE LOGIC ---
+        window.onload = () => {
+            checkSession();
             loadProducts();
+            
+            // Listen for activity
+            ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart'].forEach(name => {
+                document.addEventListener(name, updateActivity, true);
+            });
+            // Check session every 5 mins
+            setInterval(checkSession, 5 * 60 * 1000);
         };
 
-        // UI Helpers
         function toggleSidebar() {
             document.getElementById('sidebar').classList.toggle('-translate-x-full');
             document.getElementById('overlay').classList.toggle('active');
         }
 
-        function logout() {
-            localStorage.removeItem('tmb_admin_token');
-            window.location.href = 'tmbadmin-login.html';
-        }
-
-        // Display selected file name
         document.getElementById('imageUpload').onchange = function() {
             const fileName = this.files[0] ? this.files[0].name : "Click to upload image";
             document.getElementById('fileNameDisplay').innerText = fileName;
         };
 
-        // Fetch and Display Products
         async function loadProducts() {
             try {
-                const response = await fetch('/.netlify/functions/api/products');
+                const response = await fetch(`${API_URL}/products`);
                 const products = await response.json();
                 const grid = document.getElementById('inventoryGrid');
                 
@@ -191,7 +232,6 @@
             }
         }
 
-        // Form Submission Logic
         document.getElementById('addScentForm').onsubmit = async (e) => {
             e.preventDefault();
             const submitBtn = document.getElementById('submitBtn');
@@ -219,7 +259,7 @@
                 };
 
                 try {
-                    const response = await fetch('/.netlify/functions/api/admin/products', {
+                    const response = await fetch(`${API_URL}/admin/products`, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -228,17 +268,15 @@
                         body: JSON.stringify(payload)
                     });
 
-                    const result = await response.json();
-
                     if (response.ok) {
-                        alert("Success: Product added to collection.");
+                        alert("Success: Collection Updated.");
                         location.reload();
                     } else {
-                        alert("Error: " + (result.error || "Upload failed"));
+                        const resData = await response.json();
+                        alert("Error: " + resData.error);
                     }
                 } catch (err) {
-                    alert("System error. Check connection.");
-                    console.error(err);
+                    alert("System error.");
                 } finally {
                     submitBtn.disabled = false;
                     submitBtn.innerText = "Update Collection";

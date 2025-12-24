@@ -106,101 +106,126 @@
     </div>
 
     <script>
-        // Because of your netlify.toml redirect, /api/ maps to /.netlify/functions/api/
-        const API_URL = '/api';
+       // Because of your netlify.toml redirect, /api/ maps to /.netlify/functions/api/
+const API_URL = '/api';
 
-        function togglePasswordVisibility(inputId, icon) {
-            const input = document.getElementById(inputId);
-            if (input.type === 'password') {
-                input.type = 'text';
-                icon.classList.remove('fa-eye');
-                icon.classList.add('fa-eye-slash');
-            } else {
-                input.type = 'password';
-                icon.classList.remove('fa-eye-slash');
-                icon.classList.add('fa-eye');
-            }
+function togglePasswordVisibility(inputId, icon) {
+    const input = document.getElementById(inputId);
+    if (input.type === 'password') {
+        input.type = 'text';
+        icon.classList.remove('fa-eye');
+        icon.classList.add('fa-eye-slash');
+    } else {
+        input.type = 'password';
+        icon.classList.remove('fa-eye-slash');
+        icon.classList.add('fa-eye');
+    }
+}
+
+function switchTab(tab) {
+    const loginForm = document.getElementById('admin-login-form');
+    const regForm = document.getElementById('admin-register-form');
+    const loginBtn = document.getElementById('tab-login');
+    const regBtn = document.getElementById('tab-register');
+    const title = document.getElementById('portal-title');
+
+    if(tab === 'login') {
+        loginForm.classList.add('form-active');
+        regForm.classList.remove('form-active');
+        loginBtn.className = "text-[9px] uppercase tracking-widest font-bold pb-4 border-b-2 border-brandBlack transition-all";
+        regBtn.className = "text-[9px] uppercase tracking-widest font-bold pb-4 border-b-2 border-transparent text-gray-300 transition-all";
+        title.innerText = "Administrative Entry";
+    } else {
+        regForm.classList.add('form-active');
+        loginForm.classList.remove('form-active');
+        regBtn.className = "text-[9px] uppercase tracking-widest font-bold pb-4 border-b-2 border-brandBlack transition-all";
+        loginBtn.className = "text-[9px] uppercase tracking-widest font-bold pb-4 border-b-2 border-transparent text-gray-300 transition-all";
+        title.innerText = "System Enrollment";
+    }
+}
+
+function showStatus(msg, isError = true) {
+    const status = document.getElementById('status-msg');
+    status.innerText = msg;
+    status.className = `mt-8 text-[9px] uppercase tracking-widest text-center font-bold ${isError ? 'text-red-500' : 'text-brandPinkDark'}`;
+    status.classList.remove('hidden');
+    setTimeout(() => status.classList.add('hidden'), 4000);
+}
+
+// LOGIN SUBMIT
+document.getElementById('admin-login-form').onsubmit = async (e) => {
+    e.preventDefault();
+    const btn = e.target.querySelector('button');
+    const originalText = btn.innerText;
+    
+    btn.disabled = true;
+    btn.innerText = "VERIFYING...";
+
+    try {
+        const res = await fetch(`${API_URL}/admin/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                email: document.getElementById('login-email').value,
+                password: document.getElementById('login-password').value
+            })
+        });
+        const data = await res.json();
+        
+        if(res.ok && data.isAdmin) {
+            // SUCCESS: Initialize the session
+            localStorage.setItem('tmb_admin_token', data.token);
+            localStorage.setItem('tmb_last_active', Date.now().toString()); // CRITICAL ADDITION
+            
+            showStatus("Access Authorized. Redirecting...", false);
+            setTimeout(() => {
+                window.location.href = 'tmbdashboard.html'; 
+            }, 1000);
+        } else {
+            showStatus(data.error || "Access Denied");
+            btn.disabled = false;
+            btn.innerText = originalText;
         }
+    } catch (err) {
+        showStatus("System Connection Error");
+        btn.disabled = false;
+        btn.innerText = originalText;
+    }
+};
 
-        function switchTab(tab) {
-            const loginForm = document.getElementById('admin-login-form');
-            const regForm = document.getElementById('admin-register-form');
-            const loginBtn = document.getElementById('tab-login');
-            const regBtn = document.getElementById('tab-register');
-            const title = document.getElementById('portal-title');
+// REGISTER SUBMIT
+document.getElementById('admin-register-form').onsubmit = async (e) => {
+    e.preventDefault();
+    const btn = e.target.querySelector('button');
+    btn.disabled = true;
+    btn.innerText = "ENROLLING...";
 
-            if(tab === 'login') {
-                loginForm.classList.add('form-active');
-                regForm.classList.remove('form-active');
-                loginBtn.className = "text-[9px] uppercase tracking-widest font-bold pb-4 border-b-2 border-brandBlack transition-all";
-                regBtn.className = "text-[9px] uppercase tracking-widest font-bold pb-4 border-b-2 border-transparent text-gray-300 transition-all";
-                title.innerText = "Administrative Entry";
-            } else {
-                regForm.classList.add('form-active');
-                loginForm.classList.remove('form-active');
-                regBtn.className = "text-[9px] uppercase tracking-widest font-bold pb-4 border-b-2 border-brandBlack transition-all";
-                loginBtn.className = "text-[9px] uppercase tracking-widest font-bold pb-4 border-b-2 border-transparent text-gray-300 transition-all";
-                title.innerText = "System Enrollment";
-            }
+    try {
+        const res = await fetch(`${API_URL}/admin/register`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                name: document.getElementById('reg-name').value,
+                email: document.getElementById('reg-email').value,
+                password: document.getElementById('reg-password').value,
+                isAdmin: true
+            })
+        });
+        const data = await res.json();
+        if(res.ok) {
+            showStatus("Admin Created. Please Login.", false);
+            setTimeout(() => switchTab('login'), 2000);
+        } else {
+            showStatus(data.error || "Registration Failed");
+            btn.disabled = false;
+            btn.innerText = "Create Account";
         }
-
-        function showStatus(msg, isError = true) {
-            const status = document.getElementById('status-msg');
-            status.innerText = msg;
-            status.className = `mt-8 text-[9px] uppercase tracking-widest text-center font-bold ${isError ? 'text-red-500' : 'text-brandPinkDark'}`;
-            status.classList.remove('hidden');
-            setTimeout(() => status.classList.add('hidden'), 4000);
-        }
-
-        // LOGIN SUBMIT
-        document.getElementById('admin-login-form').onsubmit = async (e) => {
-            e.preventDefault();
-            try {
-                const res = await fetch(`${API_URL}/admin/login`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        email: document.getElementById('login-email').value,
-                        password: document.getElementById('login-password').value
-                    })
-                });
-                const data = await res.json();
-                if(res.ok && data.isAdmin) {
-                    localStorage.setItem('tmb_admin_token', data.token);
-                    window.location.href = 'tmbdashboard.html'; 
-                } else {
-                    showStatus(data.error || "Access Denied");
-                }
-            } catch (err) {
-                showStatus("System Connection Error");
-            }
-        };
-
-        // REGISTER SUBMIT
-        document.getElementById('admin-register-form').onsubmit = async (e) => {
-            e.preventDefault();
-            try {
-                const res = await fetch(`${API_URL}/admin/register`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        name: document.getElementById('reg-name').value,
-                        email: document.getElementById('reg-email').value,
-                        password: document.getElementById('reg-password').value,
-                        isAdmin: true
-                    })
-                });
-                const data = await res.json();
-                if(res.ok) {
-                    showStatus("Admin Created. Please Login.", false);
-                    setTimeout(() => switchTab('login'), 2000);
-                } else {
-                    showStatus(data.error || "Registration Failed");
-                }
-            } catch (err) {
-                showStatus("System Enrollment Error");
-            }
-        };
+    } catch (err) {
+        showStatus("System Enrollment Error");
+        btn.disabled = false;
+        btn.innerText = "Create Account";
+    }
+};
     </script>
 </body>
 </html>

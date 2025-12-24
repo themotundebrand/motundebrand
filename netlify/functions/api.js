@@ -15,7 +15,7 @@ app.use(compression());
 app.use(express.json({ limit: '10mb' }));
 
 const uri = process.env.MONGODB_URI;
-const JWT_SECRET = process.env.JWT_SECRET || 'tmb_super_secret_key_2024';
+const JWT_SECRET = process.env.JWT_SECRET;
 
 // --- IDRIVE E2 CONFIGURATION ---
 let s3 = null;
@@ -31,7 +31,6 @@ if (process.env.E2_ENDPOINT) {
 }
 const BUCKET_NAME = process.env.E2_BUCKET || 'themotundebrand';
 
-// Connection Pooling
 let cachedDb = null;
 async function getDb() {
     if (cachedDb) return cachedDb;
@@ -54,14 +53,12 @@ const authenticateAdmin = (req, res, next) => {
     });
 };
 
-// --- NEW: ADMIN AUTH ROUTES ---
+// --- AUTH ROUTES ---
 
-// 1. Admin Registration
 router.post('/admin/register', async (req, res) => {
     try {
         const { name, email, password } = req.body;
         const db = await getDb();
-        
         const existing = await db.collection("admins").findOne({ email });
         if (existing) return res.status(400).json({ error: "Admin already exists" });
 
@@ -73,7 +70,6 @@ router.post('/admin/register', async (req, res) => {
     } catch (e) { res.status(500).json({ error: "Registration failed" }); }
 });
 
-// 2. Admin Login
 router.post('/admin/login', async (req, res) => {
     try {
         const { email, password } = req.body;
@@ -89,15 +85,37 @@ router.post('/admin/login', async (req, res) => {
     } catch (e) { res.status(500).json({ error: "Login failed" }); }
 });
 
+// NEW: Session Refresh Route
+// Frontend calls this periodically to get a fresh 24h token if the current one is still valid
+router.get('/admin/refresh', authenticateAdmin, (req, res) => {
+    const newToken = jwt.sign({ id: req.user.id, isAdmin: true }, JWT_SECRET, { expiresIn: '24h' });
+    res.json({ token: newToken });
+});
+
 // --- PRODUCT ROUTES ---
 
 router.get('/products', async (req, res) => {
     try {
         const db = await getDb();
         const items = await db.collection("products").find({}).toArray();
-        res.json(items);
+
+        // REFRESH IMAGE URLS ON THE FLY
+        // This ensures that even if a product was added 1 year ago, the link works now
+        const refreshedItems = items.map(item => {
+            if (s3 && item.imageKey) {
+                item.imageUrl = s3.getSignedUrl('getObject', {
+                    Bucket: BUCKET_NAME,
+                    Key: item.imageKey,
+                    Expires: 86400
+                });
+            }
+            return item;
+        });
+
+        res.json(refreshedItems);
     } catch (e) { res.status(500).json({ error: "Fetch failed" }); }
 });
+
 router.post('/admin/products', authenticateAdmin, async (req, res) => {
     try {
         if (!s3) throw new Error("Storage not configured");
@@ -105,51 +123,33 @@ router.post('/admin/products', authenticateAdmin, async (req, res) => {
         const { name, price, size, description, category, imageBase64, fileName, contentType } = req.body;
 
         const buffer = Buffer.from(imageBase64, 'base64');
-        // Clean filename and create unique key
         const cleanFileName = fileName.replace(/\s+/g, '-');
         const uploadKey = `${category}/${Date.now()}-${cleanFileName}`;
 
-        // 1. Upload to Private Bucket (No ACL line)
         await s3.upload({
             Bucket: BUCKET_NAME,
             Key: uploadKey,
             Body: buffer,
             ContentType: contentType
-            // ACL: 'public-read' REMOVED because account is private
         }).promise();
 
-        // 2. Generate a Presigned URL for the database
-        // This URL will allow anyone with the link to view the image for 24 hours
-        const signedUrl = s3.getSignedUrl('getObject', {
-            Bucket: BUCKET_NAME,
-            Key: uploadKey,
-            Expires: 86400 // 24 hours in seconds
-        });
-
-        // 3. Save to MongoDB
         const product = { 
             name, 
             price: parseFloat(price), 
             size, 
             description, 
             category, 
-            imageKey: uploadKey, // Store the key so we can refresh the link later
-            imageUrl: signedUrl, 
+            imageKey: uploadKey, // Essential for regenerating URLs
             createdAt: new Date() 
         };
 
         await db.collection("products").insertOne(product);
-        
-        res.status(201).json({ 
-            message: "Product added securely", 
-            url: signedUrl 
-        });
+        res.status(201).json({ message: "Product added securely" });
     } catch (e) { 
-        console.error("Upload Error:", e);
         res.status(500).json({ error: e.message }); 
     }
 });
-// --- EXPORT ---
+
 app.use('/.netlify/functions/api', router);
-app.use('/api', router); // Backup for local/redirect consistency
+app.use('/api', router);
 module.exports.handler = serverless(app);

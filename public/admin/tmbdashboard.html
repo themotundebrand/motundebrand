@@ -130,27 +130,64 @@
     </div>
 
     <script>
-        // Security Check
-        window.onload = () => {
-            if (!localStorage.getItem('tmb_admin_token')) {
-                window.location.href = 'tmbadmin-login.html';
-            }
-            document.getElementById('current-date').innerText = new Date().toLocaleDateString('en-US', {
-                weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
-            });
-        };
+   // Configuration
+const INACTIVITY_LIMIT = 30 * 60 * 1000; // 30 Minutes in milliseconds
+const SESSION_REFRESH_INTERVAL = 5 * 60 * 1000; // Check every 5 minutes
 
-        function toggleSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            const overlay = document.getElementById('overlay');
-            sidebar.classList.toggle('-translate-x-full');
-            overlay.classList.toggle('active');
-        }
+function logout() {
+    localStorage.removeItem('tmb_admin_token');
+    localStorage.removeItem('tmb_last_active');
+    window.location.href = 'tmbadmin-login.html';
+}
 
-        function logout() {
-            localStorage.removeItem('tmb_admin_token');
-            window.location.href = 'tmbadmin-login.html';
-        }
+function updateActivity() {
+    // Update the timestamp whenever the user interacts with the page
+    localStorage.setItem('tmb_last_active', Date.now().toString());
+}
+
+function checkSession() {
+    const token = localStorage.getItem('tmb_admin_token');
+    const lastActive = localStorage.getItem('tmb_last_active');
+    const now = Date.now();
+
+    // 1. If no token, boot to login
+    if (!token) {
+        window.location.href = 'tmbadmin-login.html';
+        return;
+    }
+
+    // 2. Inactivity Check
+    if (lastActive && (now - parseInt(lastActive) > INACTIVITY_LIMIT)) {
+        alert("Session expired due to inactivity.");
+        logout();
+        return;
+    }
+
+    // 3. (Optional) You could add a fetch call here to /api/verify 
+    // to ensure the JWT hasn't been revoked on the server.
+}
+
+window.onload = () => {
+    // Initial Security Check
+    checkSession();
+    updateActivity();
+
+    // Set the display date
+    const dateEl = document.getElementById('current-date');
+    if(dateEl) {
+        dateEl.innerText = new Date().toLocaleDateString('en-US', {
+            weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+        });
+    }
+
+    // Listen for user activity to reset the timer
+    ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart'].forEach(name => {
+        document.addEventListener(name, updateActivity, true);
+    });
+
+    // Run a background check every 5 minutes
+    setInterval(checkSession, SESSION_REFRESH_INTERVAL);
+};
     </script>
 </body>
 </html>
