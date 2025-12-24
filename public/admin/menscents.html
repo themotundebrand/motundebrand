@@ -23,41 +23,30 @@
     </script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700&display=swap');
-        body { font-family: 'Inter', sans-serif; background-color: #FBFBFB; }
+        body { font-family: 'Inter', sans-serif; background-color: #FBFBFB; -webkit-tap-highlight-color: transparent; }
         .sidebar { transition: all 0.3s ease; }
         .nav-link:hover { background-color: #F7C8D0; color: #000; }
         .active-link { background-color: #000; color: #FFF; }
-        .input-field { border: 1px solid #e5e7eb; padding: 10px; font-size: 12px; width: 100%; transition: border-color 0.2s; }
+        .input-field { border: 1px solid #e5e7eb; padding: 10px; font-size: 14px; width: 100%; transition: border-color 0.2s; border-radius: 0px; }
         .input-field:focus { outline: none; border-color: #000; }
         .mobile-overlay { background: rgba(0,0,0,0.5); display: none; }
         .mobile-overlay.active { display: block; }
 
-        /* Optimized for mobile inputs */
-@media (max-width: 768px) {
-    .input-field {
-        font-size: 16px; /* Prevents auto-zoom on iPhones */
-        padding: 12px;
-        background-color: #fff;
-    }
-    #formContainer {
-        padding: 1.5rem 1rem;
-    }
-    h2 {
-        font-size: 1.5rem;
-    }
-}
-/* Custom scrollbar for better mobile feel */
-#variantsContainer {
-    max-height: 400px;
-    overflow-y: auto;
-    padding-right: 4px;
-}
+        @media (max-width: 768px) {
+            .input-field { font-size: 16px; padding: 12px; }
+            #formContainer { padding: 1.5rem 1rem; }
+        }
+
+        /* Custom Scrollbar */
+        #variantsContainer { max-height: 400px; overflow-y: auto; padding-right: 4px; }
+        #variantsContainer::-webkit-scrollbar { width: 4px; }
+        #variantsContainer::-webkit-scrollbar-thumb { background: #eee; }
     </style>
 </head>
 <body class="text-brandBlack">
 
     <div class="lg:hidden bg-white border-b p-4 flex justify-between items-center sticky top-0 z-50">
-        <span class="font-bold tracking-widest text-xs uppercase">TMB Admin</span>
+        <span class="font-bold tracking-widest text-[10px] uppercase">TMB Admin</span>
         <button onclick="toggleSidebar()" class="text-brandBlack text-xl">
             <i class="fa-solid fa-bars-staggered"></i>
         </button>
@@ -71,7 +60,7 @@
                 <a href="tmbdashboard.html"><h1 class="font-bold tracking-[0.3em] text-sm text-center hover:text-brandPinkDark transition">TMB SYSTEM</h1></a>
             </div>
 
-            <nav class="flex-1 px-4 py-8 space-y-1">
+            <nav class="flex-1 px-4 py-8 space-y-1 overflow-y-auto">
                 <p class="text-[9px] uppercase tracking-[0.2em] text-gray-400 px-4 mb-4 font-bold">Main</p>
                 <a href="tmbdashboard.html" class="nav-link flex items-center px-4 py-3 text-[10px] tracking-widest uppercase font-semibold transition-all">
                     <i class="fa-solid fa-gauge-high mr-3 w-5 text-gray-400"></i> Dashboard
@@ -103,19 +92,19 @@
             </div>
         </aside>
 
-        <main class="flex-1 min-h-screen p-6 lg:p-10">
-            <div class="mb-12">
-                <h2 class="text-2xl font-light tracking-tight mb-1">Men Scents Collection</h2>
-                <p class="text-[9px] uppercase tracking-[0.3em] text-gray-400 font-bold">Inventory Management</p>
+        <main class="flex-1 min-h-screen p-4 md:p-10">
+            <div class="mb-8 md:mb-12">
+                <h2 class="text-xl md:text-2xl font-light tracking-tight mb-1">Men Scents Collection</h2>
+                <p class="text-[8px] md:text-[9px] uppercase tracking-[0.3em] text-gray-400 font-bold">Inventory Management</p>
             </div>
 
-            <div id="formContainer" class="bg-white border p-8 mb-12 shadow-sm max-w-5xl">
+            <div id="formContainer" class="bg-white border p-5 md:p-8 mb-12 shadow-sm max-w-5xl">
                 <div class="flex justify-between items-center mb-6 border-b pb-4">
                     <h3 id="formTitle" class="text-[10px] uppercase tracking-[0.2em] font-bold">Add New Fragrance</h3>
                     <button id="cancelEdit" onclick="resetForm()" class="hidden text-[10px] uppercase text-red-500 font-bold">Cancel Edit</button>
                 </div>
                 
-                <form id="addScentForm" class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <form id="addScentForm" class="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
                     <input type="hidden" id="editProductId">
                     <div class="space-y-4">
                         <div>
@@ -140,7 +129,7 @@
 
                     <div class="space-y-4">
                         <label class="text-[9px] uppercase font-bold text-gray-400 block mb-2">Product Image</label>
-                        <div class="border-2 border-dashed border-gray-200 h-64 flex flex-col items-center justify-center relative hover:border-black transition-colors bg-gray-50">
+                        <div class="border-2 border-dashed border-gray-200 h-48 md:h-64 flex flex-col items-center justify-center relative hover:border-black transition-colors bg-gray-50">
                             <input type="file" class="absolute inset-0 opacity-0 cursor-pointer" id="imageUpload" accept="image/*">
                             <i class="fa-solid fa-cloud-arrow-up text-2xl text-gray-300 mb-2"></i>
                             <p id="fileNameDisplay" class="text-[10px] text-gray-400 uppercase tracking-widest text-center px-4">Click to upload image</p>
@@ -152,9 +141,10 @@
                 </form>
             </div>
 
-            <h3 class="text-[10px] uppercase tracking-[0.2em] font-bold mb-6">Current Inventory</h3>
-            <div id="inventoryGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                <p class="text-[10px] uppercase tracking-widest text-gray-400">Loading collection...</p>
+            <h3 class="text-[10px] uppercase tracking-[0.2em] font-bold mb-6 border-l-2 border-black pl-3">Current Inventory</h3>
+            
+            <div id="inventoryGrid" class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-6">
+                <p class="text-[10px] uppercase tracking-widest text-gray-400 col-span-full text-center py-10">Loading collection...</p>
             </div>
         </main>
     </div>
@@ -197,6 +187,14 @@
         let globalProducts = [];
         let confirmResolve;
 
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('overlay');
+            sidebar.classList.toggle('-translate-x-full');
+            overlay.classList.toggle('active');
+            document.body.style.overflow = overlay.classList.contains('active') ? 'hidden' : 'auto';
+        }
+
         function showAlert(message, isError = false) {
             const modal = document.getElementById('customAlert');
             const msgPara = document.getElementById('alertMessage');
@@ -206,9 +204,7 @@
             modal.classList.remove('hidden');
         }
 
-        function closeAlert() {
-            document.getElementById('customAlert').classList.add('hidden');
-        }
+        function closeAlert() { document.getElementById('customAlert').classList.add('hidden'); }
 
         function showConfirm(message) {
             document.getElementById('confirmMessage').innerText = message;
@@ -225,45 +221,39 @@
             localStorage.removeItem('tmb_admin_token');
             window.location.href = 'tmbadmin-login.html';
         }
-function addVariantRow(size = '', price = '', stock = '0') {
-    const container = document.getElementById('variantsContainer');
-    const rowId = 'row-' + Math.random().toString(36).substr(2, 9);
-    
-    // Updated HTML: Stacks vertically on mobile, horizontally on md screens
-    const html = `
-        <div class="flex flex-col md:flex-row gap-3 md:gap-2 variant-row items-end md:items-center bg-gray-100 md:bg-transparent p-3 md:p-0 rounded-sm border md:border-0" id="${rowId}">
-            <div class="w-full md:flex-[2]">
-                <label class="md:hidden text-[8px] uppercase font-bold text-gray-400 mb-1 block">Size</label>
-                <input type="text" placeholder="e.g. 100ml" class="input-field v-size" value="${size}" required>
-            </div>
-            <div class="w-full md:flex-[2]">
-                <label class="md:hidden text-[8px] uppercase font-bold text-gray-400 mb-1 block">Price (₦)</label>
-                <input type="number" placeholder="Price" class="input-field v-price" value="${price}" required>
-            </div>
-            <div class="w-full md:flex-[1]">
-                <label class="md:hidden text-[8px] uppercase font-bold text-gray-400 mb-1 block">Stock</label>
-                <input type="number" placeholder="Qty" class="input-field v-stock" value="${stock}" required>
-            </div>
-            <button type="button" onclick="removeVariantRow('${rowId}')" class="text-red-500 hover:text-red-700 p-2 bg-white md:bg-transparent rounded-full shadow-sm md:shadow-none">
-                <i class="fa-solid fa-trash-can text-sm md:text-xs"></i>
-            </button>
-        </div>
-    `;
-    container.insertAdjacentHTML('beforeend', html);
-}
-        function removeVariantRow(id) {
-            const rows = document.querySelectorAll('.variant-row');
-            if(rows.length > 1) {
-                document.getElementById(id).remove();
-            } else {
-                showAlert("A product must have at least one variant.", true);
-            }
+
+        function addVariantRow(size = '', price = '', stock = '0') {
+            const container = document.getElementById('variantsContainer');
+            const rowId = 'row-' + Math.random().toString(36).substr(2, 9);
+            const html = `
+                <div class="flex flex-col md:flex-row gap-2 variant-row items-end md:items-center bg-white md:bg-transparent p-3 md:p-0 border md:border-0 rounded-sm" id="${rowId}">
+                    <div class="w-full md:flex-[2]">
+                        <label class="md:hidden text-[7px] uppercase font-bold text-gray-400 mb-1 block">Size</label>
+                        <input type="text" placeholder="Size" class="input-field v-size" value="${size}" required>
+                    </div>
+                    <div class="w-full md:flex-[2]">
+                        <label class="md:hidden text-[7px] uppercase font-bold text-gray-400 mb-1 block">Price</label>
+                        <input type="number" placeholder="Price" class="input-field v-price" value="${price}" required>
+                    </div>
+                    <div class="w-full md:flex-[1]">
+                        <label class="md:hidden text-[7px] uppercase font-bold text-gray-400 mb-1 block">Stock</label>
+                        <input type="number" placeholder="Qty" class="input-field v-stock" value="${stock}" required>
+                    </div>
+                    <button type="button" onclick="removeVariantRow('${rowId}')" class="text-red-500 p-2">
+                        <i class="fa-solid fa-trash-can text-xs"></i>
+                    </button>
+                </div>
+            `;
+            container.insertAdjacentHTML('beforeend', html);
         }
 
-        window.onload = () => { 
-            addVariantRow();
-            loadProducts(); 
-        };
+        function removeVariantRow(id) {
+            const rows = document.querySelectorAll('.variant-row');
+            if(rows.length > 1) document.getElementById(id).remove();
+            else showAlert("At least one variant required.", true);
+        }
+
+        window.onload = () => { addVariantRow(); loadProducts(); };
 
         async function loadProducts() {
             try {
@@ -273,43 +263,38 @@ function addVariantRow(size = '', price = '', stock = '0') {
                 const grid = document.getElementById('inventoryGrid');
                 
                 if (globalProducts.length === 0) {
-                    grid.innerHTML = '<p class="text-[10px] uppercase text-gray-400 col-span-full text-center py-10">No items in men\'s collection.</p>';
+                    grid.innerHTML = '<p class="text-[10px] uppercase text-gray-400 col-span-full text-center py-10">No items in collection.</p>';
                     return;
                 }
 
                 grid.innerHTML = globalProducts.map(product => {
                     const totalStock = (product.variants || []).reduce((acc, curr) => acc + Number(curr.stock || 0), 0);
                     const stockStatus = totalStock > 10 ? 'bg-green-100 text-green-700' : (totalStock > 0 ? 'bg-orange-100 text-orange-700' : 'bg-red-100 text-red-700');
-                    const stockText = totalStock > 10 ? 'In Stock' : (totalStock > 0 ? 'Low Stock' : 'Out of Stock');
+                    const stockText = totalStock > 10 ? 'In Stock' : (totalStock > 0 ? 'Low' : 'Out');
 
                     return `
-                    <div class="bg-white border p-4 group">
-                        <div class="aspect-square bg-gray-50 mb-4 overflow-hidden relative">
+                    <div class="bg-white border p-2 md:p-4 group">
+                        <div class="aspect-[4/5] bg-gray-50 mb-3 overflow-hidden relative">
                             <img src="${product.imageUrl}" alt="${product.name}" class="w-full h-full object-cover">
-                            <span class="absolute top-2 right-2 text-[8px] px-2 py-1 font-bold uppercase ${stockStatus}">
+                            <span class="absolute top-1 right-1 text-[7px] md:text-[8px] px-1 md:py-1 font-bold uppercase ${stockStatus}">
                                 ${stockText} (${totalStock})
                             </span>
                         </div>
-                        <h4 class="text-xs font-bold uppercase tracking-wider mb-3">${product.name}</h4>
+                        <h4 class="text-[10px] md:text-xs font-bold uppercase tracking-wider mb-2 truncate">${product.name}</h4>
                         
-                        <div class="space-y-1 mb-4">
-                            <div class="flex justify-between text-[8px] text-gray-400 uppercase font-bold mb-1">
-                                <span>Size</span>
-                                <span>Price / Qty</span>
-                            </div>
-                            ${(product.variants || []).map(v => `
-                                <div class="flex justify-between text-[10px] border-b border-gray-50 pb-1">
-                                    <span class="text-gray-500">${v.size}</span>
-                                    <span class="font-bold">₦${Number(v.price).toLocaleString()} <span class="text-gray-400 ml-1">(${v.stock || 0})</span></span>
+                        <div class="space-y-1 mb-3">
+                            ${(product.variants || []).slice(0, 3).map(v => `
+                                <div class="flex justify-between text-[8px] md:text-[10px] border-b border-gray-50 pb-1">
+                                    <span class="text-gray-400">${v.size}</span>
+                                    <span class="font-bold">₦${Number(v.price).toLocaleString()}</span>
                                 </div>
                             `).join('')}
+                            ${product.variants.length > 3 ? `<p class="text-[7px] text-gray-400">+ more sizes</p>` : ''}
                         </div>
 
-                        <p class="text-[10px] text-gray-500 mb-4 line-clamp-2 italic">${product.description || 'Premium Collection'}</p>
-                        
-                        <div class="flex justify-between items-center border-t pt-4">
-                            <button onclick="editProduct('${product._id}')" class="text-[8px] uppercase tracking-widest text-brandBlack hover:underline font-bold">Edit Details</button>
-                            <button onclick="deleteProduct('${product._id}')" class="text-[8px] uppercase tracking-widest text-red-500 hover:text-red-700 font-bold transition">Delete</button>
+                        <div class="flex flex-col gap-2 pt-2 border-t">
+                            <button onclick="editProduct('${product._id}')" class="text-[7px] md:text-[8px] uppercase tracking-widest bg-gray-100 py-2 font-bold hover:bg-brandPinkLight transition">Edit</button>
+                            <button onclick="deleteProduct('${product._id}')" class="text-[7px] md:text-[8px] uppercase tracking-widest text-red-500 font-bold">Delete</button>
                         </div>
                     </div>
                 `}).join('');
@@ -319,23 +304,15 @@ function addVariantRow(size = '', price = '', stock = '0') {
         function editProduct(id) {
             const product = globalProducts.find(p => p._id === id);
             if (!product) return;
-
             document.getElementById('editProductId').value = product._id;
             document.getElementById('pName').value = product.name;
             document.getElementById('pDesc').value = product.description || '';
-            
             document.getElementById('variantsContainer').innerHTML = '';
-            if (product.variants && product.variants.length > 0) {
-                product.variants.forEach(v => addVariantRow(v.size, v.price, v.stock));
-            } else {
-                addVariantRow(product.size, product.price, 0);
-            }
-            
-            document.getElementById('formTitle').innerText = "Edit Fragrance: " + product.name;
+            product.variants.forEach(v => addVariantRow(v.size, v.price, v.stock));
+            document.getElementById('formTitle').innerText = "Edit: " + product.name;
             document.getElementById('submitBtn').innerText = "Save Changes";
             document.getElementById('cancelEdit').classList.remove('hidden');
             document.getElementById('imageUpload').required = false;
-            
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
@@ -358,15 +335,14 @@ function addVariantRow(size = '', price = '', stock = '0') {
             const file = document.getElementById('imageUpload').files[0];
             const token = localStorage.getItem('tmb_admin_token');
 
-            const rows = document.querySelectorAll('.variant-row');
-            const variants = Array.from(rows).map(row => ({
+            const variants = Array.from(document.querySelectorAll('.variant-row')).map(row => ({
                 size: row.querySelector('.v-size').value,
                 price: row.querySelector('.v-price').value,
                 stock: row.querySelector('.v-stock').value
             }));
 
             submitBtn.disabled = true;
-            submitBtn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin mr-2"></i> UPDATING...';
+            submitBtn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin mr-2"></i> PROCESSING...';
 
             let imageBase64 = null;
             if (file) {
@@ -386,61 +362,34 @@ function addVariantRow(size = '', price = '', stock = '0') {
             };
 
             const url = editId ? `${API_URL}/admin/products/${editId}` : `${API_URL}/admin/products`;
-            const method = editId ? 'PUT' : 'POST';
-
             try {
                 const response = await fetch(url, {
-                    method: method,
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
+                    method: editId ? 'PUT' : 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                     body: JSON.stringify(payload)
                 });
-
                 if (response.ok) {
-                    showAlert(editId ? "Product successfully updated." : "New fragrance added to collection.");
+                    showAlert(editId ? "Updated." : "Added.");
                     setTimeout(() => location.reload(), 1500);
-                } else {
-                    showAlert("Operation failed. Session may have expired.", true);
-                }
-            } catch (err) { showAlert("Server error occurred.", true); }
-            finally { submitBtn.disabled = false; submitBtn.innerText = "Update Men's Collection"; }
+                } else showAlert("Error saving product.", true);
+            } catch (err) { showAlert("Network Error.", true); }
+            finally { submitBtn.disabled = false; submitBtn.innerText = "Update Collection"; }
         };
 
         async function deleteProduct(id) {
-            const confirmed = await showConfirm("Are you sure you want to remove this fragrance from the catalog?");
+            const confirmed = await showConfirm("Remove this fragrance?");
             if(!confirmed) return;
-
             const token = localStorage.getItem('tmb_admin_token');
             try {
                 const res = await fetch(`${API_URL}/admin/products/${id}`, {
                     method: 'DELETE',
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
-                if(res.ok) {
-                    showAlert("Product removed.");
-                    setTimeout(() => location.reload(), 1000);
-                } else {
-                    showAlert("Unable to delete item.", true);
-                }
-            } catch (err) { showAlert("Network error.", true); }
+                if(res.ok) { showAlert("Removed."); setTimeout(() => location.reload(), 1000); }
+                else showAlert("Failed to delete.", true);
+            } catch (err) { showAlert("Error.", true); }
         }
 
-       function toggleSidebar() {
-    const sidebar = document.getElementById('sidebar');
-    const overlay = document.getElementById('overlay');
-    
-    sidebar.classList.toggle('-translate-x-full');
-    overlay.classList.toggle('active');
-    
-    // Prevent body scroll when menu is open
-    if (overlay.classList.contains('active')) {
-        document.body.style.overflow = 'hidden';
-    } else {
-        document.body.style.overflow = 'auto';
-    }
-}
         document.getElementById('imageUpload').onchange = function() {
             document.getElementById('fileNameDisplay').innerText = this.files[0]?.name || "Click to upload image";
         };
