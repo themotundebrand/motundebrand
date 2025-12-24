@@ -49,16 +49,16 @@
             padding-bottom: 1rem;
         }
         .collection-grid::-webkit-scrollbar { display: none; }
-        /* Custom Notification Toast */
+        
         #custom-toast {
-        transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-        transform: translateY(100px);
-      opacity: 0;
+            transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            transform: translate(-50%, 100px);
+            opacity: 0;
         }
         #custom-toast.show {
-    transform: translateY(0);
-    opacity: 1;
-    }
+            transform: translate(-50%, 0);
+            opacity: 1;
+        }
         
         @media (min-width: 768px) {
             .collection-grid { grid-auto-columns: calc(20% - 1rem); }
@@ -73,6 +73,10 @@
             background-repeat: no-repeat; 
             background-position: right 0.5rem center; 
             background-size: 0.6em; 
+        }
+
+        .qty-input::-webkit-inner-spin-button, .qty-input::-webkit-outer-spin-button {
+            -webkit-appearance: none; margin: 0;
         }
 
         @keyframes pulse-border {
@@ -93,9 +97,7 @@
 </head>
 <body class="bg-white font-sans antialiased overflow-x-hidden">
 
-    <a href="https://wa.me/2349025291629?text=Hi%20The%20Motunde%20Brand!%20My%20name%20is%20..." 
-       target="_blank" 
-       class="fixed bottom-6 right-6 z-[150] bg-[#25D366] p-3.5 rounded-full shadow-2xl transition-transform hover:scale-110 active:scale-95 whatsapp-pulse">
+    <a href="https://wa.me/2349025291629" target="_blank" class="fixed bottom-6 right-6 z-[150] bg-[#25D366] p-3.5 rounded-full shadow-2xl transition-transform hover:scale-110 whatsapp-pulse">
         <svg class="w-7 h-7 text-white" fill="currentColor" viewBox="0 0 24 24">
             <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
         </svg>
@@ -128,123 +130,46 @@
 </nav>
 
     <div id="sidebar-overlay" onclick="toggleSidebar(false)" class="fixed inset-0 bg-black/60 z-[110] hidden backdrop-blur-sm"></div>
-    
     <aside id="sidebar" class="fixed top-0 left-0 h-full w-64 bg-brandBlack z-[120] sidebar-closed p-6 flex flex-col">
         <button onclick="toggleSidebar(false)" class="self-end text-brandPink mb-10">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" stroke-width="2"></path></svg>
         </button>
         <div class="flex flex-col space-y-6 text-[10px] tracking-[0.25em] uppercase text-brandPink/80">
-            <a href="index.html" onclick="toggleSidebar(false)" class="hover:text-brandPink transition-colors">Home</a>
-            <a href="#women" onclick="toggleSidebar(false)" class="hover:text-brandPink transition-colors">Women</a>
-            <a href="#men" onclick="toggleSidebar(false)" class="hover:text-brandPink transition-colors">Men</a>
-            <a href="#kids" onclick="toggleSidebar(false)" class="hover:text-brandPink transition-colors">Kids</a>
-            <div class="pt-6 border-t border-brandPink/10 mt-4">
-                <a href="account.html" class="text-[9px] tracking-widest opacity-50 hover:opacity-100 transition-opacity">My Account</a>
-            </div>
+            <a href="index.html" class="hover:text-brandPink transition-colors">Home</a>
+            <a href="#women" class="hover:text-brandPink transition-colors">Women</a>
+            <a href="#men" class="hover:text-brandPink transition-colors">Men</a>
+            <a href="#kids" class="hover:text-brandPink transition-colors">Kids</a>
         </div>
     </aside>
 
 <section class="bg-brandBlack relative min-h-[500px] md:min-h-[750px]">
     <div class="relative h-[70vh] md:h-[90vh] overflow-hidden">
-        
         <div id="slide-group-1" class="slide-fade slide-active flex flex-row h-full">
-            <div class="w-full md:w-1/2 h-full">
-                <img src="https://i.imgur.com/Wp0HCu8.jpeg" class="w-full h-full object-cover object-top">
-            </div>
-            <div class="hidden md:block md:w-1/2 h-full">
-                <img src="https://i.imgur.com/KQ2leiY.jpeg" class="w-full h-full object-cover object-top">
-            </div>
+            <div class="w-full md:w-1/2 h-full"><img src="https://i.imgur.com/Wp0HCu8.jpeg" class="w-full h-full object-cover object-top"></div>
+            <div class="hidden md:block md:w-1/2 h-full"><img src="https://i.imgur.com/KQ2leiY.jpeg" class="w-full h-full object-cover object-top"></div>
         </div>
-
         <div id="slide-group-2" class="slide-fade slide-hidden flex flex-row h-full">
-            <div class="w-full md:w-1/2 h-full">
-                <img src="https://i.imgur.com/BRl8AVs.jpeg" class="w-full h-full object-cover object-top">
-            </div>
-            <div class="hidden md:block md:w-1/2 h-full">
-                <img src="https://i.imgur.com/Wp0HCu8.jpeg" class="w-full h-full object-cover object-top">
-            </div>
+            <div class="w-full md:w-1/2 h-full"><img src="https://i.imgur.com/BRl8AVs.jpeg" class="w-full h-full object-cover object-top"></div>
+            <div class="hidden md:block md:w-1/2 h-full"><img src="https://i.imgur.com/Wp0HCu8.jpeg" class="w-full h-full object-cover object-top"></div>
         </div>
     </div>
-
- <div class="absolute inset-0 flex flex-col items-center justify-center z-10 pointer-events-none">
-    <div class="glass-overlay p-3 md:p-10 rounded-full border border-brandPink/20 pointer-events-auto relative group">
-        
-        <button id="shop-dropdown-btn" class="text-brandPink uppercase tracking-[0.3em] md:tracking-[0.5em] text-[8px] md:text-xs font-bold flex items-center gap-2 md:gap-4">
-            Quick Access
-            <svg class="w-2 h-2 md:w-3 md:h-3 transition-transform group-hover:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path d="M19 9l-7 7-7-7" stroke-width="2"></path>
-            </svg>
-        </button>
-
-        <div id="shop-dropdown-menu" class="absolute top-full left-1/2 -translate-x-1/2 mt-3 w-48 md:w-64 bg-brandBlack/95 backdrop-blur-xl border border-brandPink/20 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform -translate-y-2 group-hover:translate-y-0 shadow-2xl overflow-hidden rounded-lg">
-            <div class="flex flex-col py-2 md:py-4">
-                <a href="#women" class="px-4 py-2 md:px-6 md:py-3 text-[8px] md:text-[9px] text-brandPink/80 hover:text-brandPink hover:bg-white/5 uppercase tracking-widest transition">Women's Collection</a>
-                <a href="#men" class="px-4 py-2 md:px-6 md:py-3 text-[8px] md:text-[9px] text-brandPink/80 hover:text-brandPink hover:bg-white/5 uppercase tracking-widest transition">Men's Collection</a>
-                <a href="#kids" class="px-4 py-2 md:px-6 md:py-3 text-[8px] md:text-[9px] text-brandPink/80 hover:text-brandPink hover:bg-white/5 uppercase tracking-widest transition">Kids' Collection</a>
-            </div>
-        </div>
-    </div>
-</div>
 </section>
 
 <main class="py-12 md:py-20">
     <section id="women" class="mb-16 md:mb-24 px-4 md:px-12 relative">
-        <div class="flex justify-between items-end mb-6 md:mb-8">
-            <div>
-                <h2 class="text-brandBlack text-[13px] md:text-xl font-light uppercase tracking-[0.2em] md:tracking-[0.3em]">Women's Collection</h2>
-                <div class="w-8 md:w-12 h-[1px] bg-brandPink mt-1 md:mt-2"></div>
-            </div>
-            <a href="womenscollection.html" class="text-[8px] md:text-[9px] uppercase tracking-widest text-brandPinkDark flex items-center gap-1 md:gap-2 font-bold">
-                View All <svg class="w-2.5 h-2.5 md:w-3 md:h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M17 8l4 4m0 0l-4 4m4-4H3" stroke-width="2"/></svg>
-            </a>
-        </div>
+        <h2 class="text-brandBlack text-[13px] md:text-xl font-light uppercase tracking-[0.3em] mb-8">Women's Collection</h2>
         <div id="women-grid" class="collection-grid"></div>
     </section>
 
     <section id="men" class="mb-16 md:mb-24 px-4 md:px-12 relative">
-        <div class="flex justify-between items-end mb-6 md:mb-8">
-            <div>
-                <h2 class="text-brandBlack text-[13px] md:text-xl font-light uppercase tracking-[0.2em] md:tracking-[0.3em]">Men's Collection</h2>
-                <div class="w-8 md:w-12 h-[1px] bg-brandPink mt-1 md:mt-2"></div>
-            </div>
-            <a href="menscollection.html" class="text-[8px] md:text-[9px] uppercase tracking-widest text-brandPinkDark flex items-center gap-1 md:gap-2 font-bold">
-                View All <svg class="w-2.5 h-2.5 md:w-3 md:h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M17 8l4 4m0 0l-4 4m4-4H3" stroke-width="2"/></svg>
-            </a>
-        </div>
+        <h2 class="text-brandBlack text-[13px] md:text-xl font-light uppercase tracking-[0.3em] mb-8">Men's Collection</h2>
         <div id="men-grid" class="collection-grid"></div>
-    </section>
-
-    <section id="kids" class="mb-12 md:mb-20 px-4 md:px-12 relative">
-        <div class="flex justify-between items-end mb-6 md:mb-8">
-            <div>
-                <h2 class="text-brandBlack text-[13px] md:text-xl font-light uppercase tracking-[0.2em] md:tracking-[0.3em]">Kids Collection</h2>
-                <div class="w-8 md:w-12 h-[1px] bg-brandPink mt-1 md:mt-2"></div>
-            </div>
-            <a href="kidscollection.html" class="text-[8px] md:text-[9px] uppercase tracking-widest text-brandPinkDark flex items-center gap-1 md:gap-2 font-bold">
-                View All <svg class="w-2.5 h-2.5 md:w-3 md:h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M17 8l4 4m0 0l-4 4m4-4H3" stroke-width="2"/></svg>
-            </a>
-        </div>
-        <div id="kids-grid" class="collection-grid"></div>
-    </section>
-
-    <section id="mist" class="mb-16 md:mb-24 px-4 md:px-12 relative">
-        <div class="flex justify-between items-end mb-6 md:mb-8">
-            <div>
-                <h2 class="text-brandBlack text-[13px] md:text-xl font-light uppercase tracking-[0.2em] md:tracking-[0.3em]">Mists & Sprays</h2>
-                <div class="w-8 md:w-12 h-[1px] bg-brandPink mt-1 md:mt-2"></div>
-            </div>
-            <a href="mistcollection.html" class="text-[8px] md:text-[9px] uppercase tracking-widest text-brandPinkDark flex items-center gap-1 md:gap-2 font-bold">
-                View All <svg class="w-2.5 h-2.5 md:w-3 md:h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M17 8l4 4m0 0l-4 4m4-4H3" stroke-width="2"/></svg>
-            </a>
-        </div>
-        <div id="mist-grid" class="collection-grid"></div>
     </section>
 </main>
 
-<div id="custom-toast" class="fixed bottom-10 left-1/2 -translate-x-1/2 z-[300] pointer-events-none">
+<div id="custom-toast" class="fixed bottom-10 left-1/2 z-[300] pointer-events-none">
     <div class="bg-brandBlack text-brandPink px-8 py-4 shadow-2xl border border-brandPink/20 flex items-center gap-4">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7" stroke-width="2"/></svg>
-        <span id="toast-message" class="text-[10px] uppercase tracking-[0.2em] font-bold">Item added to bag</span>
+        <span id="toast-message" class="text-[10px] uppercase tracking-[0.2em] font-bold"></span>
     </div>
 </div>
 
@@ -294,246 +219,234 @@
             <a href="#" class="text-brandPink/40 hover:text-brandPink transition uppercase text-[8px] tracking-widest">Facebook</a>
         </div>
     </div>
-</footer>
 
-    <div id="product-modal" class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/90 opacity-0 invisible pointer-events-none">
-        <div class="modal-content bg-white w-full max-w-4xl relative flex flex-col md:flex-row scale-95 shadow-2xl">
-            <button onclick="closeModal()" class="absolute top-4 right-4 z-10 text-brandBlack hover:text-brandPink">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" stroke-width="2"/></svg>
-            </button>
-            <div class="w-full md:w-1/2 bg-gray-100 aspect-square">
-                <img id="modal-img" src="" class="w-full h-full object-cover">
-            </div>
-            <div class="w-full md:w-1/2 p-8 md:p-12 flex flex-col justify-center">
-                <p id="modal-cat" class="text-[10px] uppercase tracking-widest text-brandPinkDark mb-2">Collection</p>
-                <h2 id="modal-name" class="text-2xl font-light uppercase tracking-[0.2em] mb-4">Product Name</h2>
-                <p id="modal-price" class="text-xl font-medium mb-8">₦0</p>
-                <div class="mb-8">
-                    <label class="block text-[10px] uppercase tracking-widest mb-3">Select Size</label>
-                    <div id="modal-sizes" class="flex flex-wrap gap-2"></div>
+<div id="product-modal" class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/90 opacity-0 invisible pointer-events-none">
+    <div class="modal-content bg-white w-full max-w-4xl relative flex flex-col md:flex-row scale-95">
+        <button onclick="closeModal()" class="absolute top-4 right-4 z-10"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" stroke-width="2"/></svg></button>
+        <div class="w-full md:w-1/2"><img id="modal-img" src="" class="w-full h-full object-cover"></div>
+        <div class="w-full md:w-1/2 p-8 md:p-12">
+            <h2 id="modal-name" class="text-2xl font-light uppercase tracking-widest mb-4"></h2>
+            <p id="modal-price" class="text-xl mb-8">₦0</p>
+            <div class="mb-6">
+                <label class="block text-[10px] uppercase mb-2 tracking-widest">Quantity</label>
+                <div class="flex items-center border border-gray-200 w-max">
+                    <button onclick="updateQtyUI('modal-qty', -1)" class="px-3 py-2">-</button>
+                    <input type="number" id="modal-qty" value="1" min="1" class="w-12 text-center text-xs focus:outline-none qty-input">
+                    <button onclick="updateQtyUI('modal-qty', 1)" class="px-3 py-2">+</button>
                 </div>
-                <button id="modal-add-btn" class="w-full bg-brandBlack text-brandPink py-4 uppercase tracking-[0.3em] text-xs hover:bg-brandPink hover:text-brandBlack transition-all">Add to Bag</button>
             </div>
+            <div id="modal-sizes" class="flex gap-2 mb-8"></div>
+            <button id="modal-add-btn" class="w-full bg-brandBlack text-brandPink py-4 uppercase text-xs tracking-widest">Add to Bag</button>
         </div>
     </div>
+</div>
 
-    <script>
-        // --- 1. Initialize Cart & Global State ---
-        let currentProducts = [];
-        let cart = JSON.parse(localStorage.getItem('tmb_cart')) || [];
-        
-        // --- 1. NEW NOTIFICATION HELPER ---
+<script>
+    let currentProducts = [];
+    let cart = JSON.parse(localStorage.getItem('tmb_cart')) || [];
+
     function showNotification(message) {
-    const toast = document.getElementById('custom-toast');
-    const toastMsg = document.getElementById('toast-message');
-    
-    toastMsg.innerText = message;
-    toast.classList.add('show');
-    
-    // Hide after 3 seconds
-    setTimeout(() => {
-        toast.classList.remove('show');
-    }, 3000);
-}
-
-        // Sync the red bubble count on page load
-        function updateCartBadge() {
-            const count = cart.reduce((sum, item) => sum + item.quantity, 0);
-            document.getElementById('cart-count').innerText = count;
-        }
-        updateCartBadge();
-
-// --- 2. UPDATE addToCart (Main Grid) ---
-function addToCart(productId) {
-    const p = currentProducts.find(prod => prod._id === productId);
-    if (!p) return;
-
-    const sizeSelect = document.querySelector(`select[data-id="${productId}"]`);
-    let selectedSize = "Default";
-    let selectedPrice = p.variants ? p.variants[0].price : p.price;
-
-    if (sizeSelect) {
-        selectedSize = sizeSelect.value;
-        selectedPrice = sizeSelect.options[sizeSelect.selectedIndex].dataset.price;
+        const toast = document.getElementById('custom-toast');
+        document.getElementById('toast-message').innerText = message;
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 3000);
     }
 
-    const cartItem = {
-        id: p._id,
-        name: p.name,
-        price: Number(selectedPrice),
-        size: selectedSize,
-        image: p.imageUrl,
-        quantity: 1
-    };
-
-    const existingItemIndex = cart.findIndex(item => item.id === productId && item.size === selectedSize);
-
-    if (existingItemIndex > -1) {
-        cart[existingItemIndex].quantity += 1;
-    } else {
-        cart.push(cartItem);
+    function updateCartBadge() {
+        const count = cart.reduce((sum, item) => sum + item.quantity, 0);
+        document.getElementById('cart-count').innerText = count;
     }
 
-    localStorage.setItem('tmb_cart', JSON.stringify(cart));
-    updateCartBadge();
-    
-    // REPLACED alert() WITH showNotification
-    showNotification(`${p.name} added to bag`);
-}
-        // --- 3. UI Interactions ---
-        function toggleSidebar(open) {
-            const sidebar = document.getElementById('sidebar');
-            const overlay = document.getElementById('sidebar-overlay');
-            if (open) {
-                sidebar.classList.replace('sidebar-closed', 'sidebar-open');
-                overlay.classList.remove('hidden');
-            } else {
-                sidebar.classList.replace('sidebar-open', 'sidebar-closed');
-                overlay.classList.add('hidden');
+    function updateQtyUI(id, delta) {
+        const input = document.getElementById(id);
+        const newVal = parseInt(input.value) + delta;
+        if (newVal >= 1) input.value = newVal;
+    }
+
+    // --- NEW: FETCH STOCK FROM SERVER ---
+    async function fetchAvailableStock(productId, selectedSize) {
+        try {
+            const response = await fetch(`/api/products/${productId}/stock`);
+            const data = await response.json();
+            
+            if (data.variants) {
+                // Find the stock for the specific size the user chose
+                const variant = data.variants.find(v => v.size === selectedSize);
+                return variant ? variant.stock : 0;
             }
+            return 0;
+        } catch (error) {
+            console.error("Stock check failed:", error);
+            return 0; // Prevent overselling if server is down
+        }
+    }
+
+    // --- UPDATED: ASYNC ADD TO CART WITH SERVER VALIDATION ---
+    async function addToCart(productId, isModal = false) {
+        const p = currentProducts.find(prod => prod._id === productId);
+        if (!p) return;
+
+        let selectedSize, selectedPrice, quantity, btnElement;
+
+        if (isModal) {
+            selectedSize = window.modalSelectedSize;
+            selectedPrice = window.modalSelectedPrice;
+            quantity = parseInt(document.getElementById('modal-qty').value);
+            btnElement = document.getElementById('modal-add-btn');
+        } else {
+            const sizeSelect = document.querySelector(`select[data-id="${productId}"]`);
+            const qtyInput = document.querySelector(`input[data-qty-id="${productId}"]`);
+            selectedSize = sizeSelect.value;
+            selectedPrice = sizeSelect.options[sizeSelect.selectedIndex].dataset.price;
+            quantity = parseInt(qtyInput.value);
+            btnElement = event.target; // Captures the button clicked
         }
 
-        function openCart() {
-            window.location.href = 'cart.html';
+        // Visual Feedback
+        const originalBtnText = btnElement.innerText;
+        btnElement.innerText = "CHECKING...";
+        btnElement.disabled = true;
+
+        // 1. Get real-time stock from Backend
+        const stockAvailable = await fetchAvailableStock(productId, selectedSize);
+
+        // 2. Calculate current demand
+        const existingInCart = cart.find(item => item.id === productId && item.size === selectedSize);
+        const currentCartQty = existingInCart ? existingInCart.quantity : 0;
+
+        // 3. Validate
+        if (currentCartQty + quantity > stockAvailable) {
+            showNotification(`Sorry, only ${stockAvailable} left in stock!`);
+            btnElement.innerText = originalBtnText;
+            btnElement.disabled = false;
+            return;
         }
 
-        // --- 4. Modal Logic (Updated with variant selection) ---
-       // --- 3. UPDATE openModal (Add Button inside Modal) ---
-function openModal(productId) {
-    const p = currentProducts.find(prod => prod._id === productId);
-    if (!p) return;
-
-    document.getElementById('modal-img').src = p.imageUrl;
-    document.getElementById('modal-name').innerText = p.name;
-    document.getElementById('modal-cat').innerText = p.category + " Collection";
-    
-    const variants = p.variants || [{size: 'Default', price: p.price || 0}];
-    document.getElementById('modal-price').innerText = `₦${Number(variants[0].price).toLocaleString()}`;
-    
-    let selectedModalSize = variants[0].size;
-    let selectedModalPrice = variants[0].price;
-
-    const sizeContainer = document.getElementById('modal-sizes');
-    sizeContainer.innerHTML = variants.map((v, i) => `
-        <button onclick="updateModalSelection('${v.price}', '${v.size}', this)" class="size-btn px-4 py-2 border ${i===0?'border-brandPink bg-brandPink/5':'border-gray-200'} text-[10px] uppercase transition-all">
-            ${v.size}
-        </button>
-    `).join('');
-
-    window.updateModalSelection = (price, size, btn) => {
-        selectedModalSize = size;
-        selectedModalPrice = price;
-        document.getElementById('modal-price').innerText = `₦${Number(price).toLocaleString()}`;
-        document.querySelectorAll('.size-btn').forEach(b => {
-            b.classList.remove('border-brandPink', 'bg-brandPink/5');
-            b.classList.add('border-gray-200');
-        });
-        btn.classList.replace('border-gray-200', 'border-brandPink');
-        btn.classList.add('bg-brandPink/5');
-    };
-
-         document.getElementById('modal-add-btn').onclick = () => {
-        const item = {
+        // 4. Update Cart
+        const cartItem = {
             id: p._id,
+            productId: p._id, // Added to match backend order requirements
             name: p.name,
-            price: Number(selectedModalPrice),
-            size: selectedModalSize,
+            price: Number(selectedPrice),
+            size: selectedSize,
             image: p.imageUrl,
-            quantity: 1
+            quantity: quantity
         };
-        
-        const idx = cart.findIndex(i => i.id === p._id && i.size === selectedModalSize);
-        if(idx > -1) cart[idx].quantity += 1;
-        else cart.push(item);
-        
+
+        if (existingInCart) {
+            existingInCart.quantity += quantity;
+        } else {
+            cart.push(cartItem);
+        }
+
         localStorage.setItem('tmb_cart', JSON.stringify(cart));
         updateCartBadge();
+        showNotification(`${quantity} ${p.name} added to bag`);
         
-        // UX: Close modal first, then show notification
-        closeModal();
-        showNotification("Added to bag");
-    };
+        // Reset Button
+        btnElement.innerText = originalBtnText;
+        btnElement.disabled = false;
+        if (isModal) closeModal();
+    }
 
-    const modal = document.getElementById('product-modal');
-    modal.classList.remove('invisible', 'opacity-0', 'pointer-events-none');
-    modal.querySelector('.modal-content').classList.remove('scale-95');
-    document.body.style.overflow = 'hidden';
-}
+    async function loadProducts() {
+        try {
+            const response = await fetch('/api/products');
+            currentProducts = await response.json();
 
-        function closeModal() {
-            const modal = document.getElementById('product-modal');
-            modal.classList.add('invisible', 'opacity-0', 'pointer-events-none');
-            modal.querySelector('.modal-content').classList.add('scale-95');
-            document.body.style.overflow = '';
-        }
-
-        // --- 5. Rendering & Data Fetching ---
-        async function loadProducts() {
-            try {
-                const response = await fetch('/api/products');
-                currentProducts = await response.json();
-
-                const renderCard = (p) => {
-                    const variants = p.variants || [{size: 'Default', price: p.price || 0}];
-                    return `
-                    <div class="product-card bg-white p-3 group">
-                        <div onclick="openModal('${p._id}')" class="aspect-[4/5] overflow-hidden mb-4 bg-gray-50 cursor-pointer">
-                            <img src="${p.imageUrl}" class="w-full h-full object-cover transition duration-700 group-hover:scale-110">
-                        </div>
-                        <div class="text-center">
-                            <h3 class="uppercase font-bold text-[8px] tracking-widest mb-1 truncate">${p.name}</h3>
-                            <p id="price-${p._id}" class="text-brandPinkDark font-medium text-[10px] mb-3">₦${Number(variants[0].price).toLocaleString()}</p>
-                            <select data-id="${p._id}" onchange="handleSizeChange(this, '${p._id}')" class="size-select w-full border border-gray-100 text-[8px] uppercase py-1.5 px-2 mb-2 focus:outline-none">
+            const renderCard = (p) => {
+                const variants = p.variants || [{size: 'Default', price: p.price || 0, stock: p.stock || 0}];
+                return `
+                <div class="product-card bg-white p-3 group">
+                    <div onclick="openModal('${p._id}')" class="aspect-[4/5] overflow-hidden mb-4 bg-gray-50 cursor-pointer">
+                        <img src="${p.imageUrl}" class="w-full h-full object-cover">
+                    </div>
+                    <div class="text-center">
+                        <h3 class="uppercase font-bold text-[8px] tracking-widest mb-1 truncate">${p.name}</h3>
+                        <p id="price-${p._id}" class="text-brandPinkDark font-medium text-[10px] mb-3">₦${Number(variants[0].price).toLocaleString()}</p>
+                        
+                        <div class="flex gap-1 mb-2">
+                            <select data-id="${p._id}" onchange="updatePriceDisplay('${p._id}', this)" class="size-select flex-1 border border-gray-100 text-[8px] uppercase py-1.5 px-2 focus:outline-none">
                                 ${variants.map(v => `<option value="${v.size}" data-price="${v.price}">${v.size}</option>`).join('')}
                             </select>
-                            <button onclick="addToCart('${p._id}')" class="w-full bg-brandBlack text-brandPink text-[8px] py-2.5 uppercase tracking-widest hover:bg-brandPink hover:text-brandBlack transition-all">Add to Bag</button>
+                            <div class="flex items-center border border-gray-100">
+                                <input type="number" data-qty-id="${p._id}" value="1" min="1" class="w-8 text-center text-[9px] focus:outline-none qty-input">
+                            </div>
                         </div>
-                    </div>`;
-                };
+                        
+                        <button onclick="addToCart('${p._id}', false)" class="w-full bg-brandBlack text-brandPink text-[8px] py-2.5 uppercase tracking-widest hover:bg-brandPink hover:text-brandBlack transition-all">Add to Bag</button>
+                    </div>
+                </div>`;
+            };
 
-                const populateGrid = (cat, elementId) => {
-                    const filtered = currentProducts.filter(p => p.category?.toLowerCase() === cat).slice(0, 5);
-                    document.getElementById(elementId).innerHTML = filtered.length > 0 ? filtered.map(renderCard).join('') : `<p class="text-[10px] uppercase text-gray-400 py-10">Vault Opening Soon...</p>`;
-                };
+            const populateGrid = (cat, elementId) => {
+                const filtered = currentProducts.filter(p => p.category?.toLowerCase() === cat);
+                document.getElementById(elementId).innerHTML = filtered.map(renderCard).join('');
+            };
 
-                const populateMistGrid = (elementId) => {
-                    const allMistsInDb = currentProducts.filter(p => p.category?.toLowerCase() === 'mist');
-                    const mists = allMistsInDb.filter(p => p.subCategory === 'Body Mist').slice(0, 3);
-                    const sprays = allMistsInDb.filter(p => p.subCategory === 'Body Spray').slice(0, 3);
-                    const combined = [...mists, ...sprays];
-                    document.getElementById(elementId).innerHTML = combined.length > 0 ? combined.map(renderCard).join('') : `<p class="text-[10px] uppercase text-gray-400 py-10">Vault Opening Soon...</p>`;
-                };
+            populateGrid('women', 'women-grid');
+            populateGrid('men', 'men-grid');
 
-                populateGrid('women', 'women-grid');
-                populateGrid('men', 'men-grid');
-                populateGrid('kids', 'kids-grid');
-                populateMistGrid('mist-grid');
+        } catch (err) { console.error("Error:", err); }
+    }
 
-            } catch (err) { console.error("Error loading products:", err); }
+    // Helper to update card price when size changes
+    function updatePriceDisplay(productId, selectElement) {
+        const price = selectElement.options[selectElement.selectedIndex].dataset.price;
+        document.getElementById(`price-${productId}`).innerText = `₦${Number(price).toLocaleString()}`;
+    }
+
+    function openModal(productId) {
+        const p = currentProducts.find(prod => prod._id === productId);
+        const variants = p.variants || [{size: 'Default', price: p.price || 0}];
+        
+        document.getElementById('modal-img').src = p.imageUrl;
+        document.getElementById('modal-name').innerText = p.name;
+        document.getElementById('modal-price').innerText = `₦${Number(variants[0].price).toLocaleString()}`;
+        document.getElementById('modal-qty').value = 1;
+
+        window.modalSelectedSize = variants[0].size;
+        window.modalSelectedPrice = variants[0].price;
+
+        const sizeContainer = document.getElementById('modal-sizes');
+        sizeContainer.innerHTML = variants.map((v, i) => `
+            <button onclick="selectModalSize(this, '${v.size}', ${v.price})" class="modal-size-btn px-3 py-1 border border-gray-200 text-[9px] uppercase hover:border-brandPink transition">${v.size}</button>
+        `).join('');
+
+        document.getElementById('modal-add-btn').onclick = () => addToCart(productId, true);
+        document.getElementById('product-modal').classList.remove('invisible', 'opacity-0');
+    }
+
+    function selectModalSize(btn, size, price) {
+        window.modalSelectedSize = size;
+        window.modalSelectedPrice = price;
+        document.getElementById('modal-price').innerText = `₦${Number(price).toLocaleString()}`;
+        
+        // Visual toggle for buttons
+        document.querySelectorAll('.modal-size-btn').forEach(b => b.classList.remove('bg-brandBlack', 'text-white'));
+        btn.classList.add('bg-brandBlack', 'text-white');
+    }
+
+    function closeModal() {
+        document.getElementById('product-modal').classList.add('invisible', 'opacity-0');
+    }
+
+    function toggleSidebar(open) {
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('sidebar-overlay');
+        if (open) {
+            sidebar.classList.remove('sidebar-closed');
+            sidebar.classList.add('sidebar-open');
+            overlay.classList.remove('hidden');
+        } else {
+            sidebar.classList.add('sidebar-closed');
+            sidebar.classList.remove('sidebar-open');
+            overlay.classList.add('hidden');
         }
+    }
 
-        function handleSizeChange(select, productId) {
-            const price = select.options[select.selectedIndex].getAttribute('data-price');
-            document.getElementById(`price-${productId}`).innerText = `₦${Number(price).toLocaleString()}`;
-        }
-
-        // --- 6. Slider Interval ---
-        let currentSlide = 1;
-        setInterval(() => {
-            const s1 = document.getElementById(`slide-group-1`);
-            const s2 = document.getElementById(`slide-group-2`);
-            if (currentSlide === 1) {
-                s1.classList.replace('slide-active', 'slide-hidden');
-                s2.classList.replace('slide-hidden', 'slide-active');
-                currentSlide = 2;
-            } else {
-                s2.classList.replace('slide-active', 'slide-hidden');
-                s1.classList.replace('slide-hidden', 'slide-active');
-                currentSlide = 1;
-            }
-        }, 5000);
-
-        loadProducts();
-    </script>
+    loadProducts();
+    updateCartBadge();
+</script>
 </body>
 </html>

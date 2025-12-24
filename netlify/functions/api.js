@@ -103,24 +103,18 @@ router.post('/admin/login', async (req, res) => {
     } catch (e) { res.status(500).json({ error: "Login failed" }); }
 });
 
-// --- [CRITICAL FIX] PRODUCT MANAGEMENT (CREATE) ---
+// --- PRODUCT MANAGEMENT (CREATE) ---
 router.post('/admin/products', authenticateAdmin, async (req, res) => {
     try {
-        if (!s3) throw new Error("Storage (S3/IDrive) not configured. Check environment variables.");
-        
+        if (!s3) throw new Error("Storage not configured.");
         const db = await getDb();
         const { name, variants, description, category, subCategory, imageBase64, fileName, contentType } = req.body;
 
-        // Validation to prevent 500 errors from missing data
-        if (!imageBase64 || !fileName) {
-            return res.status(400).json({ error: "Image data and file name are required." });
-        }
+        if (!imageBase64 || !fileName) return res.status(400).json({ error: "Image required" });
 
         const buffer = Buffer.from(imageBase64, 'base64');
-        const cleanFileName = fileName.replace(/\s+/g, '-');
-        const uploadKey = `${category}/${Date.now()}-${cleanFileName}`;
+        const uploadKey = `${category}/${Date.now()}-${fileName.replace(/\s+/g, '-')}`;
 
-        // S3 Upload
         await s3.upload({
             Bucket: BUCKET_NAME,
             Key: uploadKey,
@@ -128,15 +122,9 @@ router.post('/admin/products', authenticateAdmin, async (req, res) => {
             ContentType: contentType || 'image/jpeg'
         }).promise();
 
-        const formattedVariants = (variants || []).map(v => ({
-            size: String(v.size),
-            price: parseFloat(v.price) || 0,
-            stock: parseInt(v.stock) || 0 
-        }));
-
         const product = { 
             name, 
-            variants: formattedVariants,
+            variants: (variants || []).map(v => ({ size: String(v.size), price: parseFloat(v.price), stock: parseInt(v.stock) })),
             description, 
             category: (category || "unassigned").toLowerCase().trim(),
             subCategory: subCategory || "", 
@@ -145,11 +133,8 @@ router.post('/admin/products', authenticateAdmin, async (req, res) => {
         };
 
         await db.collection("products").insertOne(product);
-        res.status(201).json({ message: "Product added successfully" });
-    } catch (e) { 
-        console.error("Product Creation Error:", e);
-        res.status(500).json({ error: e.message }); 
-    }
+        res.status(201).json({ message: "Product added" });
+    } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
 // --- PRODUCT MANAGEMENT (UPDATE) ---
@@ -157,203 +142,100 @@ router.put('/admin/products/:id', authenticateAdmin, async (req, res) => {
     try {
         const db = await getDb();
         const productId = req.params.id;
-        const { name, variants, description, category, subCategory, imageBase64, fileName, contentType } = req.body;
+        const { name, variants, description, category, subCategory, imageBase64, fileName } = req.body;
 
-        const existingProduct = await db.collection("products").findOne({ _id: new ObjectId(productId) });
-        if (!existingProduct) return res.status(404).json({ error: "Product not found" });
+        const existing = await db.collection("products").findOne({ _id: new ObjectId(productId) });
+        if (!existing) return res.status(404).json({ error: "Product not found" });
 
-        let updatedImageKey = existingProduct.imageKey;
-
+        let imageKey = existing.imageKey;
         if (imageBase64 && fileName) {
-            const buffer = Buffer.from(imageBase64, 'base64');
-            const cleanFileName = fileName.replace(/\s+/g, '-');
-            updatedImageKey = `${category}/${Date.now()}-${cleanFileName}`;
-
-            await s3.upload({
-                Bucket: BUCKET_NAME,
-                Key: updatedImageKey,
-                Body: buffer,
-                ContentType: contentType || 'image/jpeg'
-            }).promise();
-
-            if (existingProduct.imageKey) {
-                try { await s3.deleteObject({ Bucket: BUCKET_NAME, Key: existingProduct.imageKey }).promise(); } 
-                catch (delErr) { console.error("Old image cleanup failed"); }
-            }
+            imageKey = `${category}/${Date.now()}-${fileName.replace(/\s+/g, '-')}`;
+            await s3.upload({ Bucket: BUCKET_NAME, Key: imageKey, Body: Buffer.from(imageBase64, 'base64') }).promise();
+            if (existing.imageKey) await s3.deleteObject({ Bucket: BUCKET_NAME, Key: existing.imageKey }).promise();
         }
-
-        const formattedVariants = (variants || []).map(v => ({
-            size: String(v.size),
-            price: parseFloat(v.price) || 0,
-            stock: parseInt(v.stock) || 0 
-        }));
 
         await db.collection("products").updateOne(
             { _id: new ObjectId(productId) },
-            { 
-                $set: { 
-                    name, 
-                    variants: formattedVariants, 
-                    description, 
-                    category: (category || "unassigned").toLowerCase().trim(), 
-                    subCategory: subCategory || "",
-                    imageKey: updatedImageKey, 
-                    updatedAt: new Date() 
-                } 
-            }
+            { $set: { name, variants, description, category, subCategory, imageKey, updatedAt: new Date() } }
         );
-
-        res.json({ message: "Product updated successfully" });
-    } catch (e) { 
-        console.error("Update Error:", e);
-        res.status(500).json({ error: e.message }); 
-    }
-});
-
-// --- PRODUCT MANAGEMENT (DELETE) ---
-router.delete('/admin/products/:id', authenticateAdmin, async (req, res) => {
-    try {
-        const db = await getDb();
-        const productId = req.params.id;
-        const product = await db.collection("products").findOne({ _id: new ObjectId(productId) });
-        if (!product) return res.status(404).json({ error: "Product not found" });
-
-        if (s3 && product.imageKey) {
-            await s3.deleteObject({ Bucket: BUCKET_NAME, Key: product.imageKey }).promise();
-        }
-
-        await db.collection("products").deleteOne({ _id: new ObjectId(productId) });
-        res.json({ message: "Product deleted" });
+        res.json({ message: "Updated successfully" });
     } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
-// --- UPDATED ORDER HANDLING WITH ATOMIC STOCK UPDATES ---
+// --- [NEW] FETCH STOCK FOR SPECIFIC PRODUCT (Used by Shop/Cart) ---
+router.get('/products/:id/stock', async (req, res) => {
+    try {
+        const db = await getDb();
+        const product = await db.collection("products").findOne(
+            { _id: new ObjectId(req.params.id) },
+            { projection: { variants: 1 } }
+        );
+        if (!product) return res.status(404).json({ error: "Product not found" });
+        res.json({ variants: product.variants || [] });
+    } catch (e) { res.status(500).json({ error: "Stock fetch failed" }); }
+});
+
+// --- UPDATED ORDER HANDLING ---
 router.post('/orders', async (req, res) => {
     try {
         const db = await getDb();
         const { items, customerDetails, totalPrice, paymentMethod } = req.body; 
 
-        if (!items || items.length === 0) {
-            return res.status(400).json({ error: "Cart is empty" });
-        }
+        if (!items || items.length === 0) return res.status(400).json({ error: "Empty cart" });
 
-        // 1. Create the Order Record
-        const orderRecord = {
-            customerDetails,
-            items: items.map(item => ({
-                productId: item.productId,
-                name: item.name,
-                size: item.size,
-                quantity: parseInt(item.quantity),
-                priceAtPurchase: parseFloat(item.price)
-            })),
-            totalPrice: parseFloat(totalPrice),
-            paymentMethod: paymentMethod || 'online',
-            status: 'pending',
-            createdAt: new Date()
-        };
-
-        // 2. Process Stock Updates and Validation
-        // We use a Promise.all to run these updates concurrently
+        // Atomic stock decrement for each item/size combo
         const updateResults = await Promise.all(items.map(async (item) => {
             const qty = Math.abs(parseInt(item.quantity));
-            
-            // Atomic update: Only decrement if current stock >= requested quantity
             const result = await db.collection("products").updateOne(
                 { 
                     _id: new ObjectId(item.productId), 
                     "variants.size": item.size,
-                    "variants.stock": { $gte: qty } // Prevents negative stock
+                    "variants.stock": { $gte: qty } 
                 },
-                { 
-                    $inc: { "variants.$.stock": -qty } 
-                }
+                { $inc: { "variants.$.stock": -qty } }
             );
-
-            return {
-                name: item.name,
-                size: item.size,
-                success: result.modifiedCount > 0
-            };
+            return { name: item.name, success: result.modifiedCount > 0 };
         }));
 
-        // 3. Check if any items failed due to stock issues
-        const failedItems = updateResults.filter(r => !r.success);
-        if (failedItems.length > 0) {
-            // Note: In a production app, you might want to roll back (reverse) 
-            // the successful updates if one fails. For simplicity here, we warn the user.
-            return res.status(400).json({ 
-                error: "Some items are out of stock", 
-                failedItems 
-            });
+        const failed = updateResults.filter(r => !r.success);
+        if (failed.length > 0) {
+            return res.status(400).json({ error: "Items out of stock", failed });
         }
 
-        // 4. Finalize the order in the database
-        const result = await db.collection("orders").insertOne(orderRecord);
-
-        res.status(201).json({ 
-            message: "Order placed successfully", 
-            orderId: result.insertedId 
+        const result = await db.collection("orders").insertOne({
+            customerDetails,
+            items,
+            totalPrice,
+            paymentMethod: paymentMethod || 'bank_transfer',
+            status: 'pending',
+            createdAt: new Date()
         });
 
-    } catch (e) { 
-        console.error("Order Processing Error:", e);
-        res.status(500).json({ error: "Order failed: " + e.message }); 
-    }
+        res.status(201).json({ message: "Order successful", orderId: result.insertedId });
+    } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
-// --- PUBLIC COLLECTION FETCH (UPDATED) ---
+// --- PUBLIC COLLECTION FETCH ---
 router.get('/products', async (req, res) => {
     try {
         const db = await getDb();
-        const items = await db.collection("products")
-            .find({})
-            .sort({ createdAt: -1, _id: -1 }) 
-            .toArray();
+        const items = await db.collection("products").find({}).sort({ createdAt: -1 }).toArray();
         
-        const refreshedItems = items.map(item => {
-            // 1. Handle S3 Signed URLs or Fallback Image
+        const processed = items.map(item => {
             if (s3 && item.imageKey) {
-                try {
-                    item.imageUrl = s3.getSignedUrl('getObject', {
-                        Bucket: BUCKET_NAME,
-                        Key: item.imageKey,
-                        Expires: 86400 
-                    });
-                } catch (urlErr) {
-                    item.imageUrl = "https://i.imgur.com/CVKXV7R.png"; 
-                }
-            } else {
-                item.imageUrl = item.imageUrl || "https://i.imgur.com/CVKXV7R.png";
+                item.imageUrl = s3.getSignedUrl('getObject', { Bucket: BUCKET_NAME, Key: item.imageKey, Expires: 86400 });
             }
-
-            // 2. Ensure Variants exist (Crucial for price rendering)
-            if (!item.variants || !Array.isArray(item.variants) || item.variants.length === 0) {
-                item.variants = [{ size: "Default", price: item.price || 0, stock: item.stock || 0 }];
+            // Fallback for missing variants
+            if (!item.variants || item.variants.length === 0) {
+                item.variants = [{ size: "Standard", price: item.price || 0, stock: item.stock || 0 }];
             }
-
-            // 3. Normalize Category (Standardizes to 'mist', 'women', 'men', 'kids')
-            item.category = item.category ? item.category.toLowerCase().trim() : "unassigned";
-
-            // 4. Normalize Sub-Category (Critical for the 3 Mists + 3 Sprays logic)
-            // This ensures "body mist" becomes "Body Mist" for the frontend filter
-            if (item.subCategory) {
-                const sub = item.subCategory.toLowerCase().trim();
-                if (sub.includes('mist')) item.subCategory = 'Body Mist';
-                else if (sub.includes('spray')) item.subCategory = 'Body Spray';
-            } else {
-                item.subCategory = "General";
-            }
-
             return item;
         });
 
-        res.json(refreshedItems);
-    } catch (e) { 
-        console.error("Backend Fetch Error:", e);
-        res.status(500).json({ error: "Failed to load collection" }); 
-    }
+        res.json(processed);
+    } catch (e) { res.status(500).json({ error: "Load failed" }); }
 });
+
 app.use('/.netlify/functions/api', router);
 app.use('/api', router);
 module.exports.handler = serverless(app);

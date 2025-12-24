@@ -27,9 +27,22 @@
         .sidebar-closed { transform: translateX(-100%); transition: transform 0.3s ease-in-out; }
         .sidebar-open { transform: translateX(0); transition: transform 0.3s ease-in-out; }
         
-        /* Toast Animation */
-        #notification-toast {
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        #notification-toast { transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+
+        /* WhatsApp Pulse Animation */
+        @keyframes whatsapp-pulse {
+            0% { box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.4); }
+            70% { box-shadow: 0 0 0 15px rgba(37, 211, 102, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(37, 211, 102, 0); }
+        }
+        .whatsapp-pulse { animation: whatsapp-pulse 2s infinite; }
+
+        /* MOBILE OPTIMIZATION */
+        @media (max-width: 768px) {
+            .cart-item-title { font-size: 14px !important; font-weight: 900 !important; line-height: 1.2; }
+            .cart-item-price { font-size: 15px !important; font-weight: 900 !important; color: #000; }
+            .qty-control { border-width: 1.5px !important; border-color: #000 !important; }
+            .qty-btn { padding: 10px 18px !important; font-weight: 800 !important; }
         }
     </style>
 </head>
@@ -68,6 +81,7 @@
     </nav>
 
     <div id="sidebar-overlay" onclick="toggleSidebar(false)" class="fixed inset-0 bg-black/60 z-[110] hidden backdrop-blur-sm"></div>
+    
     <aside id="sidebar" class="fixed top-0 left-0 h-full w-64 bg-brandBlack z-[120] sidebar-closed p-6 flex flex-col">
         <button onclick="toggleSidebar(false)" class="self-end text-brandPink mb-10">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" stroke-width="2"></path></svg>
@@ -80,15 +94,15 @@
         </div>
     </aside>
 
-    <main class="max-w-7xl mx-auto px-4 md:px-12 py-12 md:py-20">
+    <main class="max-w-7xl mx-auto px-4 md:px-12 py-12 md:py-20 min-h-[60vh]">
         <div class="mb-12">
-            <h2 class="text-brandBlack text-xl md:text-3xl font-light uppercase tracking-luxury">Your Bag</h2>
+            <h2 class="text-brandBlack text-2xl md:text-3xl font-light uppercase tracking-luxury">Your Bag</h2>
             <div class="w-12 h-[1px] bg-brandPink mt-4"></div>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-16">
             <div class="lg:col-span-2 space-y-12">
-                <div id="cart-items-container" class="space-y-8"></div>
+                <div id="cart-items-container" class="space-y-10"></div>
 
                 <section class="space-y-8 pt-8 border-t border-gray-100">
                     <h3 class="text-[11px] font-bold uppercase tracking-widest text-brandBlack">1. Delivery & Contact Details</h3>
@@ -143,7 +157,7 @@
                             </div>
                         </div>
 
-                        <button onclick="handleCheckout()" class="w-full bg-brandBlack text-brandPink py-4 uppercase tracking-[0.3em] text-[10px] hover:bg-brandPink hover:text-brandBlack transition-all">
+                        <button onclick="handleCheckout()" class="w-full bg-brandBlack text-brandPink py-4 uppercase tracking-[0.3em] text-[10px] font-bold hover:bg-brandPink hover:text-brandBlack transition-all">
                             Place Order
                         </button>
                     </section>
@@ -152,135 +166,247 @@
         </div>
     </main>
 
-    <script>
-        let cart = JSON.parse(localStorage.getItem('tmb_cart')) || [];
-        const FLAT_SHIPPING_FEE = 5000; 
-
-        // New Custom Notification Logic
-        function showNotification(message) {
-            const toast = document.getElementById('notification-toast');
-            const msgSpan = document.getElementById('toast-message');
-            
-            msgSpan.innerText = message;
-            
-            // Show toast
-            toast.classList.remove('opacity-0', 'translate-y-10', 'pointer-events-none');
-            toast.classList.add('opacity-100', 'translate-y-0');
-            
-            // Hide toast after 3.5 seconds
-            setTimeout(() => {
-                toast.classList.add('opacity-0', 'translate-y-10', 'pointer-events-none');
-                toast.classList.remove('opacity-100', 'translate-y-0');
-            }, 3500);
-        }
-
-        function toggleSidebar(open) {
-            const sidebar = document.getElementById('sidebar');
-            const overlay = document.getElementById('sidebar-overlay');
-            sidebar.className = `fixed top-0 left-0 h-full w-64 bg-brandBlack z-[120] p-6 flex flex-col ${open ? 'sidebar-open' : 'sidebar-closed'}`;
-            overlay.classList.toggle('hidden', !open);
-        }
-
-        function togglePaymentUI() {
-            const method = document.querySelector('input[name="pay-method"]:checked').value;
-            document.getElementById('bank-details').classList.toggle('hidden', method !== 'bank');
-        }
-
-        function renderCart() {
-            const container = document.getElementById('cart-items-container');
-            const countBadge = document.getElementById('cart-count');
-            const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
-            countBadge.innerText = totalItems;
-
-            if (cart.length === 0) {
-                container.innerHTML = `
-                    <div class="py-20 text-center uppercase tracking-widest text-[10px] text-gray-400">
-                        Your bag is empty. <br>
-                        <a href="shop.html" class="text-brandPinkDark mt-4 inline-block underline">Go Shopping</a>
-                    </div>`;
-                updateTotals();
-                return;
-            }
-
-            container.innerHTML = cart.map((item, index) => `
-                <div class="flex gap-6 pb-6 border-b border-gray-50 items-center">
-                    <div class="w-24 h-32 bg-gray-50 overflow-hidden">
-                        <img src="${item.image}" class="w-full h-full object-cover" alt="${item.name}">
+    <footer class="bg-brandBlack pt-16 pb-10 px-6 md:px-12 border-t border-brandPink/5 mt-20">
+        <div class="max-w-7xl mx-auto mb-16">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-12">
+                <div class="col-span-1">
+                    <h2 class="text-brandPink text-sm font-black tracking-luxury uppercase mb-6">The Motunde Brand</h2>
+                    <p class="text-brandPink/50 text-[10px] leading-relaxed tracking-widest uppercase max-w-xs">
+                        Timeless elegance for the modern individual. Redefining fashion through quality and luxury.
+                    </p>
+                </div>
+                <div class="col-span-1 md:col-span-2 grid grid-cols-2 gap-4">
+                    <div>
+                        <h4 class="text-brandPink text-[10px] font-bold tracking-widest uppercase mb-6">Collections</h4>
+                        <ul class="text-brandPink/60 text-[9px] space-y-4 tracking-widest uppercase">
+                            <li><a href="shop.html#women" class="hover:text-brandPink transition">Women</a></li>
+                            <li><a href="shop.html#men" class="hover:text-brandPink transition">Men</a></li>
+                            <li><a href="shop.html#kids" class="hover:text-brandPink transition">Kids</a></li>
+                        </ul>
                     </div>
-                    <div class="flex-1">
-                        <div class="flex justify-between items-start">
-                            <div>
-                                <h4 class="text-[11px] font-bold uppercase tracking-widest">${item.name}</h4>
-                                <p class="text-[10px] text-brandPinkDark uppercase mt-1">Size: ${item.size}</p>
-                            </div>
-                            <button onclick="removeItem(${index})" class="text-gray-300 hover:text-red-500 text-xl">&times;</button>
-                        </div>
-                        <div class="flex justify-between items-center mt-6">
-                            <div class="flex border border-gray-100 text-[10px]">
-                                <button onclick="updateQty(${index},-1)" class="px-3 py-1 hover:bg-gray-50">-</button>
-                                <span class="px-4 py-1 border-x border-gray-100">${item.quantity}</span>
-                                <button onclick="updateQty(${index},1)" class="px-3 py-1 hover:bg-gray-50">+</button>
-                            </div>
-                            <p class="text-[11px] font-bold">₦${(item.price * item.quantity).toLocaleString()}</p>
-                        </div>
+                    <div>
+                        <h4 class="text-brandPink text-[10px] font-bold tracking-widest uppercase mb-6">Support</h4>
+                        <ul class="text-brandPink/60 text-[9px] space-y-4 tracking-widest uppercase">
+                            <li><a href="#" class="hover:text-brandPink transition">Contact</a></li>
+                            <li><a href="#" class="hover:text-brandPink transition">Shipping</a></li>
+                            <li><a href="#" class="hover:text-brandPink transition">Privacy</a></li>
+                        </ul>
                     </div>
                 </div>
-            `).join('');
+                <div class="col-span-1">
+                    <h4 class="text-brandPink text-[10px] font-bold tracking-widest uppercase mb-6">Newsletter</h4>
+                    <div class="flex border-b border-brandPink/20 pb-2">
+                        <input type="email" placeholder="YOUR EMAIL" class="bg-transparent text-[10px] text-brandPink w-full focus:outline-none placeholder:text-brandPink/20 tracking-widest">
+                        <button class="text-brandPink text-[10px] font-bold ml-2">JOIN</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="border-t border-brandPink/10 pt-8 flex flex-col md:flex-row justify-between items-center gap-6">
+            <p class="text-brandPink/30 text-[8px] tracking-[0.3em] uppercase order-2 md:order-1">
+                © 2026 The Motunde Brand. All Rights Reserved.
+            </p>
+            <div class="flex flex-wrap justify-center gap-5 md:gap-6 order-1 md:order-2">
+                <a href="#" class="text-brandPink/40 hover:text-brandPink transition uppercase text-[8px] tracking-widest">Instagram</a>
+                <a href="#" class="text-brandPink/40 hover:text-brandPink transition uppercase text-[8px] tracking-widest">TikTok</a>
+                <a href="#" class="text-brandPink/40 hover:text-brandPink transition uppercase text-[8px] tracking-widest">Facebook</a>
+            </div>
+        </div>
+    </footer>
+
+    <a href="https://wa.me/2349025291629?text=Hi%20The%20Motunde%20Brand!%20My%20name%20is%20..." 
+       target="_blank" 
+       class="fixed bottom-6 right-6 z-[150] bg-[#25D366] p-3.5 rounded-full shadow-2xl transition-transform hover:scale-110 active:scale-95 whatsapp-pulse">
+        <svg class="w-7 h-7 text-white" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+        </svg>
+    </a>
+<script>
+    let cart = JSON.parse(localStorage.getItem('tmb_cart')) || [];
+    const FLAT_SHIPPING_FEE = 5000; 
+
+    // --- LIVE DATABASE STOCK VALIDATION ---
+    async function fetchAvailableStock(productId, selectedSize) {
+        try {
+            const response = await fetch(`/api/products/${productId}/stock`);
+            const data = await response.json();
             
+            if (data.variants) {
+                // Find the stock for the specific size the user chose
+                const variant = data.variants.find(v => v.size === selectedSize);
+                return variant ? variant.stock : 0;
+            }
+            return 0;
+        } catch (error) {
+            console.error("Stock check failed:", error);
+            return 0; // Default to 0 if server is down to prevent overselling
+        }
+    }
+
+    function showNotification(message) {
+        const toast = document.getElementById('notification-toast');
+        const msgSpan = document.getElementById('toast-message');
+        msgSpan.innerText = message;
+        toast.classList.remove('opacity-0', 'translate-y-10', 'pointer-events-none');
+        toast.classList.add('opacity-100', 'translate-y-0');
+        setTimeout(() => {
+            toast.classList.add('opacity-0', 'translate-y-10', 'pointer-events-none');
+            toast.classList.remove('opacity-100', 'translate-y-0');
+        }, 3500);
+    }
+
+    function toggleSidebar(open) {
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('sidebar-overlay');
+        sidebar.className = `fixed top-0 left-0 h-full w-64 bg-brandBlack z-[120] p-6 flex flex-col ${open ? 'sidebar-open' : 'sidebar-closed'}`;
+        overlay.classList.toggle('hidden', !open);
+    }
+
+    function togglePaymentUI() {
+        const method = document.querySelector('input[name="pay-method"]:checked').value;
+        document.getElementById('bank-details').classList.toggle('hidden', method !== 'bank');
+    }
+
+    function renderCart() {
+        const container = document.getElementById('cart-items-container');
+        const countBadge = document.getElementById('cart-count');
+        const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+        countBadge.innerText = totalItems;
+
+        if (cart.length === 0) {
+            container.innerHTML = `
+                <div class="py-20 text-center uppercase tracking-widest text-[10px] text-gray-400">
+                    Your bag is empty. <br>
+                    <a href="shop.html" class="text-brandPinkDark mt-4 inline-block underline">Go Shopping</a>
+                </div>`;
             updateTotals();
+            return;
         }
 
-        function updateTotals() {
-            const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-            const currentShipping = cart.length > 0 ? FLAT_SHIPPING_FEE : 0;
-            
-            document.getElementById('subtotal').innerText = `₦${subtotal.toLocaleString()}`;
-            document.getElementById('shipping-fee').innerText = `₦${currentShipping.toLocaleString()}`;
-            document.getElementById('total-price').innerText = `₦${(subtotal + currentShipping).toLocaleString()}`;
+        container.innerHTML = cart.map((item, index) => `
+            <div class="flex gap-6 pb-10 border-b border-gray-100 items-center">
+                <div class="w-28 h-40 md:w-24 md:h-32 bg-gray-50 overflow-hidden flex-shrink-0">
+                    <img src="${item.image}" class="w-full h-full object-cover" alt="${item.name}">
+                </div>
+                <div class="flex-1">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h4 class="cart-item-title text-[12px] uppercase tracking-widest">${item.name}</h4>
+                            <p class="text-[10px] text-brandPinkDark font-bold uppercase mt-1">Size: ${item.size}</p>
+                        </div>
+                        <button onclick="removeItem(${index})" class="text-gray-300 hover:text-red-500 text-3xl md:text-xl transition-colors">&times;</button>
+                    </div>
+                    <div class="flex justify-between items-center mt-10 md:mt-6">
+                        <div class="qty-control flex border border-gray-200 text-[12px] md:text-[10px]">
+                            <button onclick="updateQty(${index},-1)" class="qty-btn px-4 py-2 md:px-3 md:py-1 hover:bg-gray-100 transition">-</button>
+                            <span class="px-5 py-2 md:px-4 md:py-1 border-x border-gray-200 font-black">${item.quantity}</span>
+                            <button onclick="updateQty(${index},1)" class="qty-btn px-4 py-2 md:px-3 md:py-1 hover:bg-gray-100 transition">+</button>
+                        </div>
+                        <p class="cart-item-price">₦${(item.price * item.quantity).toLocaleString()}</p>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+        
+        updateTotals();
+    }
+
+    function updateTotals() {
+        const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+        const currentShipping = cart.length > 0 ? FLAT_SHIPPING_FEE : 0;
+        document.getElementById('subtotal').innerText = `₦${subtotal.toLocaleString()}`;
+        document.getElementById('shipping-fee').innerText = `₦${currentShipping.toLocaleString()}`;
+        document.getElementById('total-price').innerText = `₦${(subtotal + currentShipping).toLocaleString()}`;
+    }
+
+    // --- UPDATED QTY LOGIC WITH LIVE STOCK ---
+    async function updateQty(i, delta) {
+        const item = cart[i];
+        const newQty = item.quantity + delta;
+        if (newQty < 1) return;
+
+        // Visual feedback while checking
+        showNotification("Checking availability...");
+        
+        const stockAvailable = await fetchAvailableStock(item.id, item.size);
+        
+        if (newQty > stockAvailable) {
+            showNotification(`Sorry, only ${stockAvailable} available in size ${item.size}.`);
+            return;
         }
 
-        function updateQty(i, delta) {
-            cart[i].quantity = Math.max(1, cart[i].quantity + delta);
+        cart[i].quantity = newQty;
+        saveCart();
+    }
+
+    function removeItem(i) {
+        if(confirm("Remove item from bag?")) {
+            cart.splice(i, 1);
             saveCart();
+            showNotification("Item removed from bag");
         }
+    }
 
-        function removeItem(i) {
-            if(confirm("Remove item from bag?")) {
-                cart.splice(i, 1);
-                saveCart();
-                showNotification("Item removed from bag");
-            }
-        }
-
-        function saveCart() {
-            localStorage.setItem('tmb_cart', JSON.stringify(cart));
-            renderCart();
-        }
-
-        function handleCheckout() {
-            if (cart.length === 0) return showNotification("Your bag is empty.");
-            
-            const name = document.getElementById('cust-name').value;
-            const email = document.getElementById('cust-email').value;
-            const address = document.getElementById('cust-address').value;
-
-            if(!name || !email || !address) {
-                return showNotification("Please fill in all delivery details.");
-            }
-
-            const method = document.querySelector('input[name="pay-method"]:checked').value;
-            if (method === 'bank' && !document.getElementById('receipt-upload').files[0]) {
-                return showNotification("Please upload your payment receipt.");
-            }
-
-            if(method === 'bank') {
-                showNotification("Order Submitted! Check your email for confirmation.");
-            } else {
-                showNotification("Redirecting to Secure Payment Gateway...");
-            }
-        }
-
+    function saveCart() {
+        localStorage.setItem('tmb_cart', JSON.stringify(cart));
         renderCart();
-    </script>
+    }
+
+    // --- UPDATED: POST ORDER TO BACKEND ---
+    async function handleCheckout() {
+        if (cart.length === 0) return showNotification("Your bag is empty.");
+        
+        const name = document.getElementById('cust-name').value;
+        const email = document.getElementById('cust-email').value;
+        const phone = document.getElementById('cust-phone')?.value || "N/A";
+        const address = document.getElementById('cust-address').value;
+
+        if(!name || !email || !address) {
+            return showNotification("Please fill in all delivery details.");
+        }
+
+        const method = document.querySelector('input[name="pay-method"]:checked').value;
+        const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+
+        const orderData = {
+            customerDetails: { name, email, phone, address },
+            items: cart.map(item => ({
+                productId: item.id,
+                name: item.name,
+                size: item.size,
+                quantity: item.quantity,
+                price: item.price
+            })),
+            totalPrice: subtotal + FLAT_SHIPPING_FEE,
+            paymentMethod: method
+        };
+
+        try {
+            const response = await fetch('/api/orders', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(orderData)
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                showNotification("Order Successful! Clearing bag...");
+                localStorage.removeItem('tmb_cart');
+                cart = [];
+                renderCart();
+                // Optional: Redirect to a success page
+                // window.location.href = "success.html?id=" + result.orderId;
+            } else {
+                showNotification("Order Failed: " + (result.error || "Please try again."));
+            }
+        } catch (error) {
+            console.error("Checkout error:", error);
+            showNotification("Connection error. Please try again.");
+        }
+    }
+
+    renderCart(); 
+</script>
 </body>
 </html>
