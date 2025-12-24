@@ -317,223 +317,251 @@
         </div>
     </div>
 
-    <script>
-        // --- 1. Initialize Cart & Global State ---
-        let currentProducts = [];
-        let cart = JSON.parse(localStorage.getItem('tmb_cart')) || [];
-        
-        // --- 1. NEW NOTIFICATION HELPER ---
+   <script>
+    // --- 1. Initialize Cart & Global State ---
+    let currentProducts = [];
+    let cart = JSON.parse(localStorage.getItem('tmb_cart')) || [];
+
+    // --- 2. Notification Helper ---
     function showNotification(message) {
-    const toast = document.getElementById('custom-toast');
-    const toastMsg = document.getElementById('toast-message');
-    
-    toastMsg.innerText = message;
-    toast.classList.add('show');
-    
-    // Hide after 3 seconds
-    setTimeout(() => {
-        toast.classList.remove('show');
-    }, 3000);
-}
-
-        // Sync the red bubble count on page load
-        function updateCartBadge() {
-            const count = cart.reduce((sum, item) => sum + item.quantity, 0);
-            document.getElementById('cart-count').innerText = count;
-        }
-        updateCartBadge();
-
-// --- 2. UPDATE addToCart (Main Grid) ---
-function addToCart(productId) {
-    const p = currentProducts.find(prod => prod._id === productId);
-    if (!p) return;
-
-    const sizeSelect = document.querySelector(`select[data-id="${productId}"]`);
-    let selectedSize = "Default";
-    let selectedPrice = p.variants ? p.variants[0].price : p.price;
-
-    if (sizeSelect) {
-        selectedSize = sizeSelect.value;
-        selectedPrice = sizeSelect.options[sizeSelect.selectedIndex].dataset.price;
+        const toast = document.getElementById('custom-toast');
+        const toastMsg = document.getElementById('toast-message');
+        toastMsg.innerText = message;
+        toast.classList.add('show');
+        setTimeout(() => { toast.classList.remove('show'); }, 3000);
     }
 
-    const cartItem = {
-        id: p._id,
-        name: p.name,
-        price: Number(selectedPrice),
-        size: selectedSize,
-        image: p.imageUrl,
-        quantity: 1
-    };
-
-    const existingItemIndex = cart.findIndex(item => item.id === productId && item.size === selectedSize);
-
-    if (existingItemIndex > -1) {
-        cart[existingItemIndex].quantity += 1;
-    } else {
-        cart.push(cartItem);
+    // --- 3. Cart Badge Update ---
+    function updateCartBadge() {
+        const count = cart.reduce((sum, item) => sum + item.quantity, 0);
+        document.getElementById('cart-count').innerText = count;
     }
-
-    localStorage.setItem('tmb_cart', JSON.stringify(cart));
     updateCartBadge();
-    
-    // REPLACED alert() WITH showNotification
-    showNotification(`${p.name} added to bag`);
-}
-        // --- 3. UI Interactions ---
-        function toggleSidebar(open) {
-            const sidebar = document.getElementById('sidebar');
-            const overlay = document.getElementById('sidebar-overlay');
-            if (open) {
-                sidebar.classList.replace('sidebar-closed', 'sidebar-open');
-                overlay.classList.remove('hidden');
+
+    // --- 4. Quantity Controller ---
+    function updateQty(productId, change) {
+        const qtyElement = document.getElementById(`qty-${productId}`);
+        if (!qtyElement) return;
+        let currentQty = parseInt(qtyElement.innerText);
+        currentQty += change;
+        if (currentQty < 1) currentQty = 1;
+        qtyElement.innerText = currentQty;
+    }
+
+    // --- 5. Add to Cart with Live Stock Check ---
+    async function handleAddToCart(productId) {
+        const p = currentProducts.find(prod => prod._id === productId);
+        const qtyElement = document.getElementById(`qty-${productId}`);
+        const sizeSelect = document.querySelector(`select[data-id="${productId}"]`);
+        
+        if (!p || !qtyElement || !sizeSelect) return;
+
+        const qtyRequested = parseInt(qtyElement.innerText);
+        const selectedSize = sizeSelect.value;
+        const selectedPrice = sizeSelect.options[sizeSelect.selectedIndex].dataset.price;
+        const btn = document.getElementById(`btn-${productId}`);
+
+        btn.innerText = "Checking...";
+        btn.disabled = true;
+
+        try {
+            // Fetch live stock from MongoDB via your API
+            const response = await fetch(`/api/products/${productId}/stock`);
+            const data = await response.json();
+            
+            const variant = data.variants.find(v => v.size === selectedSize);
+            const stockAvailable = variant ? variant.stock : 0;
+
+            if (stockAvailable < qtyRequested) {
+                showNotification(`Only ${stockAvailable} left in stock`);
+                btn.innerText = "Add to Bag";
             } else {
-                sidebar.classList.replace('sidebar-open', 'sidebar-closed');
-                overlay.classList.add('hidden');
+                const cartItem = {
+                    id: p._id,
+                    name: p.name,
+                    price: Number(selectedPrice),
+                    size: selectedSize,
+                    image: p.imageUrl,
+                    quantity: qtyRequested
+                };
+
+                const existingIdx = cart.findIndex(item => item.id === productId && item.size === selectedSize);
+                if (existingIdx > -1) {
+                    cart[existingIdx].quantity += qtyRequested;
+                } else {
+                    cart.push(cartItem);
+                }
+
+                localStorage.setItem('tmb_cart', JSON.stringify(cart));
+                updateCartBadge();
+                showNotification(`${p.name} added to bag`);
+                btn.innerText = "Add to Bag";
+                qtyElement.innerText = "1"; 
             }
+        } catch (err) {
+            showNotification("Connection error. Try again.");
+            btn.innerText = "Add to Bag";
+        } finally {
+            btn.disabled = false;
         }
+    }
 
-        function openCart() {
-            window.location.href = 'cart.html';
+    // --- 6. UI Interactions ---
+    function toggleSidebar(open) {
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('sidebar-overlay');
+        if (open) {
+            sidebar.classList.replace('sidebar-closed', 'sidebar-open');
+            overlay.classList.remove('hidden');
+        } else {
+            sidebar.classList.replace('sidebar-open', 'sidebar-closed');
+            overlay.classList.add('hidden');
         }
+    }
 
-        // --- 4. Modal Logic (Updated with variant selection) ---
-       // --- 3. UPDATE openModal (Add Button inside Modal) ---
-function openModal(productId) {
-    const p = currentProducts.find(prod => prod._id === productId);
-    if (!p) return;
+    function openCart() { window.location.href = 'cart.html'; }
 
-    document.getElementById('modal-img').src = p.imageUrl;
-    document.getElementById('modal-name').innerText = p.name;
-    document.getElementById('modal-cat').innerText = p.category + " Collection";
-    
-    const variants = p.variants || [{size: 'Default', price: p.price || 0}];
-    document.getElementById('modal-price').innerText = `₦${Number(variants[0].price).toLocaleString()}`;
-    
-    let selectedModalSize = variants[0].size;
-    let selectedModalPrice = variants[0].price;
+    // --- 7. Modal Logic ---
+    function openModal(productId) {
+        const p = currentProducts.find(prod => prod._id === productId);
+        if (!p) return;
 
-    const sizeContainer = document.getElementById('modal-sizes');
-    sizeContainer.innerHTML = variants.map((v, i) => `
-        <button onclick="updateModalSelection('${v.price}', '${v.size}', this)" class="size-btn px-4 py-2 border ${i===0?'border-brandPink bg-brandPink/5':'border-gray-200'} text-[10px] uppercase transition-all">
-            ${v.size}
-        </button>
-    `).join('');
+        document.getElementById('modal-img').src = p.imageUrl;
+        document.getElementById('modal-name').innerText = p.name;
+        document.getElementById('modal-cat').innerText = (p.category || "General") + " Collection";
+        
+        const variants = p.variants || [{size: 'Default', price: p.price || 0}];
+        document.getElementById('modal-price').innerText = `₦${Number(variants[0].price).toLocaleString()}`;
+        
+        let selectedModalSize = variants[0].size;
+        let selectedModalPrice = variants[0].price;
 
-    window.updateModalSelection = (price, size, btn) => {
-        selectedModalSize = size;
-        selectedModalPrice = price;
-        document.getElementById('modal-price').innerText = `₦${Number(price).toLocaleString()}`;
-        document.querySelectorAll('.size-btn').forEach(b => {
-            b.classList.remove('border-brandPink', 'bg-brandPink/5');
-            b.classList.add('border-gray-200');
-        });
-        btn.classList.replace('border-gray-200', 'border-brandPink');
-        btn.classList.add('bg-brandPink/5');
-    };
+        const sizeContainer = document.getElementById('modal-sizes');
+        sizeContainer.innerHTML = variants.map((v, i) => `
+            <button onclick="updateModalSelection('${v.price}', '${v.size}', this)" class="size-btn px-4 py-2 border ${i===0?'border-brandPink bg-brandPink/5':'border-gray-200'} text-[10px] uppercase transition-all">
+                ${v.size}
+            </button>
+        `).join('');
 
-         document.getElementById('modal-add-btn').onclick = () => {
-        const item = {
-            id: p._id,
-            name: p.name,
-            price: Number(selectedModalPrice),
-            size: selectedModalSize,
-            image: p.imageUrl,
-            quantity: 1
+        window.updateModalSelection = (price, size, btn) => {
+            selectedModalSize = size;
+            selectedModalPrice = price;
+            document.getElementById('modal-price').innerText = `₦${Number(price).toLocaleString()}`;
+            document.querySelectorAll('.size-btn').forEach(b => {
+                b.classList.remove('border-brandPink', 'bg-brandPink/5');
+                b.classList.add('border-gray-200');
+            });
+            btn.classList.replace('border-gray-200', 'border-brandPink');
+            btn.classList.add('bg-brandPink/5');
         };
-        
-        const idx = cart.findIndex(i => i.id === p._id && i.size === selectedModalSize);
-        if(idx > -1) cart[idx].quantity += 1;
-        else cart.push(item);
-        
-        localStorage.setItem('tmb_cart', JSON.stringify(cart));
-        updateCartBadge();
-        
-        // UX: Close modal first, then show notification
-        closeModal();
-        showNotification("Added to bag");
-    };
 
-    const modal = document.getElementById('product-modal');
-    modal.classList.remove('invisible', 'opacity-0', 'pointer-events-none');
-    modal.querySelector('.modal-content').classList.remove('scale-95');
-    document.body.style.overflow = 'hidden';
-}
+        document.getElementById('modal-add-btn').onclick = () => {
+            // Note: Modal uses quantity of 1 by default; you can add a qty selector here too if needed
+            const item = {
+                id: p._id,
+                name: p.name,
+                price: Number(selectedModalPrice),
+                size: selectedModalSize,
+                image: p.imageUrl,
+                quantity: 1
+            };
+            const idx = cart.findIndex(i => i.id === p._id && i.size === selectedModalSize);
+            if(idx > -1) cart[idx].quantity += 1;
+            else cart.push(item);
+            
+            localStorage.setItem('tmb_cart', JSON.stringify(cart));
+            updateCartBadge();
+            closeModal();
+            showNotification("Added to bag");
+        };
 
-        function closeModal() {
-            const modal = document.getElementById('product-modal');
-            modal.classList.add('invisible', 'opacity-0', 'pointer-events-none');
-            modal.querySelector('.modal-content').classList.add('scale-95');
-            document.body.style.overflow = '';
-        }
+        const modal = document.getElementById('product-modal');
+        modal.classList.remove('invisible', 'opacity-0', 'pointer-events-none');
+        modal.querySelector('.modal-content').classList.remove('scale-95');
+        document.body.style.overflow = 'hidden';
+    }
 
-        // --- 5. Rendering & Data Fetching ---
-        async function loadProducts() {
-            try {
-                const response = await fetch('/api/products');
-                currentProducts = await response.json();
+    function closeModal() {
+        const modal = document.getElementById('product-modal');
+        modal.classList.add('invisible', 'opacity-0', 'pointer-events-none');
+        modal.querySelector('.modal-content').classList.add('scale-95');
+        document.body.style.overflow = '';
+    }
 
-                const renderCard = (p) => {
-                    const variants = p.variants || [{size: 'Default', price: p.price || 0}];
-                    return `
-                    <div class="product-card bg-white p-3 group">
-                        <div onclick="openModal('${p._id}')" class="aspect-[4/5] overflow-hidden mb-4 bg-gray-50 cursor-pointer">
-                            <img src="${p.imageUrl}" class="w-full h-full object-cover transition duration-700 group-hover:scale-110">
+    // --- 8. Rendering & Data Fetching ---
+    async function loadProducts() {
+        try {
+            const response = await fetch('/api/products');
+            currentProducts = await response.json();
+
+            const renderCard = (p) => {
+                const variants = p.variants || [{size: 'Default', price: p.price || 0, stock: 0}];
+                return `
+                <div class="product-card bg-white p-3 group">
+                    <div onclick="openModal('${p._id}')" class="aspect-[4/5] overflow-hidden mb-4 bg-gray-50 cursor-pointer">
+                        <img src="${p.imageUrl}" class="w-full h-full object-cover transition duration-700 group-hover:scale-110">
+                    </div>
+                    <div class="text-center">
+                        <h3 class="uppercase font-bold text-[8px] tracking-widest mb-1 truncate">${p.name}</h3>
+                        <p id="price-${p._id}" class="text-brandPinkDark font-medium text-[10px] mb-2">₦${Number(variants[0].price).toLocaleString()}</p>
+                        
+                        <select data-id="${p._id}" onchange="handleSizeChange(this, '${p._id}')" class="size-select w-full border border-gray-100 text-[8px] uppercase py-1.5 px-2 mb-2 focus:outline-none">
+                            ${variants.map(v => `<option value="${v.size}" data-price="${v.price}" data-stock="${v.stock}">${v.size}</option>`).join('')}
+                        </select>
+
+                        <div class="flex items-center justify-between border border-gray-100 mb-3">
+                            <button onclick="updateQty('${p._id}', -1)" class="px-3 py-1 text-lg font-light hover:bg-gray-50">-</button>
+                            <span id="qty-${p._id}" class="text-[10px] font-bold">1</span>
+                            <button onclick="updateQty('${p._id}', 1)" class="px-3 py-1 text-lg font-light hover:bg-gray-50">+</button>
                         </div>
-                        <div class="text-center">
-                            <h3 class="uppercase font-bold text-[8px] tracking-widest mb-1 truncate">${p.name}</h3>
-                            <p id="price-${p._id}" class="text-brandPinkDark font-medium text-[10px] mb-3">₦${Number(variants[0].price).toLocaleString()}</p>
-                            <select data-id="${p._id}" onchange="handleSizeChange(this, '${p._id}')" class="size-select w-full border border-gray-100 text-[8px] uppercase py-1.5 px-2 mb-2 focus:outline-none">
-                                ${variants.map(v => `<option value="${v.size}" data-price="${v.price}">${v.size}</option>`).join('')}
-                            </select>
-                            <button onclick="addToCart('${p._id}')" class="w-full bg-brandBlack text-brandPink text-[8px] py-2.5 uppercase tracking-widest hover:bg-brandPink hover:text-brandBlack transition-all">Add to Bag</button>
-                        </div>
-                    </div>`;
-                };
 
-                const populateGrid = (cat, elementId) => {
-                    const filtered = currentProducts.filter(p => p.category?.toLowerCase() === cat).slice(0, 5);
-                    document.getElementById(elementId).innerHTML = filtered.length > 0 ? filtered.map(renderCard).join('') : `<p class="text-[10px] uppercase text-gray-400 py-10">Vault Opening Soon...</p>`;
-                };
+                        <button onclick="handleAddToCart('${p._id}')" id="btn-${p._id}" class="w-full bg-brandBlack text-brandPink text-[8px] py-2.5 uppercase tracking-widest hover:bg-brandPink hover:text-brandBlack transition-all">
+                            Add to Bag
+                        </button>
+                    </div>
+                </div>`;
+            };
 
-                const populateMistGrid = (elementId) => {
-                    const allMistsInDb = currentProducts.filter(p => p.category?.toLowerCase() === 'mist');
-                    const mists = allMistsInDb.filter(p => p.subCategory === 'Body Mist').slice(0, 3);
-                    const sprays = allMistsInDb.filter(p => p.subCategory === 'Body Spray').slice(0, 3);
-                    const combined = [...mists, ...sprays];
-                    document.getElementById(elementId).innerHTML = combined.length > 0 ? combined.map(renderCard).join('') : `<p class="text-[10px] uppercase text-gray-400 py-10">Vault Opening Soon...</p>`;
-                };
+            const populateGrid = (cat, elementId) => {
+                const filtered = currentProducts.filter(p => p.category?.toLowerCase() === cat).slice(0, 5);
+                document.getElementById(elementId).innerHTML = filtered.length > 0 ? filtered.map(renderCard).join('') : `<p class="text-[10px] uppercase text-gray-400 py-10">Vault Opening Soon...</p>`;
+            };
 
-                populateGrid('women', 'women-grid');
-                populateGrid('men', 'men-grid');
-                populateGrid('kids', 'kids-grid');
-                populateMistGrid('mist-grid');
+            const populateMistGrid = (elementId) => {
+                const mists = currentProducts.filter(p => p.category?.toLowerCase() === 'mist').slice(0, 6);
+                document.getElementById(elementId).innerHTML = mists.length > 0 ? mists.map(renderCard).join('') : `<p class="text-[10px] uppercase text-gray-400 py-10">Vault Opening Soon...</p>`;
+            };
 
-            } catch (err) { console.error("Error loading products:", err); }
+            populateGrid('women', 'women-grid');
+            populateGrid('men', 'men-grid');
+            populateGrid('kids', 'kids-grid');
+            populateMistGrid('mist-grid');
+
+        } catch (err) { console.error("Error loading products:", err); }
+    }
+
+    function handleSizeChange(select, productId) {
+        const price = select.options[select.selectedIndex].getAttribute('data-price');
+        document.getElementById(`price-${productId}`).innerText = `₦${Number(price).toLocaleString()}`;
+    }
+
+    // --- 9. Slider Logic ---
+    let currentSlide = 1;
+    setInterval(() => {
+        const s1 = document.getElementById(`slide-group-1`);
+        const s2 = document.getElementById(`slide-group-2`);
+        if (currentSlide === 1) {
+            s1.classList.replace('slide-active', 'slide-hidden');
+            s2.classList.replace('slide-hidden', 'slide-active');
+            currentSlide = 2;
+        } else {
+            s2.classList.replace('slide-active', 'slide-hidden');
+            s1.classList.replace('slide-hidden', 'slide-active');
+            currentSlide = 1;
         }
+    }, 5000);
 
-        function handleSizeChange(select, productId) {
-            const price = select.options[select.selectedIndex].getAttribute('data-price');
-            document.getElementById(`price-${productId}`).innerText = `₦${Number(price).toLocaleString()}`;
-        }
-
-        // --- 6. Slider Interval ---
-        let currentSlide = 1;
-        setInterval(() => {
-            const s1 = document.getElementById(`slide-group-1`);
-            const s2 = document.getElementById(`slide-group-2`);
-            if (currentSlide === 1) {
-                s1.classList.replace('slide-active', 'slide-hidden');
-                s2.classList.replace('slide-hidden', 'slide-active');
-                currentSlide = 2;
-            } else {
-                s2.classList.replace('slide-active', 'slide-hidden');
-                s1.classList.replace('slide-hidden', 'slide-active');
-                currentSlide = 1;
-            }
-        }, 5000);
-
-        loadProducts();
-    </script>
+    loadProducts();
+</script>
 </body>
 </html>

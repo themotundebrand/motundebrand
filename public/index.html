@@ -31,19 +31,22 @@
             background-color: #000;
         }
 
-        .optimized-img {
+       .optimized-img {
             width: 100%;
             height: 100%;
-            object-fit: cover; 
+            /* 'contain' ensures the whole image is visible without cropping */
+            object-fit: contain; 
             object-position: center;
             content-visibility: auto;
             image-rendering: -webkit-optimize-contrast;
-            transition: transform 6s ease-out; /* Slow zoom for luxury feel */
+            transition: transform 6s ease-out;
+            /* Prevents the image from touching the very edges of the screen */
+            padding: 20px; 
         }
 
         @media (min-width: 1024px) {
             .optimized-img {
-                object-fit: contain; 
+                /* Larger padding for desktop to keep that high-end boutique look */
                 padding: 60px;
             }
         }
@@ -73,16 +76,18 @@
 
     <header class="relative h-screen-safe w-full overflow-hidden flex items-center justify-center">
         
-        <div id="slider-container" class="absolute inset-0 z-0">
-            <div class="slider-image absolute inset-0 opacity-100 fade-slide overflow-hidden">
+    <div id="slider-container" class="absolute inset-0 z-0">
+            <div class="slider-image absolute inset-0 opacity-100 fade-slide flex items-center justify-center">
                 <div class="absolute inset-0 bg-black/40 z-10"></div>
                 <img src="https://i.imgur.com/KQ2leiY.jpeg" fetchpriority="high" class="optimized-img" alt="Luxury Scent 1">
             </div>
-            <div class="slider-image absolute inset-0 opacity-0 fade-slide overflow-hidden">
+            
+            <div class="slider-image absolute inset-0 opacity-0 fade-slide flex items-center justify-center">
                 <div class="absolute inset-0 bg-black/40 z-10"></div>
                 <img src="https://i.imgur.com/Wp0HCu8.jpeg" class="optimized-img" alt="Luxury Scent 2">
             </div>
-            <div class="slider-image absolute inset-0 opacity-0 fade-slide overflow-hidden">
+            
+            <div class="slider-image absolute inset-0 opacity-0 fade-slide flex items-center justify-center">
                 <div class="absolute inset-0 bg-black/40 z-10"></div>
                 <img src="https://i.imgur.com/BRl8AVs.jpeg" class="optimized-img" alt="Luxury Scent 3">
             </div>

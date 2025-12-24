@@ -104,18 +104,26 @@
             <div class="lg:col-span-2 space-y-12">
                 <div id="cart-items-container" class="space-y-10"></div>
 
-                <section class="space-y-8 pt-8 border-t border-gray-100">
-                    <h3 class="text-[11px] font-bold uppercase tracking-widest text-brandBlack">1. Delivery & Contact Details</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <input type="text" id="cust-name" placeholder="FULL NAME" class="w-full py-3 text-[10px] tracking-widest uppercase">
-                        <input type="email" id="cust-email" placeholder="EMAIL ADDRESS" class="w-full py-3 text-[10px] tracking-widest uppercase">
-                        <input type="tel" id="cust-phone" placeholder="PHONE NUMBER" class="w-full py-3 text-[10px] tracking-widest uppercase">
-                        <input type="tel" id="cust-whatsapp" placeholder="WHATSAPP NUMBER" class="w-full py-3 text-[10px] tracking-widest uppercase">
-                        <div class="md:col-span-2">
-                            <input type="text" id="cust-address" placeholder="DELIVERY ADDRESS" class="w-full py-3 text-[10px] tracking-widest uppercase">
-                        </div>
-                    </div>
-                </section>
+<section class="space-y-8 pt-8 border-t border-gray-100">
+    <h3 class="text-[11px] font-bold uppercase tracking-widest text-brandBlack">1. Shipping & Contact Details</h3>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <input type="text" id="cust-name" placeholder="FULL NAME" class="w-full py-3 text-[10px] tracking-widest uppercase">
+        <input type="email" id="cust-email" placeholder="EMAIL ADDRESS" class="w-full py-3 text-[10px] tracking-widest uppercase">
+        <input type="tel" id="cust-phone" placeholder="PHONE NUMBER" class="w-full py-3 text-[10px] tracking-widest uppercase">
+        <input type="tel" id="cust-whatsapp" placeholder="WHATSAPP NUMBER" class="w-full py-3 text-[10px] tracking-widest uppercase">
+        
+        <div class="md:col-span-2">
+            <input type="text" id="cust-street" placeholder="STREET ADDRESS" class="w-full py-3 text-[10px] tracking-widest uppercase">
+        </div>
+        
+        <input type="text" id="cust-city" placeholder="CITY" class="w-full py-3 text-[10px] tracking-widest uppercase">
+        <input type="text" id="cust-state" placeholder="STATE" class="w-full py-3 text-[10px] tracking-widest uppercase">
+        
+        <div class="md:col-span-2">
+            <input type="text" id="cust-country" value="NIGERIA" readonly class="w-full py-3 text-[10px] tracking-widest uppercase opacity-60 cursor-not-allowed border-none bg-transparent">
+        </div>
+    </div>
+</section>
             </div>
 
             <div class="lg:col-span-1">
@@ -133,14 +141,58 @@
                             </label>
                         </div>
 
-                        <div id="bank-details" class="hidden space-y-4 pt-4 border-t border-gray-200">
-                            <div class="bg-white p-4 border border-brandPink/20 text-[9px] uppercase tracking-widest leading-loose">
-                                <p>Account: <span class="text-brandBlack font-bold">The Motunde Brand Ltd</span></p>
-                                <p>Bank: <span class="text-brandBlack font-bold">GTBANK</span></p>
-                                <p>Number: <span class="text-brandBlack font-bold">0123456789</span></p>
-                            </div>
-                            <input type="file" id="receipt-upload" class="text-[9px] w-full">
-                        </div>
+                  <div id="bank-details" class="hidden space-y-6 pt-6 border-t border-gray-100">
+    <div class="relative overflow-hidden bg-white border border-brandPink/30 p-5 rounded-sm shadow-sm">
+        <div class="flex items-center gap-4 mb-4">
+            <div class="w-10 h-10 bg-[#003399] rounded-full flex items-center justify-center flex-shrink-0 shadow-sm">
+                <span class="text-white font-black text-[14px]">M</span>
+            </div>
+            <div>
+                <h4 class="text-[10px] font-black text-[#003399] tracking-widest uppercase">Moniepoint Microfinance Bank</h4>
+                <div class="h-[1px] w-full bg-[#003399]/10 mt-1"></div>
+            </div>
+        </div>
+
+        <div class="space-y-3">
+            <div>
+                <p class="text-[8px] text-gray-400 uppercase tracking-widest mb-0.5">Account Name</p>
+                <p class="text-[11px] font-bold text-brandBlack uppercase tracking-refined">The Motunde Brand</p>
+            </div>
+            
+            <div class="flex justify-between items-end">
+                <div>
+                    <p class="text-[8px] text-gray-400 uppercase tracking-widest mb-0.5">Account Number</p>
+                    <p class="text-[14px] font-black text-brandBlack tracking-[0.2em]">9025291629</p>
+                </div>
+                <div class="flex items-center gap-1 bg-green-50 px-2 py-1 rounded-full">
+                    <svg class="w-3 h-3 text-green-600" fill="currentColor" viewBox="0 0 20 20"><path d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.64.304 1.25.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"></path></svg>
+                    <span class="text-[7px] font-bold text-green-700 uppercase tracking-tighter">Verified</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="space-y-3 bg-gray-50 p-4 border-l-2 border-brandBlack">
+        <div class="flex items-start gap-3">
+            <svg class="w-4 h-4 text-brandBlack mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-width="2"></path></svg>
+            <p class="text-[9px] text-brandBlack font-medium uppercase tracking-widest leading-relaxed">
+                <span class="font-black text-brandPinkDark">Required:</span> Please upload your payment receipt (Screenshot/PDF) below. Orders without receipts will not be processed.
+            </p>
+        </div>
+        
+        <label class="block">
+            <span class="sr-only">Choose receipt</span>
+            <input type="file" id="receipt-upload" accept="image/*,.pdf" 
+                class="block w-full text-[10px] text-gray-500
+                file:mr-4 file:py-2 file:px-4
+                file:border-0
+                file:text-[9px] file:font-black file:uppercase file:tracking-widest
+                file:bg-brandBlack file:text-brandPink
+                hover:file:bg-brandPinkDark hover:file:text-brandBlack
+                transition-all cursor-pointer">
+        </label>
+    </div>
+</div>
 
                         <div class="border-t border-gray-200 pt-6 space-y-3">
                             <div class="flex justify-between text-[10px] uppercase text-gray-500">
@@ -353,58 +405,82 @@
     }
 
     // --- UPDATED: POST ORDER TO BACKEND ---
-    async function handleCheckout() {
-        if (cart.length === 0) return showNotification("Your bag is empty.");
-        
-        const name = document.getElementById('cust-name').value;
-        const email = document.getElementById('cust-email').value;
-        const phone = document.getElementById('cust-phone')?.value || "N/A";
-        const address = document.getElementById('cust-address').value;
+   async function handleCheckout() {
+    if (cart.length === 0) return showNotification("Your bag is empty.");
+    
+    // 1. Gather form data
+    const name = document.getElementById('cust-name').value.trim();
+    const email = document.getElementById('cust-email').value.trim();
+    const street = document.getElementById('cust-street').value.trim();
+    const city = document.getElementById('cust-city').value.trim();
+    const state = document.getElementById('cust-state').value.trim();
+    
+    // 2. Payment Method Check
+    const method = document.querySelector('input[name="pay-method"]:checked').value;
+    const receiptInput = document.getElementById('receipt-upload');
 
-        if(!name || !email || !address) {
-            return showNotification("Please fill in all delivery details.");
-        }
-
-        const method = document.querySelector('input[name="pay-method"]:checked').value;
-        const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-
-        const orderData = {
-            customerDetails: { name, email, phone, address },
-            items: cart.map(item => ({
-                productId: item.id,
-                name: item.name,
-                size: item.size,
-                quantity: item.quantity,
-                price: item.price
-            })),
-            totalPrice: subtotal + FLAT_SHIPPING_FEE,
-            paymentMethod: method
-        };
-
-        try {
-            const response = await fetch('/api/orders', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(orderData)
-            });
-
-            const result = await response.json();
-
-            if (response.ok) {
-                showNotification("Order Successful! Clearing bag...");
-                localStorage.removeItem('tmb_cart');
-                cart = [];
-                renderCart();
-                // Optional: Redirect to a success page
-                // window.location.href = "success.html?id=" + result.orderId;
-            } else {
-                showNotification("Order Failed: " + (result.error || "Please try again."));
-            }
-        } catch (error) {
-            console.error("Checkout error:", error);
-            showNotification("Connection error. Please try again.");
-        }
+    // 3. Security Check: Validate Contact/Shipping Info
+    if(!name || !email || !street || !city || !state) {
+        return showNotification("Please fill in all shipping details.");
     }
+
+    // 4. Security Check: Validate Receipt for Bank Transfer
+    if (method === 'bank' && (!receiptInput.files || receiptInput.files.length === 0)) {
+        return showNotification("Please upload your payment receipt to proceed.");
+    }
+
+    // Prepare data for the backend
+    const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    const orderData = {
+        customerDetails: { 
+            name, email,
+            phone: document.getElementById('cust-phone').value,
+            whatsapp: document.getElementById('cust-whatsapp').value,
+            shippingAddress: { street, city, state, country: "NIGERIA" }
+        },
+        items: cart.map(item => ({
+            productId: item.id,
+            name: item.name,
+            size: item.size,
+            quantity: item.quantity,
+            price: item.price
+        })),
+        totalPrice: subtotal + FLAT_SHIPPING_FEE,
+        paymentMethod: method
+    };
+
+    // UI Feedback: Disable button
+    const checkoutBtn = document.querySelector('button[onclick="handleCheckout()"]');
+    const originalText = checkoutBtn.innerText;
+    checkoutBtn.innerText = "VERIFYING...";
+    checkoutBtn.disabled = true;
+
+    try {
+        // If bank transfer, you would typically use FormData to upload the file
+        // For this example, we proceed with the JSON order data
+        const response = await fetch('/api/orders', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(orderData)
+        });
+
+        if (response.ok) {
+            showNotification("Order Placed Successfully!");
+            localStorage.removeItem('tmb_cart');
+            cart = [];
+            renderCart();
+            // Optional: window.location.href = "thank-you.html";
+        } else {
+            const result = await response.json();
+            showNotification("Order Failed: " + (result.error || "Check details."));
+        }
+    } catch (error) {
+        showNotification("Connection error. Please try again.");
+    } finally {
+        checkoutBtn.innerText = originalText;
+        checkoutBtn.disabled = false;
+    }
+}
 
     renderCart(); 
 </script>
