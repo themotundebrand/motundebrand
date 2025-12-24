@@ -238,41 +238,60 @@ router.delete('/admin/products/:id', authenticateAdmin, async (req, res) => {
     } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
+
 // --- PUBLIC FETCH ---
-// Fetches all products and generates temporary signed URLs for images
+// Fetches all products, refreshes S3/IDrive URLs, and standardizes variants
 router.get('/products', async (req, res) => {
     try {
         const db = await getDb();
-        // Sort by newest first
-        const items = await db.collection("products").find({}).sort({ createdAt: -1 }).toArray();
+        
+        // Fetch all products, newest first based on createdAt or MongoDB _id
+        const items = await db.collection("products")
+            .find({})
+            .sort({ createdAt: -1, _id: -1 }) 
+            .toArray();
         
         const refreshedItems = items.map(item => {
-            // Provide a default empty array if variants don't exist
-            if (!item.variants) item.variants = [];
-            
-            // Generate a signed URL from IDrive E2 if an imageKey exists
+            // 1. IMAGE URL REFRESH
             if (s3 && item.imageKey) {
                 try {
                     item.imageUrl = s3.getSignedUrl('getObject', {
                         Bucket: BUCKET_NAME,
                         Key: item.imageKey,
-                        Expires: 86400 // URL valid for 24 hours
+                        Expires: 86400 // 24 Hours
                     });
                 } catch (urlErr) {
-                    console.error("Error generating signed URL for:", item.imageKey);
-                    item.imageUrl = null;
+                    console.error(`URL Error for ${item.name}:`, urlErr);
+                    item.imageUrl = "https://i.imgur.com/CVKXV7R.png"; // Brand Logo Fallback
                 }
             } else {
-                item.imageUrl = null; // Fallback for products without images
+                item.imageUrl = item.imageUrl || "https://i.imgur.com/CVKXV7R.png";
             }
-            
+
+            // 2. VARIANT STANDARDIZATION
+            // If the product has no variants array, we create one using the base price
+            // This prevents the frontend dropdown from being empty
+            if (!item.variants || !Array.isArray(item.variants) || item.variants.length === 0) {
+                item.variants = [
+                    { 
+                        size: "100ml", 
+                        price: item.price || 0, 
+                        stock: item.stock || 0 
+                    }
+                ];
+            }
+
+            // 3. CATEGORY NORMALIZATION
+            // Ensures "Women", "WOMEN", and "women" all work correctly
+            item.category = item.category ? item.category.toLowerCase().trim() : "unassigned";
+
             return item;
         });
 
         res.json(refreshedItems);
     } catch (e) { 
-        console.error("Fetch Products Error:", e);
-        res.status(500).json({ error: "Fetch failed: " + e.message }); 
+        console.error("Critical Fetch Error:", e);
+        res.status(500).json({ error: "Failed to load the collection." }); 
     }
 });
 
