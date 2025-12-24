@@ -105,8 +105,7 @@
 
                             <div class="border p-4 bg-gray-50 rounded-sm">
                                 <label class="text-[9px] uppercase font-bold text-gray-600 block mb-4">Price Variants (Size & Amount)</label>
-                                <div id="variantsContainer" class="space-y-3 mb-4">
-                                    </div>
+                                <div id="variantsContainer" class="space-y-3 mb-4"></div>
                                 <button type="button" onclick="addVariantRow()" class="text-[9px] uppercase font-bold bg-white border border-black text-black px-3 py-2 hover:bg-black hover:text-white transition w-full">
                                     <i class="fa-solid fa-plus mr-1"></i> Add Another Size
                                 </button>
@@ -140,9 +139,68 @@
         </main>
     </div>
 
+    <div id="customAlert" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-4">
+        <div class="fixed inset-0 bg-black/50 backdrop-blur-sm"></div>
+        <div class="bg-white w-full max-w-sm relative z-10 p-8 border border-gray-100 shadow-2xl text-center">
+            <div id="alertIcon" class="mb-4 text-black text-3xl">
+                <i class="fa-solid fa-circle-check"></i>
+            </div>
+            <h3 id="alertTitle" class="text-[10px] uppercase tracking-[0.2em] font-bold mb-2">System Status</h3>
+            <p id="alertMessage" class="text-xs text-gray-500 mb-6 leading-relaxed"></p>
+            <button onclick="closeAlert()" class="w-full bg-brandBlack text-white text-[9px] uppercase tracking-widest py-3 font-bold hover:bg-gray-800 transition-colors">
+                Continue
+            </button>
+        </div>
+    </div>
+
+    <div id="customConfirm" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-4">
+        <div class="fixed inset-0 bg-black/50 backdrop-blur-sm"></div>
+        <div class="bg-white w-full max-w-sm relative z-10 p-8 border border-gray-100 shadow-2xl text-center">
+            <div class="mb-4 text-red-500 text-3xl">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+            </div>
+            <h3 class="text-[10px] uppercase tracking-[0.2em] font-bold mb-2">Remove Product?</h3>
+            <p id="confirmMessage" class="text-xs text-gray-500 mb-6 leading-relaxed"></p>
+            <div class="flex gap-3">
+                <button onclick="closeConfirm(false)" class="flex-1 border border-gray-200 text-gray-400 text-[9px] uppercase tracking-widest py-3 font-bold hover:bg-gray-50 transition-colors">
+                    Cancel
+                </button>
+                <button onclick="closeConfirm(true)" class="flex-1 bg-red-600 text-white text-[9px] uppercase tracking-widest py-3 font-bold hover:bg-red-700 transition-colors">
+                    Delete
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script>
         const API_URL = '/api'; 
         let globalProducts = [];
+        let confirmResolve;
+
+        // --- CUSTOM MODAL LOGIC ---
+        function showAlert(message, isError = false) {
+            const modal = document.getElementById('customAlert');
+            const msgPara = document.getElementById('alertMessage');
+            const icon = document.getElementById('alertIcon');
+            msgPara.innerText = message;
+            icon.innerHTML = isError ? '<i class="fa-solid fa-circle-xmark text-red-500"></i>' : '<i class="fa-solid fa-circle-check text-black"></i>';
+            modal.classList.remove('hidden');
+        }
+
+        function closeAlert() {
+            document.getElementById('customAlert').classList.add('hidden');
+        }
+
+        function showConfirm(message) {
+            document.getElementById('confirmMessage').innerText = message;
+            document.getElementById('customConfirm').classList.remove('hidden');
+            return new Promise((resolve) => { confirmResolve = resolve; });
+        }
+
+        function closeConfirm(result) {
+            document.getElementById('customConfirm').classList.add('hidden');
+            if (confirmResolve) confirmResolve(result);
+        }
 
         function logout() {
             localStorage.removeItem('tmb_admin_token');
@@ -171,7 +229,11 @@
 
         function removeVariantRow(id) {
             const rows = document.querySelectorAll('.variant-row');
-            if(rows.length > 1) document.getElementById(id).remove();
+            if(rows.length > 1) {
+                document.getElementById(id).remove();
+            } else {
+                showAlert("A product must have at least one size variant.", true);
+            }
         }
 
         window.onload = () => { 
@@ -187,7 +249,7 @@
                 const grid = document.getElementById('inventoryGrid');
                 
                 if (globalProducts.length === 0) {
-                    grid.innerHTML = '<p class="text-[10px] uppercase text-gray-400 col-span-full">No products found.</p>';
+                    grid.innerHTML = '<p class="text-[10px] uppercase text-gray-400 col-span-full text-center py-10">No items in men\'s collection.</p>';
                     return;
                 }
 
@@ -267,7 +329,7 @@
             }));
 
             submitBtn.disabled = true;
-            submitBtn.innerText = "PROCESSING...";
+            submitBtn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin mr-2"></i> UPDATING...';
 
             let imageBase64 = null;
             if (file) {
@@ -300,25 +362,32 @@
                 });
 
                 if (response.ok) {
-                    alert(editId ? "Collection Updated!" : "Product Added!");
-                    location.reload();
+                    showAlert(editId ? "Product successfully updated." : "New fragrance added to collection.");
+                    setTimeout(() => location.reload(), 1500);
                 } else {
-                    alert("Error. Verify authorization.");
+                    showAlert("Operation failed. Please check your admin session.", true);
                 }
-            } catch (err) { alert("Server error."); }
-            finally { submitBtn.disabled = false; }
+            } catch (err) { showAlert("Server error occurred.", true); }
+            finally { submitBtn.disabled = false; submitBtn.innerText = "Update Men's Collection"; }
         };
 
         async function deleteProduct(id) {
-            if(!confirm("Remove this item?")) return;
+            const confirmed = await showConfirm("Are you sure you want to remove this fragrance from the catalog?");
+            if(!confirmed) return;
+
             const token = localStorage.getItem('tmb_admin_token');
             try {
                 const res = await fetch(`${API_URL}/admin/products/${id}`, {
                     method: 'DELETE',
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
-                if(res.ok) location.reload();
-            } catch (err) { alert("Delete failed."); }
+                if(res.ok) {
+                    showAlert("Product removed.");
+                    setTimeout(() => location.reload(), 1000);
+                } else {
+                    showAlert("Unable to delete item.", true);
+                }
+            } catch (err) { showAlert("Network error.", true); }
         }
 
         function toggleSidebar() {

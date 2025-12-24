@@ -105,8 +105,7 @@
 
                             <div class="border p-4 bg-gray-50 rounded-sm">
                                 <label class="text-[9px] uppercase font-bold text-brandPinkDark block mb-4">Price Variants (Size & Amount)</label>
-                                <div id="variantsContainer" class="space-y-3 mb-4">
-                                    </div>
+                                <div id="variantsContainer" class="space-y-3 mb-4"></div>
                                 <button type="button" onclick="addVariantRow()" class="text-[9px] uppercase font-bold bg-white border border-brandPinkDark text-brandPinkDark px-3 py-2 hover:bg-brandPinkDark hover:text-white transition w-full">
                                     <i class="fa-solid fa-plus mr-1"></i> Add Another Size
                                 </button>
@@ -140,9 +139,68 @@
         </main>
     </div>
 
+    <div id="customAlert" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-4">
+        <div class="fixed inset-0 bg-black/50 backdrop-blur-sm"></div>
+        <div class="bg-white w-full max-w-sm relative z-10 p-8 border border-gray-100 shadow-2xl text-center">
+            <div id="alertIcon" class="mb-4 text-brandPinkDark text-3xl">
+                <i class="fa-solid fa-circle-check"></i>
+            </div>
+            <h3 id="alertTitle" class="text-[10px] uppercase tracking-[0.2em] font-bold mb-2">System Notification</h3>
+            <p id="alertMessage" class="text-xs text-gray-500 mb-6 leading-relaxed"></p>
+            <button onclick="closeAlert()" class="w-full bg-brandBlack text-white text-[9px] uppercase tracking-widest py-3 font-bold hover:bg-brandPinkDark transition-colors">
+                Acknowledge
+            </button>
+        </div>
+    </div>
+
+    <div id="customConfirm" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-4">
+        <div class="fixed inset-0 bg-black/50 backdrop-blur-sm"></div>
+        <div class="bg-white w-full max-w-sm relative z-10 p-8 border border-gray-100 shadow-2xl text-center">
+            <div class="mb-4 text-red-400 text-3xl">
+                <i class="fa-solid fa-circle-exclamation"></i>
+            </div>
+            <h3 class="text-[10px] uppercase tracking-[0.2em] font-bold mb-2">Confirm Action</h3>
+            <p id="confirmMessage" class="text-xs text-gray-500 mb-6 leading-relaxed"></p>
+            <div class="flex gap-3">
+                <button onclick="closeConfirm(false)" class="flex-1 border border-gray-200 text-gray-400 text-[9px] uppercase tracking-widest py-3 font-bold hover:bg-gray-50 transition-colors">
+                    Cancel
+                </button>
+                <button onclick="closeConfirm(true)" class="flex-1 bg-red-500 text-white text-[9px] uppercase tracking-widest py-3 font-bold hover:bg-red-600 transition-colors">
+                    Delete
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script>
         const API_URL = '/api'; 
         let globalProducts = [];
+        let confirmResolve;
+
+        // --- MODAL SYSTEM FUNCTIONS ---
+        function showAlert(message, isError = false) {
+            const modal = document.getElementById('customAlert');
+            const msgPara = document.getElementById('alertMessage');
+            const icon = document.getElementById('alertIcon');
+            msgPara.innerText = message;
+            icon.innerHTML = isError ? '<i class="fa-solid fa-circle-xmark text-red-500"></i>' : '<i class="fa-solid fa-circle-check"></i>';
+            modal.classList.remove('hidden');
+        }
+
+        function closeAlert() {
+            document.getElementById('customAlert').classList.add('hidden');
+        }
+
+        function showConfirm(message) {
+            document.getElementById('confirmMessage').innerText = message;
+            document.getElementById('customConfirm').classList.remove('hidden');
+            return new Promise((resolve) => { confirmResolve = resolve; });
+        }
+
+        function closeConfirm(result) {
+            document.getElementById('customConfirm').classList.add('hidden');
+            if (confirmResolve) confirmResolve(result);
+        }
 
         function logout() {
             localStorage.removeItem('tmb_admin_token');
@@ -174,16 +232,15 @@
             if(rows.length > 1) {
                 document.getElementById(id).remove();
             } else {
-                alert("At least one size variant is required.");
+                showAlert("At least one size variant is required.", true);
             }
         }
 
         window.onload = () => { 
-            addVariantRow(); // Add initial blank row
+            addVariantRow(); 
             loadProducts(); 
         };
 
-        // --- FILE DISPLAY ---
         document.getElementById('imageUpload').onchange = function() {
             const name = this.files[0]?.name || "Click to upload image";
             document.getElementById('fileNameDisplay').innerText = name;
@@ -197,7 +254,7 @@
                 const grid = document.getElementById('inventoryGrid');
                 
                 if (globalProducts.length === 0) {
-                    grid.innerHTML = '<p class="text-[10px] uppercase text-gray-400 col-span-full">No products found.</p>';
+                    grid.innerHTML = '<p class="text-[10px] uppercase text-gray-400 col-span-full text-center py-12">No products found.</p>';
                     return;
                 }
 
@@ -236,12 +293,11 @@
             document.getElementById('pName').value = product.name;
             document.getElementById('pDesc').value = product.description || '';
             
-            // Rebuild Variant Rows
             document.getElementById('variantsContainer').innerHTML = '';
             if (product.variants && product.variants.length > 0) {
                 product.variants.forEach(v => addVariantRow(v.size, v.price));
             } else {
-                addVariantRow(product.size, product.price); // Fallback for old data
+                addVariantRow(product.size, product.price);
             }
             
             document.getElementById('formTitle').innerText = "Edit Fragrance: " + product.name;
@@ -271,7 +327,6 @@
             const file = document.getElementById('imageUpload').files[0];
             const token = localStorage.getItem('tmb_admin_token');
 
-            // Collect Variants
             const rows = document.querySelectorAll('.variant-row');
             const variants = Array.from(rows).map(row => ({
                 size: row.querySelector('.v-size').value,
@@ -279,7 +334,7 @@
             }));
 
             submitBtn.disabled = true;
-            submitBtn.innerText = "PROCESSING...";
+            submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> PROCESSING...';
 
             let imageBase64 = null;
             if (file) {
@@ -294,7 +349,7 @@
                 name: document.getElementById('pName').value,
                 description: document.getElementById('pDesc').value,
                 category: 'women',
-                variants: variants, // Sent as array
+                variants: variants,
                 ...(imageBase64 && { imageBase64, fileName: file.name, contentType: file.type })
             };
 
@@ -312,26 +367,33 @@
                 });
 
                 if (response.ok) {
-                    alert(editId ? "Product updated!" : "Product added!");
-                    location.reload();
+                    showAlert(editId ? "Inventory updated successfully." : "New fragrance added successfully.");
+                    setTimeout(() => location.reload(), 1500);
                 } else {
                     const errData = await response.json();
-                    alert("Operation failed: " + (errData.error || "Check permissions"));
+                    showAlert(errData.error || "Update failed.", true);
                 }
-            } catch (err) { alert("Server error."); }
-            finally { submitBtn.disabled = false; }
+            } catch (err) { showAlert("Server error.", true); }
+            finally { submitBtn.disabled = false; submitBtn.innerText = "Update Collection"; }
         };
 
         async function deleteProduct(id) {
-            if(!confirm("Remove this scent?")) return;
+            const confirmed = await showConfirm("Permanently remove this scent from inventory?");
+            if(!confirmed) return;
+
             const token = localStorage.getItem('tmb_admin_token');
             try {
                 const res = await fetch(`${API_URL}/admin/products/${id}`, {
                     method: 'DELETE',
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
-                if(res.ok) location.reload();
-            } catch (err) { alert("Error deleting."); }
+                if(res.ok) {
+                    showAlert("Deleted successfully.");
+                    setTimeout(() => location.reload(), 1000);
+                } else {
+                    showAlert("Failed to delete.", true);
+                }
+            } catch (err) { showAlert("Error deleting.", true); }
         }
 
         function toggleSidebar() {
