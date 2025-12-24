@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Men Scents | TMB Inventory</title>
+    <link rel="icon" type="image/png" href="https://i.imgur.com/CVKXV7R.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brandWhite: '#FFFFFF',
+                        brandBlack: '#000000',
+                        brandPinkDark: '#D48A96',
+                        brandPinkLight: '#F7C8D0',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #FBFBFB; }
+        .sidebar { transition: all 0.3s ease; }
+        .nav-link:hover { background-color: #F7C8D0; color: #000; }
+        .product-card { transition: all 0.2s ease; }
+        .product-card:hover { border-color: #000000; }
+        .mobile-overlay { background: rgba(0,0,0,0.5); display: none; }
+        .mobile-overlay.active { display: block; }
+    </style>
+</head>
+<body class="text-brandBlack">
+
+    <div class="lg:hidden bg-white border-b p-4 flex justify-between items-center sticky top-0 z-50">
+        <span class="font-bold tracking-widest text-xs uppercase">TMB Admin</span>
+        <button onclick="toggleSidebar()" class="text-brandBlack text-xl">
+            <i class="fa-solid fa-bars-staggered"></i>
+        </button>
+    </div>
+
+    <div class="flex">
+        <div id="overlay" onclick="toggleSidebar()" class="mobile-overlay fixed inset-0 z-40 lg:hidden"></div>
+        <aside id="sidebar" class="sidebar fixed lg:static inset-y-0 left-0 z-50 w-64 bg-white border-r transform -translate-x-full lg:translate-x-0 h-screen flex flex-col">
+            <div class="p-8 border-b">
+                <h1 class="font-bold tracking-[0.3em] text-sm text-center cursor-pointer" onclick="window.location.href='tmbdashboard.html'">TMB SYSTEM</h1>
+            </div>
+
+            <nav class="flex-1 px-4 py-8 space-y-1">
+                <p class="text-[9px] uppercase tracking-[0.2em] text-gray-400 px-4 mb-4 font-bold">Inventory</p>
+                <a href="womenscents.html" class="nav-link flex items-center px-4 py-3 text-[10px] tracking-widest uppercase font-semibold transition-all">
+                    <i class="fa-solid fa-venus mr-3 w-5 text-gray-400"></i> Women Scents
+                </a>
+                <a href="menscents.html" class="nav-link flex items-center px-4 py-3 text-[10px] tracking-widest uppercase font-semibold bg-gray-100 text-black transition-all">
+                    <i class="fa-solid fa-mars mr-3 w-5 text-brandBlack"></i> Men Scents
+                </a>
+                <div class="pt-8">
+                    <p class="text-[9px] uppercase tracking-[0.2em] text-gray-400 px-4 mb-4 font-bold">Business</p>
+                    <a href="orders.html" class="nav-link flex items-center px-4 py-3 text-[10px] tracking-widest uppercase font-semibold transition-all">
+                        <i class="fa-solid fa-bag-shopping mr-3 w-5 text-gray-400"></i> Orders
+                    </a>
+                    <a href="analytics.html" class="nav-link flex items-center px-4 py-3 text-[10px] tracking-widest uppercase font-semibold transition-all">
+                        <i class="fa-solid fa-chart-simple mr-3 w-5 text-gray-400"></i> Analytics
+                    </a>
+                </div>
+            </nav>
+
+            <div class="p-4 border-t">
+                <button onclick="logout()" class="w-full flex items-center justify-center px-4 py-3 text-[10px] uppercase tracking-widest font-bold bg-brandBlack text-white hover:bg-red-900 transition-all">
+                    <i class="fa-solid fa-power-off mr-2"></i> System Exit
+                </button>
+            </div>
+        </aside>
+
+        <main class="flex-1 min-h-screen p-6 lg:p-12">
+            <div class="max-w-6xl mx-auto">
+                <div class="flex justify-between items-center mb-12">
+                    <div>
+                        <h2 class="text-2xl font-light tracking-tight mb-1">Men's Collection</h2>
+                        <p class="text-[9px] uppercase tracking-[0.3em] text-gray-400 font-bold">Inventory & Stock Levels</p>
+                    </div>
+                    <button onclick="openAddModal()" class="bg-brandBlack text-white px-6 py-3 text-[10px] uppercase tracking-widest font-bold hover:bg-gray-800 transition">
+                        Add New Scent
+                    </button>
+                </div>
+
+                <div class="bg-white border shadow-sm overflow-hidden">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-gray-50 border-b">
+                                <th class="px-6 py-4 text-[9px] uppercase tracking-widest font-bold text-gray-400">Product</th>
+                                <th class="px-6 py-4 text-[9px] uppercase tracking-widest font-bold text-gray-400">Variant Sizes</th>
+                                <th class="px-6 py-4 text-[9px] uppercase tracking-widest font-bold text-gray-400">Stock Status</th>
+                                <th class="px-6 py-4 text-[9px] uppercase tracking-widest font-bold text-gray-400 text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="stock-list">
+                            <tr><td colspan="4" class="p-12 text-center text-xs uppercase tracking-widest text-gray-400">Syncing database...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const API_URL = '/api';
+
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('-translate-x-full');
+            document.getElementById('overlay').classList.toggle('active');
+        }
+
+        async function fetchMenInventory() {
+            try {
+                const res = await fetch(`${API_URL}/products`);
+                const products = await res.json();
+                
+                // FILTER FOR MEN ONLY
+                const menScents = products.filter(p => p.category === 'men');
+                
+                const listContainer = document.getElementById('stock-list');
+                listContainer.innerHTML = '';
+
+                if (menScents.length === 0) {
+                    listContainer.innerHTML = '<tr><td colspan="4" class="p-12 text-center text-xs text-gray-400 uppercase tracking-widest">No products found in Men category</td></tr>';
+                    return;
+                }
+
+                menScents.forEach(product => {
+                    // Loop through variants for size-specific stock
+                    const variantsHtml = product.variants.map(v => `
+                        <div class="flex justify-between items-center mb-1 border-b border-gray-100 pb-1 last:border-0">
+                            <span class="text-[10px] font-bold text-gray-500 uppercase">${v.size}</span>
+                            <span class="text-[11px] font-medium ${v.stock < 5 ? 'text-red-500 font-bold' : 'text-gray-700'}">
+                                ${v.stock} pcs
+                            </span>
+                        </div>
+                    `).join('');
+
+                    const totalStock = product.variants.reduce((sum, v) => sum + (parseInt(v.stock) || 0), 0);
+
+                    const row = `
+                        <tr class="border-b hover:bg-gray-50 transition-colors">
+                            <td class="px-6 py-6">
+                                <div class="flex items-center">
+                                    <img src="${product.imageUrl || 'https://via.placeholder.com/40'}" class="w-10 h-10 object-cover mr-4 border">
+                                    <div>
+                                        <p class="text-xs font-bold uppercase tracking-wider">${product.name}</p>
+                                        <p class="text-[9px] text-gray-400 uppercase tracking-tighter">Total units: ${totalStock}</p>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="px-6 py-6 min-w-[150px]">
+                                ${variantsHtml}
+                            </td>
+                            <td class="px-6 py-6">
+                                ${totalStock > 0 
+                                    ? `<span class="bg-gray-100 text-gray-800 text-[8px] font-bold px-2 py-1 uppercase tracking-widest border border-gray-200">In Stock</span>`
+                                    : `<span class="bg-red-50 text-red-600 text-[8px] font-bold px-2 py-1 uppercase tracking-widest border border-red-100">Sold Out</span>`
+                                }
+                            </td>
+                            <td class="px-6 py-6 text-right">
+                                <button onclick="editProduct('${product._id}')" class="text-gray-400 hover:text-brandBlack mr-4 transition"><i class="fa-solid fa-pen-to-square"></i></button>
+                                <button onclick="deleteProduct('${product._id}')" class="text-gray-400 hover:text-red-600 transition"><i class="fa-solid fa-trash-can"></i></button>
+                            </td>
+                        </tr>
+                    `;
+                    listContainer.innerHTML += row;
+                });
+            } catch (err) {
+                console.error("Fetch Error:", err);
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('tmb_admin_token');
+            window.location.href = 'tmbadmin-login.html';
+        }
+
+        window.onload = fetchMenInventory;
+    </script>
+</body>
+</html>
