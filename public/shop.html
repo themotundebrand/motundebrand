@@ -32,7 +32,12 @@
         .slide-active { opacity: 1; pointer-events: auto; }
         .glass-overlay { background: rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px); border: 1px solid rgba(247, 200, 208, 0.1); }
 
-        /* Collection Grid Layout */
+        /* Sidebar Styles */
+        #sidebar { transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+        .sidebar-open { transform: translateX(0); }
+        .sidebar-closed { transform: translateX(-100%); }
+
+        /* Collection Grid */
         .collection-grid {
             display: grid;
             grid-auto-flow: column;
@@ -63,15 +68,47 @@
 </head>
 <body class="bg-white font-sans antialiased overflow-x-hidden">
 
-    <nav class="fixed w-full z-50 bg-brandBlack px-6 py-4 flex justify-between items-center shadow-lg">
-        <h1 class="text-brandPink text-xs md:text-lg font-black tracking-luxury uppercase">The Motunde Brand</h1>
+    <nav class="fixed w-full z-[100] bg-brandBlack px-4 md:px-8 py-4 flex justify-between items-center shadow-lg">
+        <div class="flex items-center gap-4">
+            <button onclick="toggleSidebar(true)" class="md:hidden text-brandPink">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 8h16M4 16h16" stroke-width="2"></path></svg>
+            </button>
+            <h1 class="text-brandPink text-xs md:text-lg font-black tracking-luxury uppercase">The Motunde Brand</h1>
+        </div>
+
         <div class="hidden md:flex space-x-8 text-[10px] tracking-widest uppercase text-brandPink/70">
             <a href="index.html" class="hover:text-brandPink transition">Home</a>
             <a href="#women" class="hover:text-brandPink transition">Women</a>
             <a href="#men" class="hover:text-brandPink transition">Men</a>
             <a href="#kids" class="hover:text-brandPink transition">Kids</a>
         </div>
+
+        <div class="flex items-center gap-5 text-brandPink">
+            <a href="account.html" class="hover:text-white transition">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" stroke-width="1.5"></path></svg>
+            </a>
+            <button onclick="openCart()" class="relative hover:text-white transition">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" stroke-width="1.5"></path></svg>
+                <span id="cart-count" class="absolute -top-2 -right-2 bg-white text-brandBlack text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center">0</span>
+            </button>
+        </div>
     </nav>
+
+    <div id="sidebar-overlay" onclick="toggleSidebar(false)" class="fixed inset-0 bg-black/60 z-[110] hidden backdrop-blur-sm"></div>
+    <aside id="sidebar" class="fixed top-0 left-0 h-full w-72 bg-brandBlack z-[120] sidebar-closed p-8 flex flex-col">
+        <button onclick="toggleSidebar(false)" class="self-end text-brandPink mb-12">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" stroke-width="2"></path></svg>
+        </button>
+        <div class="flex flex-col space-y-8 text-sm tracking-[0.3em] uppercase text-brandPink/80">
+            <a href="index.html" onclick="toggleSidebar(false)">Home</a>
+            <a href="#women" onclick="toggleSidebar(false)">Women's Collection</a>
+            <a href="#men" onclick="toggleSidebar(false)">Men's Collection</a>
+            <a href="#kids" onclick="toggleSidebar(false)">Kids Collection</a>
+            <div class="pt-8 border-t border-brandPink/10">
+                <a href="account.html" class="text-[10px] opacity-60">My Account</a>
+            </div>
+        </div>
+    </aside>
 
     <section class="pt-16 bg-brandBlack relative">
         <div class="relative h-[300px] md:h-[450px] overflow-hidden">
@@ -83,6 +120,10 @@
                 <div class="w-full md:w-1/2 h-full"><img src="https://i.imgur.com/mfXDwZG.jpeg" class="w-full h-full object-cover"></div>
                 <div class="hidden md:block md:w-1/2 h-full"><img src="https://i.imgur.com/LWxBC3K.jpeg" class="w-full h-full object-cover"></div>
             </div>
+            <div id="slide-group-2" class="slide-fade slide-hidden flex flex-row h-full">
+                <div class="w-full md:w-1/2 h-full"><img src="https://i.imgur.com/KQ2leiY.jpeg" class="w-full h-full object-cover"></div>
+                <div class="hidden md:block md:w-1/2 h-full"><img src="https://i.imgur.com/Wp0HCu8.jpeg" class="w-full h-full object-cover"></div>
+            </div>
         </div>
 
         <div class="absolute inset-0 flex flex-col items-center justify-center z-10 pointer-events-none">
@@ -91,12 +132,11 @@
                     Quick Access
                     <svg class="w-3 h-3 transition-transform group-hover:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7" stroke-width="2"></path></svg>
                 </button>
-
                 <div id="shop-dropdown-menu" class="absolute top-full left-1/2 -translate-x-1/2 mt-4 w-64 bg-brandBlack/95 backdrop-blur-xl border border-brandPink/20 opacity-0 invisible transition-all duration-300 transform -translate-y-2">
                     <div class="flex flex-col py-4">
-                        <a href="#women" class="px-6 py-3 text-[9px] text-brandPink/80 hover:text-brandPink hover:bg-white/5 uppercase tracking-widest transition">Women's Collection</a>
-                        <a href="#men" class="px-6 py-3 text-[9px] text-brandPink/80 hover:text-brandPink hover:bg-white/5 uppercase tracking-widest transition">Men's Collection</a>
-                        <a href="#kids" class="px-6 py-3 text-[9px] text-brandPink/80 hover:text-brandPink hover:bg-white/5 uppercase tracking-widest transition">Kids' Collection</a>
+                        <a href="#women" class="px-6 py-3 text-[9px] text-brandPink/80 hover:text-brandPink uppercase tracking-widest transition">Women's Collection</a>
+                        <a href="#men" class="px-6 py-3 text-[9px] text-brandPink/80 hover:text-brandPink uppercase tracking-widest transition">Men's Collection</a>
+                        <a href="#kids" class="px-6 py-3 text-[9px] text-brandPink/80 hover:text-brandPink uppercase tracking-widest transition">Kids' Collection</a>
                     </div>
                 </div>
             </div>
@@ -110,7 +150,7 @@
                     <h2 class="text-brandBlack text-lg md:text-xl font-light uppercase tracking-[0.3em]">Women's Collection</h2>
                     <div class="w-12 h-[1px] bg-brandPink mt-2"></div>
                 </div>
-                <a href="womenscollection.html" class="text-[9px] uppercase tracking-widest text-brandPinkDark hover:text-brandBlack flex items-center gap-2 font-bold">
+                <a href="womenscollection.html" class="text-[9px] uppercase tracking-widest text-brandPinkDark flex items-center gap-2 font-bold">
                     View All <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M17 8l4 4m0 0l-4 4m4-4H3" stroke-width="2"/></svg>
                 </a>
             </div>
@@ -123,7 +163,7 @@
                     <h2 class="text-brandBlack text-lg md:text-xl font-light uppercase tracking-[0.3em]">Men's Collection</h2>
                     <div class="w-12 h-[1px] bg-brandPink mt-2"></div>
                 </div>
-                <a href="menscollection.html" class="text-[9px] uppercase tracking-widest text-brandPinkDark hover:text-brandBlack flex items-center gap-2 font-bold">
+                <a href="menscollection.html" class="text-[9px] uppercase tracking-widest text-brandPinkDark flex items-center gap-2 font-bold">
                     View All <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M17 8l4 4m0 0l-4 4m4-4H3" stroke-width="2"/></svg>
                 </a>
             </div>
@@ -136,7 +176,7 @@
                     <h2 class="text-brandBlack text-lg md:text-xl font-light uppercase tracking-[0.3em]">Kids Collection</h2>
                     <div class="w-12 h-[1px] bg-brandPink mt-2"></div>
                 </div>
-                <a href="kidscollection.html" class="text-[9px] uppercase tracking-widest text-brandPinkDark hover:text-brandBlack flex items-center gap-2 font-bold">
+                <a href="kidscollection.html" class="text-[9px] uppercase tracking-widest text-brandPinkDark flex items-center gap-2 font-bold">
                     View All <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M17 8l4 4m0 0l-4 4m4-4H3" stroke-width="2"/></svg>
                 </a>
             </div>
@@ -144,20 +184,37 @@
         </section>
     </main>
 
-    <footer class="bg-brandBlack py-12 text-center border-t border-brandPink/10">
-        <p class="text-brandPink/40 text-[8px] uppercase tracking-widest">The Motunde Brand © 2025</p>
-    </footer>
-
     <script>
+        // Sidebar Navigation Logic
+        function toggleSidebar(open) {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+            if (open) {
+                sidebar.classList.replace('sidebar-closed', 'sidebar-open');
+                overlay.classList.remove('hidden');
+            } else {
+                sidebar.classList.replace('sidebar-open', 'sidebar-closed');
+                overlay.classList.add('hidden');
+            }
+        }
+
         // Hero Slider Logic
         let currentSlide = 1;
         setInterval(() => {
-            document.getElementById(`slide-group-${currentSlide}`).classList.replace('slide-active', 'slide-hidden');
-            currentSlide = (currentSlide % 2) + 1;
-            document.getElementById(`slide-group-${currentSlide}`).classList.replace('slide-hidden', 'slide-active');
+            const s1 = document.getElementById(`slide-group-1`);
+            const s2 = document.getElementById(`slide-group-2`);
+            if (currentSlide === 1) {
+                s1.classList.replace('slide-active', 'slide-hidden');
+                s2.classList.replace('slide-hidden', 'slide-active');
+                currentSlide = 2;
+            } else {
+                s2.classList.replace('slide-active', 'slide-hidden');
+                s1.classList.replace('slide-hidden', 'slide-active');
+                currentSlide = 1;
+            }
         }, 5000);
 
-        // Quick Access Dropdown Logic
+        // Quick Access Dropdown
         const shopBtn = document.getElementById('shop-dropdown-btn');
         const shopMenu = document.getElementById('shop-dropdown-menu');
         shopBtn.onclick = (e) => {
@@ -168,10 +225,17 @@
         };
         window.onclick = () => shopMenu.classList.add('opacity-0', 'invisible', '-translate-y-2');
 
-        // Product Logic
+        // Product Rendering Logic
         function handleSizeChange(select, productId) {
             const price = select.options[select.selectedIndex].getAttribute('data-price');
             document.getElementById(`price-${productId}`).innerText = `₦${Number(price).toLocaleString()}`;
+        }
+
+        let cartItems = 0;
+        function addToCart(id) { 
+            cartItems++;
+            document.getElementById('cart-count').innerText = cartItems;
+            alert("Added to your collection."); 
         }
 
         async function loadProducts() {
@@ -209,7 +273,6 @@
             } catch (err) { console.error("Error:", err); }
         }
 
-        function addToCart(id) { alert("Added to your collection."); }
         loadProducts();
     </script>
 </body>
