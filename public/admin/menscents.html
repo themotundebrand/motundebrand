@@ -31,6 +31,27 @@
         .input-field:focus { outline: none; border-color: #000; }
         .mobile-overlay { background: rgba(0,0,0,0.5); display: none; }
         .mobile-overlay.active { display: block; }
+
+        /* Optimized for mobile inputs */
+@media (max-width: 768px) {
+    .input-field {
+        font-size: 16px; /* Prevents auto-zoom on iPhones */
+        padding: 12px;
+        background-color: #fff;
+    }
+    #formContainer {
+        padding: 1.5rem 1rem;
+    }
+    h2 {
+        font-size: 1.5rem;
+    }
+}
+/* Custom scrollbar for better mobile feel */
+#variantsContainer {
+    max-height: 400px;
+    overflow-y: auto;
+    padding-right: 4px;
+}
     </style>
 </head>
 <body class="text-brandBlack">
@@ -204,23 +225,32 @@
             localStorage.removeItem('tmb_admin_token');
             window.location.href = 'tmbadmin-login.html';
         }
-
-        function addVariantRow(size = '', price = '', stock = '0') {
-            const container = document.getElementById('variantsContainer');
-            const rowId = 'row-' + Math.random().toString(36).substr(2, 9);
-            const html = `
-                <div class="flex gap-2 variant-row items-center" id="${rowId}">
-                    <input type="text" placeholder="Size" class="input-field v-size flex-[2]" value="${size}" required>
-                    <input type="number" placeholder="Price" class="input-field v-price flex-[2]" value="${price}" required>
-                    <input type="number" placeholder="Stock" class="input-field v-stock flex-[1]" value="${stock}" required>
-                    <button type="button" onclick="removeVariantRow('${rowId}')" class="text-red-500 hover:text-red-700 p-2">
-                        <i class="fa-solid fa-trash-can text-xs"></i>
-                    </button>
-                </div>
-            `;
-            container.insertAdjacentHTML('beforeend', html);
-        }
-
+function addVariantRow(size = '', price = '', stock = '0') {
+    const container = document.getElementById('variantsContainer');
+    const rowId = 'row-' + Math.random().toString(36).substr(2, 9);
+    
+    // Updated HTML: Stacks vertically on mobile, horizontally on md screens
+    const html = `
+        <div class="flex flex-col md:flex-row gap-3 md:gap-2 variant-row items-end md:items-center bg-gray-100 md:bg-transparent p-3 md:p-0 rounded-sm border md:border-0" id="${rowId}">
+            <div class="w-full md:flex-[2]">
+                <label class="md:hidden text-[8px] uppercase font-bold text-gray-400 mb-1 block">Size</label>
+                <input type="text" placeholder="e.g. 100ml" class="input-field v-size" value="${size}" required>
+            </div>
+            <div class="w-full md:flex-[2]">
+                <label class="md:hidden text-[8px] uppercase font-bold text-gray-400 mb-1 block">Price (₦)</label>
+                <input type="number" placeholder="Price" class="input-field v-price" value="${price}" required>
+            </div>
+            <div class="w-full md:flex-[1]">
+                <label class="md:hidden text-[8px] uppercase font-bold text-gray-400 mb-1 block">Stock</label>
+                <input type="number" placeholder="Qty" class="input-field v-stock" value="${stock}" required>
+            </div>
+            <button type="button" onclick="removeVariantRow('${rowId}')" class="text-red-500 hover:text-red-700 p-2 bg-white md:bg-transparent rounded-full shadow-sm md:shadow-none">
+                <i class="fa-solid fa-trash-can text-sm md:text-xs"></i>
+            </button>
+        </div>
+    `;
+    container.insertAdjacentHTML('beforeend', html);
+}
         function removeVariantRow(id) {
             const rows = document.querySelectorAll('.variant-row');
             if(rows.length > 1) {
@@ -397,11 +427,20 @@
             } catch (err) { showAlert("Network error.", true); }
         }
 
-        function toggleSidebar() {
-            document.getElementById('sidebar').classList.toggle('-translate-x-full');
-            document.getElementById('overlay').classList.toggle('active');
-        }
-
+       function toggleSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('overlay');
+    
+    sidebar.classList.toggle('-translate-x-full');
+    overlay.classList.toggle('active');
+    
+    // Prevent body scroll when menu is open
+    if (overlay.classList.contains('active')) {
+        document.body.style.overflow = 'hidden';
+    } else {
+        document.body.style.overflow = 'auto';
+    }
+}
         document.getElementById('imageUpload').onchange = function() {
             document.getElementById('fileNameDisplay').innerText = this.files[0]?.name || "Click to upload image";
         };
