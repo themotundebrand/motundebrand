@@ -32,7 +32,6 @@
         .form-active { display: block; animation: fadeIn 0.5s ease-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         
-        /* Custom styling for the select arrow */
         select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23F7C8D0'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right center; background-size: 12px; }
     </style>
 </head>
@@ -45,7 +44,7 @@
     <main class="flex-grow flex items-center justify-center px-6 py-12">
         <div class="w-full max-w-lg bg-brandGray/50 p-8 md:p-12 rounded-sm border border-brandPink/5 backdrop-blur-md">
             
-            <div class="flex justify-center space-x-8 mb-12">
+            <div id="tab-header" class="flex justify-center space-x-8 mb-12">
                 <button id="tab-login" onclick="switchTab('login')" class="text-[10px] uppercase tracking-widest text-brandPink border-b border-brandPink pb-2">Login</button>
                 <button id="tab-register" onclick="switchTab('register')" class="text-[10px] uppercase tracking-widest text-brandPink/40 hover:text-brandPink pb-2 transition">Create Account</button>
             </div>
@@ -103,10 +102,6 @@
                                 <input type="text" id="reg-state" required class="w-full py-2 text-sm text-white">
                             </div>
                         </div>
-                        <div>
-                            <label class="block text-[8px] uppercase tracking-widest text-brandPink/60 mb-1">Country</label>
-                            <input type="text" value="Nigeria" disabled class="w-full py-2 text-sm text-brandPink/40 cursor-not-allowed">
-                        </div>
                     </div>
                 </div>
 
@@ -119,60 +114,49 @@
                     Create Profile
                 </button>
             </form>
+
+            <form id="verify-form" class="form-container space-y-8 text-center">
+                <div>
+                    <h2 class="text-brandPink text-[12px] uppercase tracking-luxury mb-2">Verify Email</h2>
+                    <p class="text-[9px] text-brandPink/40 uppercase tracking-widest leading-relaxed">
+                        We've sent a 6-digit code to your email.<br>Please enter it below to activate your account.
+                    </p>
+                </div>
+                
+                <div class="flex justify-center gap-2">
+                    <input type="text" id="otp-code" maxlength="6" placeholder="000000" 
+                           class="w-48 text-center text-2xl tracking-[0.5em] font-bold py-4 !border-b-2 !border-brandPink">
+                </div>
+
+                <button type="submit" class="w-full bg-brandPink text-brandBlack py-4 text-[10px] font-bold uppercase tracking-[0.3em] hover:bg-white transition-all duration-500">
+                    Confirm Activation
+                </button>
+            </form>
+
         </div>
     </main>
-<footer class="bg-brandBlack pt-16 pb-10 px-6 md:px-12 border-t border-brandPink/5">
-    <div class="max-w-7xl mx-auto mb-16">
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-12">
-            <div class="col-span-1">
-                <h2 class="text-brandPink text-sm font-black tracking-luxury uppercase mb-6">The Motunde Brand</h2>
-                <p class="text-brandPink/50 text-[10px] leading-relaxed tracking-widest uppercase max-w-xs">
-                    Timeless elegance for the modern individual. Redefining fashion through quality and luxury.
-                </p>
-            </div>
-            <div class="col-span-1 md:col-span-2 grid grid-cols-2 gap-4">
-                <div>
-                    <h4 class="text-brandPink text-[10px] font-bold tracking-widest uppercase mb-6">Collections</h4>
-                    <ul class="text-brandPink/60 text-[9px] space-y-4 tracking-widest uppercase">
-                        <li><a href="#women" class="hover:text-brandPink transition">Women</a></li>
-                        <li><a href="#men" class="hover:text-brandPink transition">Men</a></li>
-                        <li><a href="#kids" class="hover:text-brandPink transition">Kids</a></li>
-                    </ul>
-                </div>
-                <div>
-                    <h4 class="text-brandPink text-[10px] font-bold tracking-widest uppercase mb-6">Support</h4>
-                    <ul class="text-brandPink/60 text-[9px] space-y-4 tracking-widest uppercase">
-                        <li><a href="#" class="hover:text-brandPink transition">Contact</a></li>
-                        <li><a href="#" class="hover:text-brandPink transition">Shipping</a></li>
-                        <li><a href="#" class="hover:text-brandPink transition">Privacy</a></li>
-                    </ul>
-                </div>
-            </div>
-            <div class="col-span-1">
-                <h4 class="text-brandPink text-[10px] font-bold tracking-widest uppercase mb-6">Newsletter</h4>
-                <div class="flex border-b border-brandPink/20 pb-2">
-                    <input type="email" placeholder="YOUR EMAIL" class="bg-transparent text-[10px] text-brandPink w-full focus:outline-none placeholder:text-brandPink/20 tracking-widest">
-                    <button class="text-brandPink text-[10px] font-bold ml-2">JOIN</button>
-                </div>
-            </div>
+
+    <footer class="bg-brandBlack pt-16 pb-10 px-6 md:px-12 border-t border-brandPink/5">
+        <div class="max-w-7xl mx-auto mb-16 text-center">
+            <p class="text-brandPink/30 text-[8px] tracking-[0.3em] uppercase">
+                © 2026 The Motunde Brand. All Rights Reserved.
+            </p>
         </div>
-    </div>
-    <div class="border-t border-brandPink/10 pt-8 flex flex-col md:flex-row justify-between items-center gap-6">
-        <p class="text-brandPink/30 text-[8px] tracking-[0.3em] uppercase order-2 md:order-1">
-            © 2026 The Motunde Brand. All Rights Reserved.
-        </p>
-        <div class="flex flex-wrap justify-center gap-5 md:gap-6 order-1 md:order-2">
-            <a href="#" class="text-brandPink/40 hover:text-brandPink transition uppercase text-[8px] tracking-widest">Instagram</a>
-            <a href="#" class="text-brandPink/40 hover:text-brandPink transition uppercase text-[8px] tracking-widest">TikTok</a>
-            <a href="#" class="text-brandPink/40 hover:text-brandPink transition uppercase text-[8px] tracking-widest">Facebook</a>
-        </div>
-    </div>
+    </footer>
+
     <script>
+        const API_URL = '/api';
+        let pendingEmail = ""; 
+
         function switchTab(tab) {
             const loginForm = document.getElementById('login-form');
             const regForm = document.getElementById('register-form');
+            const verifyForm = document.getElementById('verify-form');
             const loginBtn = document.getElementById('tab-login');
             const regBtn = document.getElementById('tab-register');
+
+            // Always hide verify when switching tabs
+            verifyForm.classList.remove('form-active');
 
             if(tab === 'login') {
                 loginForm.classList.add('form-active');
@@ -187,14 +171,19 @@
             }
         }
 
-        const API_URL = '/api';
-
-        // Register
+        // 1. REGISTER LOGIC
         document.getElementById('register-form').onsubmit = async (e) => {
             e.preventDefault();
+            const submitBtn = e.target.querySelector('button');
+            const originalText = submitBtn.innerText;
+            submitBtn.innerText = "SENDING CODE...";
+            submitBtn.disabled = true;
+
+            pendingEmail = document.getElementById('reg-email').value;
+            
             const userData = {
                 name: document.getElementById('reg-name').value,
-                email: document.getElementById('reg-email').value,
+                email: pendingEmail,
                 password: document.getElementById('reg-password').value,
                 phone: document.getElementById('reg-phone').value,
                 whatsapp: document.getElementById('reg-whatsapp').value,
@@ -213,13 +202,51 @@
                     body: JSON.stringify(userData)
                 });
                 const data = await res.json();
-                if(data.token) {
-                    saveSession(data.token, data.user);
-                } else { alert(data.error); }
-            } catch (err) { alert("Connection Error"); }
+                
+                if(res.ok) {
+                    // Hide Header Tabs & Reg Form, show OTP
+                    document.getElementById('tab-header').style.display = 'none';
+                    document.getElementById('register-form').classList.remove('form-active');
+                    document.getElementById('verify-form').classList.add('form-active');
+                } else {
+                    alert(data.error || "Registration failed");
+                }
+            } catch (err) { 
+                alert("Connection Error"); 
+            } finally { 
+                submitBtn.innerText = originalText;
+                submitBtn.disabled = false;
+            }
         };
 
-        // Login
+        // 2. VERIFY OTP LOGIC
+        document.getElementById('verify-form').onsubmit = async (e) => {
+            e.preventDefault();
+            const otp = document.getElementById('otp-code').value;
+            const submitBtn = e.target.querySelector('button');
+            submitBtn.innerText = "VERIFYING...";
+
+            try {
+                const res = await fetch(`${API_URL}/verify-otp`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: pendingEmail, otp })
+                });
+                const data = await res.json();
+                
+                if(data.token) {
+                    saveSession(data.token, data.user);
+                } else {
+                    alert(data.error || "Invalid Code");
+                }
+            } catch (err) { 
+                alert("Verification Error"); 
+            } finally {
+                submitBtn.innerText = "Confirm Activation";
+            }
+        };
+
+        // 3. LOGIN LOGIC
         document.getElementById('login-form').onsubmit = async (e) => {
             e.preventDefault();
             const email = document.getElementById('login-email').value;
@@ -234,7 +261,9 @@
                 const data = await res.json();
                 if(data.token) {
                     saveSession(data.token, data.user);
-                } else { alert(data.error); }
+                } else { 
+                    alert(data.error); 
+                }
             } catch (err) { alert("Connection Error"); }
         };
 

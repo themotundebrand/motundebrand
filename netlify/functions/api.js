@@ -6,6 +6,7 @@ const compression = require('compression');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const AWS = require('aws-sdk');
+const nodemailer = require('nodemailer'); 
 
 const app = express();
 const router = express.Router();
@@ -16,6 +17,15 @@ app.use(express.json({ limit: '10mb' }));
 
 const uri = process.env.MONGODB_URI;
 const JWT_SECRET = process.env.JWT_SECRET;
+
+// --- GMAIL SMTP CONFIGURATION ---
+const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+        user: process.env.EMAIL_USER, // e.g., yourbrand@gmail.com
+        pass: process.env.EMAIL_PASS  // your 16-character App Password
+    }
+});
 
 // --- IDRIVE E2 / S3 CONFIGURATION ---
 let s3 = null;
@@ -236,17 +246,17 @@ router.get('/products', async (req, res) => {
     } catch (e) { res.status(500).json({ error: "Load failed" }); }
 });
 
-// --- USER REGISTRATION ---
+// --- USER REGISTRATION (UPDATED FOR OTP) ---
 router.post('/register', async (req, res) => {
     try {
         const db = await getDb();
         const { name, email, password, phone, whatsapp, address } = req.body;
 
-        // Check if user already exists
         const existingUser = await db.collection("users").findOne({ email: email.toLowerCase() });
         if (existingUser) return res.status(400).json({ error: "Email already registered" });
 
-        // Hash password
+        // Generate 6-digit OTP
+        const otp = Math.floor(100000 + Math.random() * 900000).toString();
         const hashedPassword = await bcrypt.hash(password, 10);
 
         const newUser = {
@@ -255,25 +265,75 @@ router.post('/register', async (req, res) => {
             password: hashedPassword,
             phone,
             whatsapp,
-            address, // { street, city, state, country }
+            address,
+            isVerified: false, // User is locked until verified
+            otp: otp,
             createdAt: new Date(),
             isAdmin: false
         };
 
-        const result = await db.collection("users").insertOne(newUser);
-        
-        // Generate Token
+        await db.collection("users").insertOne(newUser);
+
+        // Send Luxury-Branded Email
+        const mailOptions = {
+            from: `"The Motunde Brand" <${process.env.EMAIL_USER}>`,
+            to: email,
+            subject: 'Verify Your Account | The Motunde Brand',
+            html: `
+                <div style="font-family: sans-serif; background-color: #000; color: #fff; padding: 40px; text-align: center; border: 1px solid #F7C8D0;">
+                    <h2 style="color: #F7C8D0; letter-spacing: 0.4em; text-transform: uppercase;">The Motunde Brand</h2>
+                    <p style="font-size: 12px; letter-spacing: 0.1em; color: rgba(247,200,208,0.7);">WELCOME TO THE INNER CIRCLE</p>
+                    <hr style="border: 0; border-top: 1px solid rgba(247,200,208,0.1); margin: 30px 0;">
+                    <p style="font-size: 14px; margin-bottom: 30px;">Your activation code is:</p>
+                    <div style="background: #1A1A1A; padding: 20px; border: 1px solid #F7C8D0; display: inline-block; letter-spacing: 0.5em; font-size: 24px; font-weight: bold; color: #F7C8D0;">
+                        ${otp}
+                    </div>
+                    <p style="font-size: 10px; margin-top: 30px; color: #666; text-transform: uppercase;">If you did not request this, please ignore this email.</p>
+                </div>
+            `
+        };
+
+        await transporter.sendMail(mailOptions);
+        res.status(201).json({ message: "OTP sent to email" });
+    } catch (e) {
+        res.status(500).json({ error: "Registration failed: " + e.message });
+    }
+});
+
+// --- NEW: VERIFY OTP ROUTE ---
+router.post('/verify-otp', async (req, res) => {
+    try {
+        const db = await getDb();
+        const { email, otp } = req.body;
+
+        const user = await db.collection("users").findOne({ 
+            email: email.toLowerCase(), 
+            otp: otp 
+        });
+
+        if (!user) {
+            return res.status(400).json({ error: "Invalid or expired verification code" });
+        }
+
+        // Set verified to true and remove the otp from DB
+        await db.collection("users").updateOne(
+            { _id: user._id },
+            { 
+                $set: { isVerified: true },
+                $unset: { otp: "" } 
+            }
+        );
+
         const token = jwt.sign(
-            { id: result.insertedId, email: newUser.email, isAdmin: false },
+            { id: user._id, email: user.email, isAdmin: user.isAdmin || false },
             JWT_SECRET,
             { expiresIn: '7d' }
         );
 
-        // Remove password from user object before sending
-        delete newUser.password;
-        res.status(201).json({ token, user: newUser });
+        delete user.password;
+        res.json({ token, user, message: "Account activated" });
     } catch (e) {
-        res.status(500).json({ error: "Registration failed: " + e.message });
+        res.status(500).json({ error: "Verification failed" });
     }
 });
 
