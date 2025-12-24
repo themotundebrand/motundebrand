@@ -64,7 +64,7 @@ router.get('/admin/analytics/stock-overview', authenticateAdmin, async (req, res
         let womenTotalStock = 0;
         let menTotalStock = 0;
         let kidTotalStock = 0;
-        let mistTotalStock = 0; // Added for Mists & Sprays
+        let mistTotalStock = 0;
 
         products.forEach(product => {
             const totalProductUnits = (product.variants || []).reduce((sum, v) => sum + (parseInt(v.stock) || 0), 0);
@@ -103,27 +103,34 @@ router.post('/admin/login', async (req, res) => {
     } catch (e) { res.status(500).json({ error: "Login failed" }); }
 });
 
-// --- PRODUCT MANAGEMENT (CREATE) ---
+// --- [CRITICAL FIX] PRODUCT MANAGEMENT (CREATE) ---
 router.post('/admin/products', authenticateAdmin, async (req, res) => {
     try {
-        if (!s3) throw new Error("Storage not configured");
+        if (!s3) throw new Error("Storage (S3/IDrive) not configured. Check environment variables.");
+        
         const db = await getDb();
         const { name, variants, description, category, subCategory, imageBase64, fileName, contentType } = req.body;
+
+        // Validation to prevent 500 errors from missing data
+        if (!imageBase64 || !fileName) {
+            return res.status(400).json({ error: "Image data and file name are required." });
+        }
 
         const buffer = Buffer.from(imageBase64, 'base64');
         const cleanFileName = fileName.replace(/\s+/g, '-');
         const uploadKey = `${category}/${Date.now()}-${cleanFileName}`;
 
+        // S3 Upload
         await s3.upload({
             Bucket: BUCKET_NAME,
             Key: uploadKey,
             Body: buffer,
-            ContentType: contentType
+            ContentType: contentType || 'image/jpeg'
         }).promise();
 
         const formattedVariants = (variants || []).map(v => ({
-            size: v.size,
-            price: parseFloat(v.price),
+            size: String(v.size),
+            price: parseFloat(v.price) || 0,
             stock: parseInt(v.stock) || 0 
         }));
 
@@ -131,15 +138,18 @@ router.post('/admin/products', authenticateAdmin, async (req, res) => {
             name, 
             variants: formattedVariants,
             description, 
-            category: category.toLowerCase().trim(),
-            subCategory: subCategory || "", // Distinguishes between 'Body Mist' and 'Body Spray'
+            category: (category || "unassigned").toLowerCase().trim(),
+            subCategory: subCategory || "", 
             imageKey: uploadKey,
             createdAt: new Date() 
         };
 
         await db.collection("products").insertOne(product);
         res.status(201).json({ message: "Product added successfully" });
-    } catch (e) { res.status(500).json({ error: e.message }); }
+    } catch (e) { 
+        console.error("Product Creation Error:", e);
+        res.status(500).json({ error: e.message }); 
+    }
 });
 
 // --- PRODUCT MANAGEMENT (UPDATE) ---
@@ -163,7 +173,7 @@ router.put('/admin/products/:id', authenticateAdmin, async (req, res) => {
                 Bucket: BUCKET_NAME,
                 Key: updatedImageKey,
                 Body: buffer,
-                ContentType: contentType
+                ContentType: contentType || 'image/jpeg'
             }).promise();
 
             if (existingProduct.imageKey) {
@@ -173,8 +183,8 @@ router.put('/admin/products/:id', authenticateAdmin, async (req, res) => {
         }
 
         const formattedVariants = (variants || []).map(v => ({
-            size: v.size,
-            price: parseFloat(v.price),
+            size: String(v.size),
+            price: parseFloat(v.price) || 0,
             stock: parseInt(v.stock) || 0 
         }));
 
@@ -185,7 +195,7 @@ router.put('/admin/products/:id', authenticateAdmin, async (req, res) => {
                     name, 
                     variants: formattedVariants, 
                     description, 
-                    category: category.toLowerCase().trim(), 
+                    category: (category || "unassigned").toLowerCase().trim(), 
                     subCategory: subCategory || "",
                     imageKey: updatedImageKey, 
                     updatedAt: new Date() 
@@ -194,7 +204,10 @@ router.put('/admin/products/:id', authenticateAdmin, async (req, res) => {
         );
 
         res.json({ message: "Product updated successfully" });
-    } catch (e) { res.status(500).json({ error: e.message }); }
+    } catch (e) { 
+        console.error("Update Error:", e);
+        res.status(500).json({ error: e.message }); 
+    }
 });
 
 // --- PRODUCT MANAGEMENT (DELETE) ---
@@ -251,7 +264,6 @@ router.get('/products', async (req, res) => {
             .toArray();
         
         const refreshedItems = items.map(item => {
-            // 1. Image URL Handling
             if (s3 && item.imageKey) {
                 try {
                     item.imageUrl = s3.getSignedUrl('getObject', {
@@ -266,7 +278,6 @@ router.get('/products', async (req, res) => {
                 item.imageUrl = item.imageUrl || "https://i.imgur.com/CVKXV7R.png";
             }
 
-            // 2. Data Normalization
             if (!item.variants || !Array.isArray(item.variants) || item.variants.length === 0) {
                 item.variants = [{ size: "Default", price: item.price || 0, stock: item.stock || 0 }];
             }
@@ -281,7 +292,6 @@ router.get('/products', async (req, res) => {
     }
 });
 
-// --- EXPORTS ---
 app.use('/.netlify/functions/api', router);
 app.use('/api', router);
 module.exports.handler = serverless(app);
