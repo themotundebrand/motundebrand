@@ -221,6 +221,18 @@
         </div>
         <div id="kids-grid" class="collection-grid"></div>
     </section>
+    <section id="mist" class="mb-16 md:mb-24 px-4 md:px-12 relative">
+        <div class="flex justify-between items-end mb-6 md:mb-8">
+            <div>
+                <h2 class="text-brandBlack text-[13px] md:text-xl font-light uppercase tracking-[0.2em] md:tracking-[0.3em]">Mists & Sprays</h2>
+                <div class="w-8 md:w-12 h-[1px] bg-brandPink mt-1 md:mt-2"></div>
+            </div>
+            <a href="mistcollection.html" class="text-[8px] md:text-[9px] uppercase tracking-widest text-brandPinkDark flex items-center gap-1 md:gap-2 font-bold">
+                View All <svg class="w-2.5 h-2.5 md:w-3 md:h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M17 8l4 4m0 0l-4 4m4-4H3" stroke-width="2"/></svg>
+            </a>
+        </div>
+        <div id="mist-grid" class="collection-grid"></div>
+    </section>
 </main>
 
     <footer class="bg-brandBlack pt-16 pb-10 px-6 md:px-12 border-t border-brandPink/5">
@@ -384,7 +396,7 @@
             alert("Added to your collection."); 
         }
 
-        // Fetch and Render
+// Updated Fetch and Render
         async function loadProducts() {
             try {
                 const response = await fetch('/api/products');
@@ -408,14 +420,32 @@
                     </div>`;
                 };
 
+                // Standard population for Women, Men, Kids (Limit 5)
                 const populateGrid = (cat, elementId) => {
                     const filtered = currentProducts.filter(p => p.category?.toLowerCase() === cat).slice(0, 5);
                     document.getElementById(elementId).innerHTML = filtered.length > 0 ? filtered.map(renderCard).join('') : `<p class="text-[10px] uppercase text-gray-400 py-10">Vault Opening Soon...</p>`;
                 };
 
+                // SPECIAL LOGIC FOR MISTS & SPRAYS (Limit 6: 3 Mists + 3 Sprays)
+                const populateMistGrid = (elementId) => {
+                    const allMistsInDb = currentProducts.filter(p => p.category?.toLowerCase() === 'mist');
+                    
+                    const mists = allMistsInDb.filter(p => p.subCategory === 'Body Mist').slice(0, 3);
+                    const sprays = allMistsInDb.filter(p => p.subCategory === 'Body Spray').slice(0, 3);
+                    
+                    const combined = [...mists, ...sprays];
+                    
+                    document.getElementById(elementId).innerHTML = combined.length > 0 
+                        ? combined.map(renderCard).join('') 
+                        : `<p class="text-[10px] uppercase text-gray-400 py-10">Vault Opening Soon...</p>`;
+                };
+
+                // Execute populations
                 populateGrid('women', 'women-grid');
                 populateGrid('men', 'men-grid');
                 populateGrid('kids', 'kids-grid');
+                populateMistGrid('mist-grid'); // New Mist Grid call
+
             } catch (err) { console.error("Error:", err); }
         }
 

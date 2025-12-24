@@ -253,8 +253,7 @@ router.post('/orders', async (req, res) => {
         res.status(201).json({ message: "Order successful", orderId: result.insertedId });
     } catch (e) { res.status(500).json({ error: "Order failed: " + e.message }); }
 });
-
-// --- PUBLIC COLLECTION FETCH ---
+// --- PUBLIC COLLECTION FETCH (UPDATED) ---
 router.get('/products', async (req, res) => {
     try {
         const db = await getDb();
@@ -264,6 +263,7 @@ router.get('/products', async (req, res) => {
             .toArray();
         
         const refreshedItems = items.map(item => {
+            // 1. Handle S3 Signed URLs or Fallback Image
             if (s3 && item.imageKey) {
                 try {
                     item.imageUrl = s3.getSignedUrl('getObject', {
@@ -278,20 +278,33 @@ router.get('/products', async (req, res) => {
                 item.imageUrl = item.imageUrl || "https://i.imgur.com/CVKXV7R.png";
             }
 
+            // 2. Ensure Variants exist (Crucial for price rendering)
             if (!item.variants || !Array.isArray(item.variants) || item.variants.length === 0) {
                 item.variants = [{ size: "Default", price: item.price || 0, stock: item.stock || 0 }];
             }
+
+            // 3. Normalize Category (Standardizes to 'mist', 'women', 'men', 'kids')
             item.category = item.category ? item.category.toLowerCase().trim() : "unassigned";
+
+            // 4. Normalize Sub-Category (Critical for the 3 Mists + 3 Sprays logic)
+            // This ensures "body mist" becomes "Body Mist" for the frontend filter
+            if (item.subCategory) {
+                const sub = item.subCategory.toLowerCase().trim();
+                if (sub.includes('mist')) item.subCategory = 'Body Mist';
+                else if (sub.includes('spray')) item.subCategory = 'Body Spray';
+            } else {
+                item.subCategory = "General";
+            }
 
             return item;
         });
 
         res.json(refreshedItems);
     } catch (e) { 
+        console.error("Backend Fetch Error:", e);
         res.status(500).json({ error: "Failed to load collection" }); 
     }
 });
-
 app.use('/.netlify/functions/api', router);
 app.use('/api', router);
 module.exports.handler = serverless(app);
