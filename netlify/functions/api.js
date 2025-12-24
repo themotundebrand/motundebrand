@@ -54,8 +54,8 @@ const authenticateAdmin = (req, res, next) => {
     });
 };
 
-// --- [NEW] DASHBOARD ANALYTICS ENDPOINT ---
-// This sums up all 'stock' values inside the 'variants' array for every product
+// --- [UPDATED] DASHBOARD ANALYTICS ENDPOINT ---
+// Now includes kidTotalStock for the new category
 router.get('/admin/analytics/stock-overview', authenticateAdmin, async (req, res) => {
     try {
         const db = await getDb();
@@ -63,6 +63,7 @@ router.get('/admin/analytics/stock-overview', authenticateAdmin, async (req, res
 
         let womenTotalStock = 0;
         let menTotalStock = 0;
+        let kidTotalStock = 0; // Added for kids
 
         products.forEach(product => {
             const totalProductUnits = (product.variants || []).reduce((sum, v) => sum + (parseInt(v.stock) || 0), 0);
@@ -71,23 +72,23 @@ router.get('/admin/analytics/stock-overview', authenticateAdmin, async (req, res
                 womenTotalStock += totalProductUnits;
             } else if (product.category === 'men') {
                 menTotalStock += totalProductUnits;
+            } else if (product.category === 'kids') { // Added logic
+                kidTotalStock += totalProductUnits;
             }
         });
 
-        res.json({ womenTotalStock, menTotalStock });
+        res.json({ womenTotalStock, menTotalStock, kidTotalStock });
     } catch (e) {
         res.status(500).json({ error: "Failed to calculate stock totals" });
     }
 });
 
-// --- [NEW] ORDER PLACEMENT & STOCK DEDUCTION ---
+// --- ORDER PLACEMENT & STOCK DEDUCTION ---
 router.post('/orders', async (req, res) => {
     try {
         const db = await getDb();
         const { items, customerDetails, totalPrice } = req.body; 
-        // items expected format: [{ productId: "...", size: "100ml", quantity: 1 }]
 
-        // 1. Save the Order Record
         const orderRecord = {
             customerDetails,
             items,
@@ -97,7 +98,6 @@ router.post('/orders', async (req, res) => {
         };
         const result = await db.collection("orders").insertOne(orderRecord);
 
-        // 2. Deduct Stock for each item purchased
         const updatePromises = items.map(item => {
             return db.collection("products").updateOne(
                 { 
@@ -166,7 +166,7 @@ router.post('/admin/products', authenticateAdmin, async (req, res) => {
             name, 
             variants: formattedVariants,
             description, 
-            category, 
+            category, // Will correctly store 'kids', 'men', or 'women'
             imageKey: uploadKey,
             createdAt: new Date() 
         };
@@ -206,7 +206,7 @@ router.put('/admin/products/:id', authenticateAdmin, async (req, res) => {
             }
         }
 
-        const formattedVariants = variants.map(v => ({
+        const formattedVariants = (variants || []).map(v => ({
             size: v.size,
             price: parseFloat(v.price),
             stock: parseInt(v.stock) || 0 

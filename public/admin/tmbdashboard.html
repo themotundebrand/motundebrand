@@ -16,6 +16,7 @@
                         brandBlack: '#000000',
                         brandPinkDark: '#D48A96',
                         brandPinkLight: '#F7C8D0',
+                        brandKidsBlue: '#5BA4B5', // Matching the kidstock theme
                     }
                 }
             }
@@ -56,8 +57,8 @@
                 <a href="menscents.html" class="nav-link flex items-center px-4 py-3 text-[10px] tracking-widest uppercase font-semibold transition-all">
                     <i class="fa-solid fa-mars mr-3 w-5 text-gray-400"></i> Men Scents
                 </a>
-                 <a href="kidscents.html" class="nav-link active-link flex items-center px-4 py-3 text-[10px] tracking-widest uppercase font-semibold transition-all">
-                    <i class="fa-solid fa-child mr-3 w-5 text-white"></i> Kids Scents
+                 <a href="kidscents.html" class="nav-link flex items-center px-4 py-3 text-[10px] tracking-widest uppercase font-semibold transition-all">
+                    <i class="fa-solid fa-child mr-3 w-5 text-brandKidsBlue"></i> Kids Scents
                 </a>
                 
                 <div class="pt-8">
@@ -90,27 +91,33 @@
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6 mb-12">
                     
-                    <a href="womenstock.html" class="stat-card bg-white p-8 border shadow-sm flex flex-col items-center text-center group">
+                    <a href="womenstock.html" class="stat-card bg-white p-6 border shadow-sm flex flex-col items-center text-center group">
                         <span class="text-[9px] uppercase tracking-widest text-gray-400 mb-4 font-bold group-hover:text-brandPinkDark">Women Stock (Units)</span>
                         <span id="women-count" class="text-3xl font-light mb-2">...</span>
                         <span class="text-[8px] uppercase tracking-tighter text-brandPinkDark font-bold">Manage Scents <i class="fa-solid fa-arrow-right ml-1"></i></span>
                     </a>
 
-                    <a href="menstock.html" class="stat-card bg-white p-8 border shadow-sm flex flex-col items-center text-center group">
+                    <a href="menstock.html" class="stat-card bg-white p-6 border shadow-sm flex flex-col items-center text-center group">
                         <span class="text-[9px] uppercase tracking-widest text-gray-400 mb-4 font-bold group-hover:text-brandBlack">Men Stock (Units)</span>
                         <span id="men-count" class="text-3xl font-light mb-2">...</span>
                         <span class="text-[8px] uppercase tracking-tighter text-gray-400 font-bold">Manage Scents <i class="fa-solid fa-arrow-right ml-1"></i></span>
                     </a>
 
-                    <a href="orders.html" class="stat-card bg-white p-8 border shadow-sm flex flex-col items-center text-center group">
+                    <a href="kidstock.html" class="stat-card bg-white p-6 border shadow-sm flex flex-col items-center text-center group hover:border-brandKidsBlue">
+                        <span class="text-[9px] uppercase tracking-widest text-gray-400 mb-4 font-bold group-hover:text-brandKidsBlue">Kids Stock (Units)</span>
+                        <span id="kids-count" class="text-3xl font-light mb-2">...</span>
+                        <span class="text-[8px] uppercase tracking-tighter text-brandKidsBlue font-bold">Manage Scents <i class="fa-solid fa-arrow-right ml-1"></i></span>
+                    </a>
+
+                    <a href="orders.html" class="stat-card bg-white p-6 border shadow-sm flex flex-col items-center text-center group">
                         <span class="text-[9px] uppercase tracking-widest text-gray-400 mb-4 font-bold">Pending Orders</span>
                         <span id="pending-orders" class="text-3xl font-light text-brandPinkDark mb-2">...</span>
                         <span class="text-[8px] uppercase tracking-tighter text-gray-400 font-bold">View Queue <i class="fa-solid fa-arrow-right ml-1"></i></span>
                     </a>
 
-                    <a href="analytics.html" class="stat-card bg-white p-8 border shadow-sm flex flex-col items-center text-center group">
+                    <a href="analytics.html" class="stat-card bg-white p-6 border shadow-sm flex flex-col items-center text-center group">
                         <span class="text-[9px] uppercase tracking-widest text-gray-400 mb-4 font-bold">Total Sales</span>
                         <span id="revenue-mtd" class="text-3xl font-light mb-2">...</span>
                         <span class="text-[8px] uppercase tracking-tighter text-gray-400 font-bold">Analytics <i class="fa-solid fa-arrow-right ml-1"></i></span>
@@ -158,7 +165,7 @@
                 const pRes = await fetch(`${API_URL}/products`);
                 const products = await pRes.json();
                 
-                // Logic to calculate total physical stock (Sum of all variants)
+                // Unified calculation logic
                 const calculateCategoryStock = (cat) => {
                     return products
                         .filter(p => p.category === cat)
@@ -168,11 +175,10 @@
                         }, 0);
                 };
 
-                const womenTotalStock = calculateCategoryStock('women');
-                const menTotalStock = calculateCategoryStock('men');
-                
-                document.getElementById('women-count').innerText = womenTotalStock;
-                document.getElementById('men-count').innerText = menTotalStock;
+                // Update UI for all three categories
+                document.getElementById('women-count').innerText = calculateCategoryStock('women');
+                document.getElementById('men-count').innerText = calculateCategoryStock('men');
+                document.getElementById('kids-count').innerText = calculateCategoryStock('kids');
 
                 // 2. Fetch Orders for Pending & Revenue
                 const oRes = await fetch(`${API_URL}/admin/orders`, {
@@ -192,7 +198,7 @@
                 }
             } catch (err) {
                 console.error("Dashboard Sync Error:", err);
-                ['women-count', 'men-count', 'pending-orders', 'revenue-mtd'].forEach(id => {
+                ['women-count', 'men-count', 'kids-count', 'pending-orders', 'revenue-mtd'].forEach(id => {
                     const el = document.getElementById(id);
                     if(el && (el.innerText === '...' || el.innerText === '')) el.innerText = '0';
                 });
