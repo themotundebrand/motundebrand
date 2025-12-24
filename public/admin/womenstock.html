@@ -26,8 +26,7 @@
         body { font-family: 'Inter', sans-serif; background-color: #FBFBFB; }
         .sidebar { transition: all 0.3s ease; }
         .nav-link:hover { background-color: #F7C8D0; color: #000; }
-        .product-card { transition: all 0.2s ease; }
-        .product-card:hover { border-color: #D48A96; }
+        .active-link { background-color: #F7C8D0; color: #000; }
         .mobile-overlay { background: rgba(0,0,0,0.5); display: none; }
         .mobile-overlay.active { display: block; }
     </style>
@@ -56,7 +55,7 @@
                 </a>
                 <p class="text-[9px] uppercase tracking-[0.2em] text-gray-400 px-4 mt-8 mb-4 font-bold">Inventory</p>
                  <a href="womenscents.html" class="nav-link active-link flex items-center px-4 py-3 text-[10px] tracking-widest uppercase font-semibold transition-all">
-                    <i class="fa-solid fa-child mr-3 w-5 text-white"></i> Women Scents
+                    <i class="fa-solid fa-child mr-3 w-5 text-brandPinkDark"></i> Women Scents
                 </a>
                 <a href="menscents.html" class="nav-link flex items-center px-4 py-3 text-[10px] tracking-widest uppercase font-semibold transition-all">
                     <i class="fa-solid fa-mars mr-3 w-5 text-gray-400"></i> Men Scents
@@ -64,10 +63,9 @@
                 <a href="bodymistspray.html" class="nav-link flex items-center px-4 py-3 text-[10px] tracking-widest uppercase font-semibold transition-all">
                     <i class="fa-solid fa-spray-can mr-3 w-5 text-gray-400"></i> Mists & Sprays
                 </a>
-                 <a href="kidscents.html" class="nav-link active-link flex items-center px-4 py-3 text-[10px] tracking-widest uppercase font-semibold transition-all">
-                    <i class="fa-solid fa-venus mr-3 w-5 text-brandPinkDark"></i> Kid Scents
+                 <a href="kidscents.html" class="nav-link flex items-center px-4 py-3 text-[10px] tracking-widest uppercase font-semibold transition-all">
+                    <i class="fa-solid fa-venus mr-3 w-5 text-gray-400"></i> Kid Scents
                 </a>
-                
 
                 <div class="pt-8">
                     <p class="text-[9px] uppercase tracking-[0.2em] text-gray-400 px-4 mb-4 font-bold">Business</p>
@@ -103,14 +101,13 @@
                     <table class="w-full text-left border-collapse">
                         <thead>
                             <tr class="bg-gray-50 border-b">
-                                <th class="px-6 py-4 text-[9px] uppercase tracking-widest font-bold text-gray-400">Product</th>
-                                <th class="px-6 py-4 text-[9px] uppercase tracking-widest font-bold text-gray-400">Variant Sizes</th>
-                                <th class="px-6 py-4 text-[9px] uppercase tracking-widest font-bold text-gray-400">Stock Status</th>
-                                <th class="px-6 py-4 text-[9px] uppercase tracking-widest font-bold text-gray-400 text-right">Actions</th>
+                                <th class="px-8 py-4 text-[9px] uppercase tracking-widest font-bold text-gray-400">Product</th>
+                                <th class="px-8 py-4 text-[9px] uppercase tracking-widest font-bold text-gray-400">Variant Sizes</th>
+                                <th class="px-8 py-4 text-[9px] uppercase tracking-widest font-bold text-gray-400">Stock Status</th>
                             </tr>
                         </thead>
                         <tbody id="stock-list">
-                            <tr><td colspan="4" class="p-12 text-center text-xs uppercase tracking-widest text-gray-400">Syncing database...</td></tr>
+                            <tr><td colspan="3" class="p-12 text-center text-xs uppercase tracking-widest text-gray-400">Syncing database...</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -136,13 +133,13 @@
                 listContainer.innerHTML = '';
 
                 if (womenScents.length === 0) {
-                    listContainer.innerHTML = '<tr><td colspan="4" class="p-12 text-center text-xs text-gray-400 uppercase tracking-widest">No products found in Women category</td></tr>';
+                    listContainer.innerHTML = '<tr><td colspan="3" class="p-12 text-center text-xs text-gray-400 uppercase tracking-widest">No products found in Women category</td></tr>';
                     return;
                 }
 
                 womenScents.forEach(product => {
                     const variantsHtml = product.variants.map(v => `
-                        <div class="flex justify-between items-center mb-1 border-b border-gray-100 pb-1 last:border-0">
+                        <div class="flex justify-between items-center mb-1 border-b border-gray-100 pb-1 last:border-0 w-32">
                             <span class="text-[10px] font-bold text-gray-500 uppercase">${v.size}</span>
                             <span class="text-[11px] font-medium ${v.stock < 5 ? 'text-red-500 font-bold' : 'text-gray-700'}">
                                 ${v.stock} pcs
@@ -154,27 +151,25 @@
 
                     const row = `
                         <tr class="border-b hover:bg-gray-50 transition-colors">
-                            <td class="px-6 py-6">
+                            <td class="px-8 py-6">
                                 <div class="flex items-center">
-                                    <img src="${product.imageUrl || 'https://via.placeholder.com/40'}" class="w-10 h-10 object-cover mr-4 border">
+                                    <img src="${product.imageUrl || 'https://via.placeholder.com/40'}" class="w-12 h-12 object-cover mr-6 border rounded-sm">
                                     <div>
-                                        <p class="text-xs font-bold uppercase tracking-wider">${product.name}</p>
-                                        <p class="text-[9px] text-gray-400 uppercase tracking-tighter">Total units: ${totalStock}</p>
+                                        <p class="text-[11px] font-bold uppercase tracking-wider">${product.name}</p>
+                                        <p class="text-[9px] text-gray-400 uppercase tracking-widest mt-1">Total units: ${totalStock}</p>
                                     </div>
                                 </div>
                             </td>
-                            <td class="px-6 py-6 min-w-[150px]">
-                                ${variantsHtml}
+                            <td class="px-8 py-6">
+                                <div class="inline-block">
+                                    ${variantsHtml}
+                                </div>
                             </td>
-                            <td class="px-6 py-6">
+                            <td class="px-8 py-6">
                                 ${totalStock > 0 
-                                    ? `<span class="bg-green-50 text-green-600 text-[8px] font-bold px-2 py-1 uppercase tracking-widest border border-green-100">In Stock</span>`
-                                    : `<span class="bg-red-50 text-red-600 text-[8px] font-bold px-2 py-1 uppercase tracking-widest border border-red-100">Out of Stock</span>`
+                                    ? `<span class="bg-green-50 text-green-600 text-[8px] font-bold px-3 py-1.5 uppercase tracking-widest border border-green-100 rounded-sm">In Stock</span>`
+                                    : `<span class="bg-red-50 text-red-600 text-[8px] font-bold px-3 py-1.5 uppercase tracking-widest border border-red-100 rounded-sm">Out of Stock</span>`
                                 }
-                            </td>
-                            <td class="px-6 py-6 text-right">
-                                <button onclick="editProduct('${product._id}')" class="text-gray-400 hover:text-brandPinkDark mr-4 transition"><i class="fa-solid fa-pen-to-square"></i></button>
-                                <button onclick="deleteProduct('${product._id}')" class="text-gray-400 hover:text-red-600 transition"><i class="fa-solid fa-trash-can"></i></button>
                             </td>
                         </tr>
                     `;
@@ -182,6 +177,7 @@
                 });
             } catch (err) {
                 console.error("Fetch Error:", err);
+                document.getElementById('stock-list').innerHTML = '<tr><td colspan="3" class="p-12 text-center text-xs text-red-400 uppercase tracking-widest">Connection failed</td></tr>';
             }
         }
 
