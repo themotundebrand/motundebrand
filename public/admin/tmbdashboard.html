@@ -154,23 +154,20 @@
             </div>
         </main>
     </div>
+<script>
+    const API_URL = '/api'; 
 
-    <script>
-        const API_URL = '/api'; 
+    function toggleSidebar() {
+        document.getElementById('sidebar').classList.toggle('-translate-x-full');
+        document.getElementById('overlay').classList.toggle('active');
+    }
 
-        function toggleSidebar() {
-            document.getElementById('sidebar').classList.toggle('-translate-x-full');
-            document.getElementById('overlay').classList.toggle('active');
-        }
+    function logout() {
+        localStorage.removeItem('tmb_admin_token');
+        window.location.href = 'tmbadmin-login.html';
+    }
 
-        function logout() {
-            localStorage.removeItem('tmb_admin_token');
-            localStorage.removeItem('tmb_last_active');
-            window.location.href = 'tmbadmin-login.html';
-        }
-
-async function fetchDashboardStats() {
-    try {
+    async function fetchDashboardStats() {
         const token = localStorage.getItem('tmb_admin_token');
         if (!token) {
             window.location.href = 'tmbadmin-login.html';
@@ -179,74 +176,55 @@ async function fetchDashboardStats() {
         
         const headers = { 'Authorization': `Bearer ${token}` };
 
-        // 1. Fetch Analytics Overview (More efficient than loading all products)
-        const analyticsRes = await fetch(`${API_URL}/admin/analytics/stock-overview`, { headers });
-        
-        if (analyticsRes.ok) {
-            const stats = await analyticsRes.json();
-            // Matching the backend keys: women, men, kids, mist
-            document.getElementById('women-count').innerText = stats.women || 0;
-            document.getElementById('men-count').innerText = stats.men || 0;
-            document.getElementById('mist-count').innerText = stats.mist || 0; 
-            document.getElementById('kids-count').innerText = stats.kids || 0;
-        } else {
-            // Fallback: If analytics fails, try the general products list
-            const pRes = await fetch(`${API_URL}/products`);
-            const products = await pRes.json();
-            if (Array.isArray(products)) {
-                const calc = (cat) => products
-                    .filter(p => p.category?.toLowerCase().trim() === cat)
-                    .reduce((total, p) => total + (p.variants || []).reduce((sum, v) => sum + (parseInt(v.stock) || 0), 0), 0);
-
-                document.getElementById('women-count').innerText = calc('women');
-                document.getElementById('men-count').innerText = calc('men');
-                document.getElementById('mist-count').innerText = calc('mist'); 
-                document.getElementById('kids-count').innerText = calc('kids');
+        try {
+            // 1. Fetch Analytics Overview
+            const analyticsRes = await fetch(`${API_URL}/admin/analytics/stock-overview`, { headers });
+            
+            if (analyticsRes.ok) {
+                const stats = await analyticsRes.json();
+                document.getElementById('women-count').innerText = stats.women || 0;
+                document.getElementById('men-count').innerText = stats.men || 0;
+                document.getElementById('mist-count').innerText = stats.mist || 0; 
+                document.getElementById('kids-count').innerText = stats.kids || 0;
             }
-        }
 
-        // 2. Fetch Orders & Revenue
-        const oRes = await fetch(`${API_URL}/admin/orders`, { headers });
-        if (oRes.ok) {
-            const orders = await oRes.json();
-            if (Array.isArray(orders)) {
+            // 2. Fetch User Count
+            const uRes = await fetch(`${API_URL}/admin/users/count`, { headers });
+            if (uRes.ok) {
+                const userData = await uRes.json();
+                document.getElementById('user-count').innerText = userData.count || 0;
+            }
+
+            // 3. Fetch Orders for Revenue & Pending status
+            // Note: Ensure you have a GET /admin/orders route in your backend!
+            const oRes = await fetch(`${API_URL}/admin/orders`, { headers });
+            if (oRes.ok) {
+                const orders = await oRes.json();
                 const pending = orders.filter(o => o.status === 'pending').length;
                 const totalRevenue = orders
-                    .filter(o => o.status === 'completed' || o.status === 'paid' || o.status === 'shipped')
+                    .filter(o => ['completed', 'paid', 'shipped'].includes(o.status))
                     .reduce((sum, o) => sum + (parseFloat(o.totalPrice) || 0), 0);
 
                 document.getElementById('pending-orders').innerText = pending;
-                
-                // Format currency (e.g., 50000 -> ₦ 50k)
-                if (totalRevenue >= 1000) {
-                    document.getElementById('revenue-mtd').innerText = `₦ ${(totalRevenue / 1000).toFixed(1)}k`;
-                } else {
-                    document.getElementById('revenue-mtd').innerText = `₦ ${totalRevenue.toLocaleString()}`;
-                }
+                document.getElementById('revenue-mtd').innerText = totalRevenue >= 1000 
+                    ? `₦ ${(totalRevenue / 1000).toFixed(1)}k` 
+                    : `₦ ${totalRevenue.toLocaleString()}`;
             }
-        }
 
-        // 3. Fetch Total Registered Users
-        const uRes = await fetch(`${API_URL}/admin/users/count`, { headers });
-        if (uRes.ok) {
-            const data = await uRes.json();
-            document.getElementById('user-count').innerText = data.count || 0;
+        } catch (err) {
+            console.error("Dashboard Sync Error:", err);
         }
-
-    } catch (err) {
-        console.error("Dashboard Sync Error:", err);
-        document.querySelectorAll('.stat-card span[id]').forEach(el => el.innerText = "!");
     }
-}
-        window.onload = () => {
-            fetchDashboardStats();
-            const dateEl = document.getElementById('current-date');
-            if(dateEl) {
-                dateEl.innerText = new Date().toLocaleDateString('en-US', {
-                    weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
-                });
-            }
-        };
-    </script>
+
+    window.onload = () => {
+        fetchDashboardStats();
+        const dateEl = document.getElementById('current-date');
+        if(dateEl) {
+            dateEl.innerText = new Date().toLocaleDateString('en-US', {
+                weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+            });
+        }
+    };
+</script>
 </body>
 </html>
