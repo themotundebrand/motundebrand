@@ -8,17 +8,19 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
-    "aws-sdk": "^2.1500.0",
-    "bcryptjs": "^2.4.3",
-    "compression": "^1.7.4",
+    "aws-sdk": "^2.1693.0",
+    "bcryptjs": "^3.0.3",
     "dotenv": "^16.4.7",
-    "express": "^4.19.2",
-    "helmet": "^7.1.0",
-    "jsonwebtoken": "^9.0.2",
-    "mongodb": "^6.10.0",
-    "serverless-http": "^3.2.0"
+    "compression": "^1.8.1",
+    "express": "^5.2.1",
+    "helmet": "^8.1.0",
+    "jsonwebtoken": "^9.0.3",
+    "mongodb": "^7.0.0",
+     "nodemailer": "^7.0.12",
+    "serverless-http": "^4.0.0"
   },
   "devDependencies": {
     "netlify-cli": "^17.10.1"
   }
 }
+
