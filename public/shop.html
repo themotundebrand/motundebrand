@@ -538,56 +538,75 @@ function updateQty(productId, change) {
     }
 
     // --- 8. Rendering & Data Fetching ---
-    async function loadProducts() {
-        try {
-            const response = await fetch('/api/products');
-            currentProducts = await response.json();
+   async function loadProducts() {
+    try {
+        const response = await fetch('/api/products');
+        
+        // Check if the response is actually JSON
+        if (!response.ok) {
+            throw new Error(`Server error: ${response.status}`);
+        }
 
-            const renderCard = (p) => {
-                const variants = p.variants || [{size: 'Default', price: p.price || 0, stock: 0}];
-                return `
-                <div class="product-card bg-white p-3 group">
-                    <div onclick="openModal('${p._id}')" class="aspect-[4/5] overflow-hidden mb-4 bg-gray-50 cursor-pointer">
-                        <img src="${p.imageUrl}" class="w-full h-full object-cover transition duration-700 group-hover:scale-110">
+        const data = await response.json();
+        
+        // Ensure data is an array before assigning
+        currentProducts = Array.isArray(data) ? data : [];
+
+        if (currentProducts.length === 0) {
+            console.warn("No products found in database.");
+        }
+
+        const renderCard = (p) => {
+            const variants = p.variants || [{size: 'Default', price: p.price || 0, stock: 0}];
+            return `
+            <div class="product-card bg-white p-3 group">
+                <div onclick="openModal('${p._id}')" class="aspect-[4/5] overflow-hidden mb-4 bg-gray-50 cursor-pointer">
+                    <img src="${p.imageUrl}" class="w-full h-full object-cover transition duration-700 group-hover:scale-110">
+                </div>
+                <div class="text-center">
+                    <h3 class="uppercase font-bold text-[8px] tracking-widest mb-1 truncate">${p.name}</h3>
+                    <p id="price-${p._id}" class="text-brandPinkDark font-medium text-[10px] mb-2">₦${Number(variants[0].price).toLocaleString()}</p>
+                    
+                    <select data-id="${p._id}" onchange="handleSizeChange(this, '${p._id}')" class="size-select w-full border border-gray-100 text-[8px] uppercase py-1.5 px-2 mb-2 focus:outline-none">
+                        ${variants.map(v => `<option value="${v.size}" data-price="${v.price}" data-stock="${v.stock}">${v.size}</option>`).join('')}
+                    </select>
+
+                    <div class="flex items-center justify-between border border-gray-100 mb-3">
+                        <button onclick="updateQty('${p._id}', -1)" class="px-3 py-1 text-lg font-light hover:bg-gray-50">-</button>
+                        <span id="qty-${p._id}" class="text-[10px] font-bold">1</span>
+                        <button onclick="updateQty('${p._id}', 1)" class="px-3 py-1 text-lg font-light hover:bg-gray-50">+</button>
                     </div>
-                    <div class="text-center">
-                        <h3 class="uppercase font-bold text-[8px] tracking-widest mb-1 truncate">${p.name}</h3>
-                        <p id="price-${p._id}" class="text-brandPinkDark font-medium text-[10px] mb-2">₦${Number(variants[0].price).toLocaleString()}</p>
-                        
-                        <select data-id="${p._id}" onchange="handleSizeChange(this, '${p._id}')" class="size-select w-full border border-gray-100 text-[8px] uppercase py-1.5 px-2 mb-2 focus:outline-none">
-                            ${variants.map(v => `<option value="${v.size}" data-price="${v.price}" data-stock="${v.stock}">${v.size}</option>`).join('')}
-                        </select>
 
-                        <div class="flex items-center justify-between border border-gray-100 mb-3">
-                            <button onclick="updateQty('${p._id}', -1)" class="px-3 py-1 text-lg font-light hover:bg-gray-50">-</button>
-                            <span id="qty-${p._id}" class="text-[10px] font-bold">1</span>
-                            <button onclick="updateQty('${p._id}', 1)" class="px-3 py-1 text-lg font-light hover:bg-gray-50">+</button>
-                        </div>
+                    <button onclick="handleAddToCart('${p._id}')" id="btn-${p._id}" class="w-full bg-brandBlack text-brandPink text-[8px] py-2.5 uppercase tracking-widest hover:bg-brandPink hover:text-brandBlack transition-all">
+                        Add to Bag
+                    </button>
+                </div>
+            </div>`;
+        };
 
-                        <button onclick="handleAddToCart('${p._id}')" id="btn-${p._id}" class="w-full bg-brandBlack text-brandPink text-[8px] py-2.5 uppercase tracking-widest hover:bg-brandPink hover:text-brandBlack transition-all">
-                            Add to Bag
-                        </button>
-                    </div>
-                </div>`;
-            };
+        const populateGrid = (cat, elementId) => {
+            const gridEl = document.getElementById(elementId);
+            if (!gridEl) return;
+            const filtered = currentProducts.filter(p => p.category?.toLowerCase() === cat).slice(0, 5);
+            gridEl.innerHTML = filtered.length > 0 ? filtered.map(renderCard).join('') : `<p class="text-[10px] uppercase text-gray-400 py-10">Vault Opening Soon...</p>`;
+        };
 
-            const populateGrid = (cat, elementId) => {
-                const filtered = currentProducts.filter(p => p.category?.toLowerCase() === cat).slice(0, 5);
-                document.getElementById(elementId).innerHTML = filtered.length > 0 ? filtered.map(renderCard).join('') : `<p class="text-[10px] uppercase text-gray-400 py-10">Vault Opening Soon...</p>`;
-            };
+        populateGrid('women', 'women-grid');
+        populateGrid('men', 'men-grid');
+        populateGrid('kids', 'kids-grid');
+        
+        // Mist grid
+        const mistGrid = document.getElementById('mist-grid');
+        if (mistGrid) {
+            const mists = currentProducts.filter(p => p.category?.toLowerCase() === 'mist').slice(0, 6);
+            mistGrid.innerHTML = mists.length > 0 ? mists.map(renderCard).join('') : `<p class="text-[10px] uppercase text-gray-400 py-10">Vault Opening Soon...</p>`;
+        }
 
-            const populateMistGrid = (elementId) => {
-                const mists = currentProducts.filter(p => p.category?.toLowerCase() === 'mist').slice(0, 6);
-                document.getElementById(elementId).innerHTML = mists.length > 0 ? mists.map(renderCard).join('') : `<p class="text-[10px] uppercase text-gray-400 py-10">Vault Opening Soon...</p>`;
-            };
-
-            populateGrid('women', 'women-grid');
-            populateGrid('men', 'men-grid');
-            populateGrid('kids', 'kids-grid');
-            populateMistGrid('mist-grid');
-
-        } catch (err) { console.error("Error loading products:", err); }
+    } catch (err) { 
+        console.error("Error loading products:", err);
+        showNotification("Unable to load collection. Please refresh.");
     }
+}
 
    function handleSizeChange(select, productId) {
     // Update Price Display
