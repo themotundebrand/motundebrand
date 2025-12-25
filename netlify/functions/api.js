@@ -165,6 +165,20 @@ router.get('/admin/users', async (req, res) => {
     }
 });
 
+// --- FETCH ALL ORDERS (Admin Only) ---
+router.get('/admin/orders', authenticateAdmin, async (req, res) => {
+    try {
+        const db = await getDb();
+        const orders = await db.collection("orders")
+            .find({})
+            .sort({ createdAt: -1 })
+            .toArray();
+        res.json(orders);
+    } catch (e) {
+        res.status(500).json({ error: "Failed to fetch orders" });
+    }
+});
+
 // --- PRODUCT MANAGEMENT (CREATE) ---
 router.post('/admin/products', authenticateAdmin, async (req, res) => {
     try {
@@ -275,9 +289,10 @@ router.post('/orders', async (req, res) => {
             return res.status(400).json({ error: "Some items are now out of stock", failed });
         }
 
-        // 2. Create the Order Object
+      // 2. Create the Order Object
         const finalOrder = {
             userId: userId ? new ObjectId(userId) : "GUEST", 
+            email: customerDetails.email.toLowerCase(), // This makes order history lookups fast
             customerDetails,
             items,
             totalPrice,

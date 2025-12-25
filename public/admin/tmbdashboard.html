@@ -180,13 +180,14 @@
             // 1. Fetch Analytics Overview
             const analyticsRes = await fetch(`${API_URL}/admin/analytics/stock-overview`, { headers });
             
-            if (analyticsRes.ok) {
-                const stats = await analyticsRes.json();
-                document.getElementById('women-count').innerText = stats.women || 0;
-                document.getElementById('men-count').innerText = stats.men || 0;
-                document.getElementById('mist-count').innerText = stats.mist || 0; 
-                document.getElementById('kids-count').innerText = stats.kids || 0;
-            }
+           if (analyticsRes.ok) {
+    const stats = await analyticsRes.json();
+    // Use the exact property names from your backend response
+    document.getElementById('women-count').innerText = stats.womenTotalStock || 0;
+    document.getElementById('men-count').innerText = stats.menTotalStock || 0;
+    document.getElementById('mist-count').innerText = stats.mistTotalStock || 0; 
+    document.getElementById('kids-count').innerText = stats.kidTotalStock || 0;
+}
 
             // 2. Fetch User Count
             const uRes = await fetch(`${API_URL}/admin/users/count`, { headers });
