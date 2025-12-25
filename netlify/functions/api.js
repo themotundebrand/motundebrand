@@ -92,6 +92,32 @@ router.get('/admin/analytics/stock-overview', authenticateAdmin, async (req, res
     }
 });
 
+// --- ADMIN REGISTRATION (Add this to your index.js) ---
+router.post('/admin/register', async (req, res) => {
+    try {
+        const db = await getDb();
+        const { name, email, password } = req.body;
+
+        // Check if an admin already exists (Optional security measure)
+        const existingAdmin = await db.collection("admins").findOne({ email: email.toLowerCase() });
+        if (existingAdmin) return res.status(400).json({ error: "Admin email already exists" });
+
+        const hashedPassword = await bcrypt.hash(password, 10);
+        const newAdmin = {
+            name,
+            email: email.toLowerCase(),
+            password: hashedPassword,
+            isAdmin: true,
+            createdAt: new Date()
+        };
+
+        await db.collection("admins").insertOne(newAdmin);
+        res.status(201).json({ message: "Admin account created successfully" });
+    } catch (e) {
+        res.status(500).json({ error: "System enrollment failed" });
+    }
+});
+
 // --- ADMIN LOGIN ---
 router.post('/admin/login', async (req, res) => {
     try {
@@ -478,7 +504,6 @@ router.get('/profile', async (req, res) => {
         res.status(401).json({ error: "Session expired" });
     }
 });
-const bcrypt = require('bcryptjs'); // Ensure bcrypt is installed
 
 // --- 1. UPDATE USER PROFILE (Name, Phone, WhatsApp, Address) ---
 router.put('/update', async (req, res) => {
