@@ -185,15 +185,26 @@ router.get('/products/:id/stock', async (req, res) => {
     } catch (e) { res.status(500).json({ error: "Stock fetch failed" }); }
 });
 
-// --- UPDATED ORDER HANDLING ---
+// --- UPDATED ORDER HANDLING (Supports Guest & Members) ---
 router.post('/orders', async (req, res) => {
     try {
         const db = await getDb();
-        const { items, customerDetails, totalPrice, paymentMethod } = req.body; 
+        const { 
+            items, 
+            customerDetails, // { name, email, phone, address, city, etc }
+            totalPrice, 
+            paymentMethod,
+            userId // Optional: will be present if a member is logged in
+        } = req.body; 
 
         if (!items || items.length === 0) return res.status(400).json({ error: "Empty cart" });
+        
+        // Validation for Guest: Ensure they provided contact info
+        if (!customerDetails.email || !customerDetails.name || !customerDetails.address) {
+            return res.status(400).json({ error: "Missing shipping or contact details" });
+        }
 
-        // Atomic stock decrement for each item/size combo
+        // 1. Atomic stock decrement (same as before)
         const updateResults = await Promise.all(items.map(async (item) => {
             const qty = Math.abs(parseInt(item.quantity));
             const result = await db.collection("products").updateOne(
@@ -209,20 +220,32 @@ router.post('/orders', async (req, res) => {
 
         const failed = updateResults.filter(r => !r.success);
         if (failed.length > 0) {
-            return res.status(400).json({ error: "Items out of stock", failed });
+            return res.status(400).json({ error: "Some items are now out of stock", failed });
         }
 
-        const result = await db.collection("orders").insertOne({
+        // 2. Create the Order Object
+        const finalOrder = {
+            userId: userId ? new ObjectId(userId) : "GUEST", 
             customerDetails,
             items,
             totalPrice,
             paymentMethod: paymentMethod || 'bank_transfer',
             status: 'pending',
+            isGuest: !userId,
             createdAt: new Date()
+        };
+
+        const result = await db.collection("orders").insertOne(finalOrder);
+
+        res.status(201).json({ 
+            message: "Order successful", 
+            orderId: result.insertedId,
+            type: userId ? "Member Order" : "Guest Order"
         });
 
-        res.status(201).json({ message: "Order successful", orderId: result.insertedId });
-    } catch (e) { res.status(500).json({ error: e.message }); }
+    } catch (e) { 
+        res.status(500).json({ error: "Order processing failed: " + e.message }); 
+    }
 });
 
 // --- PUBLIC COLLECTION FETCH ---
@@ -275,23 +298,67 @@ router.post('/register', async (req, res) => {
         await db.collection("users").insertOne(newUser);
 
         // Send Luxury-Branded Email
-        const mailOptions = {
-            from: `"The Motunde Brand" <${process.env.EMAIL_USER}>`,
-            to: email,
-            subject: 'Verify Your Account | The Motunde Brand',
-            html: `
-                <div style="font-family: sans-serif; background-color: #000; color: #fff; padding: 40px; text-align: center; border: 1px solid #F7C8D0;">
-                    <h2 style="color: #F7C8D0; letter-spacing: 0.4em; text-transform: uppercase;">The Motunde Brand</h2>
-                    <p style="font-size: 12px; letter-spacing: 0.1em; color: rgba(247,200,208,0.7);">WELCOME TO THE INNER CIRCLE</p>
-                    <hr style="border: 0; border-top: 1px solid rgba(247,200,208,0.1); margin: 30px 0;">
-                    <p style="font-size: 14px; margin-bottom: 30px;">Your activation code is:</p>
-                    <div style="background: #1A1A1A; padding: 20px; border: 1px solid #F7C8D0; display: inline-block; letter-spacing: 0.5em; font-size: 24px; font-weight: bold; color: #F7C8D0;">
-                        ${otp}
-                    </div>
-                    <p style="font-size: 10px; margin-top: 30px; color: #666; text-transform: uppercase;">If you did not request this, please ignore this email.</p>
+      const mailOptions = {
+    from: `"The Motunde Brand" <${process.env.EMAIL_USER}>`,
+    to: email,
+    replyTo: process.env.EMAIL_USER,
+    subject: 'Confirm Your Access | The Motunde Brand',
+    priority: 'high',
+    headers: {
+        'List-Unsubscribe': `<mailto:${process.env.EMAIL_USER}?subject=unsubscribe>`,
+        'X-Entity-Ref-ID': Date.now().toString()
+    },
+    html: `
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <style>
+                @media only screen and (max-width: 600px) {
+                    .container { width: 100% !important; padding: 20px !important; }
+                }
+            </style>
+        </head>
+        <body style="margin: 0; padding: 0; background-color: #ffffff;">
+            <div style="display: none; max-height: 0px; overflow: hidden;">
+                Your activation code for The Motunde Brand is inside.
+            </div>
+
+            <div class="container" style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; max-width: 500px; margin: auto; padding: 40px; color: #000000; border: 1px solid #f2f2f2;">
+                
+                <div style="text-align: center; margin-bottom: 30px;">
+                    <img src="https://i.imgur.com/CVKXV7R.png" alt="The Motunde Brand" style="width: 60px; height: auto; margin-bottom: 10px;">
+                    <h2 style="margin: 0; font-size: 16px; letter-spacing: 4px; text-transform: uppercase; font-weight: 300; color: #000;">The Motunde Brand</h2>
                 </div>
-            `
-        };
+
+                <div style="text-align: center; margin-bottom: 30px;">
+                    <p style="font-size: 14px; line-height: 1.6; color: #444; margin-bottom: 30px;">
+                        Welcome to The Motunde Brand. To finalize your account registration, please use the activation code below:
+                    </p>
+                    
+                    <div style="background-color: #000000; padding: 20px; display: inline-block; border-radius: 2px;">
+                        <span style="letter-spacing: 8px; font-size: 28px; font-weight: bold; color: #F7C8D0; font-family: monospace;">
+                            ${otp}
+                        </span>
+                    </div>
+                    
+                    <p style="font-size: 12px; color: #888; margin-top: 30px; font-style: italic;">
+                        This code is valid for a limited time. If you did not request this, please ignore this email.
+                    </p>
+                </div>
+
+                <hr style="border: 0; border-top: 1px solid #eeeeee; margin: 40px 0;">
+
+                <div style="text-align: center;">
+                    <p style="font-size: 10px; color: #aaa; letter-spacing: 1px; text-transform: uppercase;">
+                        &copy; ${new Date().getFullYear()} The Motunde Brand <br>
+                        Excellence in every stitch.
+                    </p>
+                </div>
+            </div>
+        </body>
+        </html>
+    `
+};
 
         await transporter.sendMail(mailOptions);
         res.status(201).json({ message: "OTP sent to email" });
@@ -301,6 +368,7 @@ router.post('/register', async (req, res) => {
 });
 
 // --- NEW: VERIFY OTP ROUTE ---
+// --- UPDATED VERIFY OTP ROUTE (Returns full details) ---
 router.post('/verify-otp', async (req, res) => {
     try {
         const db = await getDb();
@@ -311,17 +379,11 @@ router.post('/verify-otp', async (req, res) => {
             otp: otp 
         });
 
-        if (!user) {
-            return res.status(400).json({ error: "Invalid or expired verification code" });
-        }
+        if (!user) return res.status(400).json({ error: "Invalid or expired verification code" });
 
-        // Set verified to true and remove the otp from DB
         await db.collection("users").updateOne(
             { _id: user._id },
-            { 
-                $set: { isVerified: true },
-                $unset: { otp: "" } 
-            }
+            { $set: { isVerified: true }, $unset: { otp: "" } }
         );
 
         const token = jwt.sign(
@@ -330,14 +392,17 @@ router.post('/verify-otp', async (req, res) => {
             { expiresIn: '7d' }
         );
 
-        delete user.password;
-        res.json({ token, user, message: "Account activated" });
+        // Remove sensitive password before sending to frontend
+        const { password, ...userProfile } = user;
+        userProfile.isVerified = true; 
+
+        res.json({ token, user: userProfile, message: "Account activated" });
     } catch (e) {
         res.status(500).json({ error: "Verification failed" });
     }
 });
 
-// --- USER LOGIN ---
+// --- UPDATED USER LOGIN (Ensures full profile is sent) ---
 router.post('/login', async (req, res) => {
     try {
         const db = await getDb();
@@ -345,6 +410,7 @@ router.post('/login', async (req, res) => {
 
         const user = await db.collection("users").findOne({ email: email.toLowerCase() });
         if (!user) return res.status(401).json({ error: "Invalid email or password" });
+        if (!user.isVerified) return res.status(403).json({ error: "Please verify your email first" });
 
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) return res.status(401).json({ error: "Invalid email or password" });
@@ -355,8 +421,14 @@ router.post('/login', async (req, res) => {
             { expiresIn: '7d' }
         );
 
-        delete user.password;
-        res.json({ token, user });
+        // Include all details needed for Shipping & Contact sections
+        const { password: _, ...userProfile } = user;
+
+        res.json({ 
+            token, 
+            user: userProfile, // Contains name, email, phone, whatsapp, address
+            message: "Login successful" 
+        });
     } catch (e) {
         res.status(500).json({ error: "Login failed" });
     }

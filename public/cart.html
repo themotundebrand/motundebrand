@@ -70,9 +70,13 @@
         </div>
 
         <div class="flex items-center gap-5 text-brandPink">
-            <a href="account.html" class="hover:text-white transition">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" stroke-width="1.5"></path></svg>
-            </a>
+           <div class="flex items-center gap-5 text-brandPink">
+    <button onclick="handleAccountClick()" class="hover:text-white transition cursor-pointer focus:outline-none">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" stroke-width="1.5"></path>
+        </svg>
+    </button>
+    </div>
             <button class="relative hover:text-white transition">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" stroke-width="1.5"></path></svg>
                 <span id="cart-count" class="absolute -top-2 -right-2 bg-brandPink text-brandBlack text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center">0</span>
@@ -302,6 +306,48 @@
         modal.classList.remove('hidden');
     }
 
+    // --- NEW: Account & Auto-fill Logic ---
+
+function handleAccountClick() {
+    const token = localStorage.getItem('motunde_token');
+    const user = localStorage.getItem('motunde_user');
+
+    if (token && user) {
+        window.location.href = 'membership.html';
+    } else {
+        window.location.href = 'account.html';
+    }
+}
+
+function autoFillUserDetails() {
+    const userData = localStorage.getItem('motunde_user');
+    
+    if (userData) {
+        const user = JSON.parse(userData);
+        
+        // Basic Contact Info
+        if (user.name) document.getElementById('cust-name').value = user.name;
+        if (user.email) document.getElementById('cust-email').value = user.email;
+        if (user.phone) document.getElementById('cust-phone').value = user.phone;
+        
+        // Auto-fill WhatsApp (Uses specific whatsapp field or falls back to phone)
+        const whatsappField = document.getElementById('cust-whatsapp');
+        if (whatsappField) {
+            whatsappField.value = user.whatsapp || user.phone || "";
+        }
+        
+        // Shipping Address Details
+        if (user.address) document.getElementById('cust-street').value = user.address;
+        if (user.city) document.getElementById('cust-city').value = user.city;
+        if (user.state) document.getElementById('cust-state').value = user.state;
+
+        showNotification("Welcome back! Details auto-filled.");
+    }
+}
+
+// Call this function when the page loads
+window.addEventListener('DOMContentLoaded', autoFillUserDetails);
+
     function showConfirm(title, message, onConfirm) {
         const modal = document.getElementById('brand-modal');
         document.getElementById('modal-title').innerText = title;
@@ -441,47 +487,82 @@
         renderCart();
     }
 
-    async function handleCheckout() {
-        if (cart.length === 0) return showAlert("Empty Bag", "Please add items before checking out.");
-        
-        const name = document.getElementById('cust-name').value;
-        const method = document.querySelector('input[name="pay-method"]:checked').value;
-        const receipt = document.getElementById('receipt-upload');
+  async function handleCheckout() {
+    // 1. Basic Validation
+    if (cart.length === 0) return showAlert("Empty Bag", "Please add items before checking out.");
+    
+    const name = document.getElementById('cust-name').value;
+    const email = document.getElementById('cust-email').value;
+    const phone = document.getElementById('cust-phone').value;
+    const whatsapp = document.getElementById('cust-whatsapp').value;
+    const method = document.querySelector('input[name="pay-method"]:checked').value;
+    const receipt = document.getElementById('receipt-upload');
 
-        if(!name || !document.getElementById('cust-email').value) {
-            return showAlert("Details Required", "Please fill in your contact and shipping information.");
-        }
-
-        if (method === 'bank' && (!receipt.files || receipt.files.length === 0)) {
-            return showAlert("Receipt Required", "Please upload your payment screenshot to proceed.");
-        }
-
-        const checkoutBtn = document.querySelector('button[onclick="handleCheckout()"]');
-        checkoutBtn.innerText = "VERIFYING...";
-        checkoutBtn.disabled = true;
-
-        try {
-            const response = await fetch('/api/orders', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ items: cart, paymentMethod: method, customer: name })
-            });
-
-            if (response.ok) {
-                showAlert("Order Success", "Your order has been placed. We will contact you shortly via WhatsApp.");
-                localStorage.removeItem('tmb_cart');
-                cart = [];
-                renderCart();
-            } else {
-                showAlert("Order Failed", "There was an issue processing your order. Please check your details.");
-            }
-        } catch (error) {
-            showAlert("Error", "Could not connect to the server.");
-        } finally {
-            checkoutBtn.innerText = "PLACE ORDER";
-            checkoutBtn.disabled = false;
-        }
+    if (!name || !email || !phone || !whatsapp) {
+        return showAlert("Details Required", "Please fill in all contact and shipping information.");
     }
+
+    if (method === 'bank' && (!receipt.files || receipt.files.length === 0)) {
+        return showAlert("Receipt Required", "Please upload your payment screenshot to proceed.");
+    }
+
+    // 2. Prepare Button State
+    const checkoutBtn = document.querySelector('button[onclick="handleCheckout()"]');
+    const originalText = checkoutBtn.innerText;
+    checkoutBtn.innerText = "VERIFYING...";
+    checkoutBtn.disabled = true;
+
+    // 3. Collect Data & Token
+    const token = localStorage.getItem('motunde_token');
+    
+    const orderData = {
+        items: cart,
+        paymentMethod: method,
+        customer: name,
+        email: email,
+        phone: phone,
+        whatsapp: whatsapp, // Fetches the WhatsApp contact
+        address: {
+            street: document.getElementById('cust-street').value,
+            city: document.getElementById('cust-city').value,
+            state: document.getElementById('cust-state').value,
+            country: "Nigeria"
+        },
+        summary: {
+            subtotal: cart.reduce((sum, item) => sum + (item.price * item.quantity), 0),
+            shipping: FLAT_SHIPPING_FEE,
+            total: cart.reduce((sum, item) => sum + (item.price * item.quantity), 0) + FLAT_SHIPPING_FEE
+        }
+    };
+
+    // 4. API Call
+    try {
+        const response = await fetch('/api/orders', {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': token ? `Bearer ${token}` : '' // Send token if logged in
+            },
+            body: JSON.stringify(orderData)
+        });
+
+        if (response.ok) {
+            showAlert("Order Success", "Your order has been placed. We will contact you shortly via WhatsApp.");
+            localStorage.removeItem('tmb_cart');
+            cart = [];
+            renderCart();
+        } else {
+            const errorData = await response.json();
+            showAlert("Order Failed", errorData.message || "There was an issue processing your order.");
+        }
+    } catch (error) {
+        console.error("Checkout Error:", error);
+        showAlert("Error", "Could not connect to the server. Please try again later.");
+    } finally {
+        checkoutBtn.innerText = originalText;
+        checkoutBtn.disabled = false;
+    }
+}
 
     renderCart();
 </script>

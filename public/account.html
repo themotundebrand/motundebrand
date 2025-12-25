@@ -144,134 +144,146 @@
         </div>
     </footer>
 
-    <script>
-        const API_URL = '/api';
-        let pendingEmail = ""; 
+  <script>
+    const API_URL = '/api';
+    let pendingEmail = ""; 
 
-        function switchTab(tab) {
-            const loginForm = document.getElementById('login-form');
-            const regForm = document.getElementById('register-form');
-            const verifyForm = document.getElementById('verify-form');
-            const loginBtn = document.getElementById('tab-login');
-            const regBtn = document.getElementById('tab-register');
-
-            // Always hide verify when switching tabs
-            verifyForm.classList.remove('form-active');
-
-            if(tab === 'login') {
-                loginForm.classList.add('form-active');
-                regForm.classList.remove('form-active');
-                loginBtn.className = "text-[10px] uppercase tracking-widest text-brandPink border-b border-brandPink pb-2";
-                regBtn.className = "text-[10px] uppercase tracking-widest text-brandPink/40 hover:text-brandPink pb-2 transition";
-            } else {
-                regForm.classList.add('form-active');
-                loginForm.classList.remove('form-active');
-                regBtn.className = "text-[10px] uppercase tracking-widest text-brandPink border-b border-brandPink pb-2";
-                loginBtn.className = "text-[10px] uppercase tracking-widest text-brandPink/40 hover:text-brandPink pb-2 transition";
-            }
+    // --- NEW: REDIRECT IF ALREADY LOGGED IN ---
+    // This runs as soon as the page loads
+    window.onload = () => {
+        const token = localStorage.getItem('motunde_token');
+        const user = localStorage.getItem('motunde_user');
+        
+        if (token && user) {
+            // User is already logged in, send them to membership details
+            window.location.href = 'membership.html';
         }
+    };
 
-        // 1. REGISTER LOGIC
-        document.getElementById('register-form').onsubmit = async (e) => {
-            e.preventDefault();
-            const submitBtn = e.target.querySelector('button');
-            const originalText = submitBtn.innerText;
-            submitBtn.innerText = "SENDING CODE...";
-            submitBtn.disabled = true;
+    function switchTab(tab) {
+        const loginForm = document.getElementById('login-form');
+        const regForm = document.getElementById('register-form');
+        const verifyForm = document.getElementById('verify-form');
+        const loginBtn = document.getElementById('tab-login');
+        const regBtn = document.getElementById('tab-register');
 
-            pendingEmail = document.getElementById('reg-email').value;
+        verifyForm.classList.remove('form-active');
+
+        if(tab === 'login') {
+            loginForm.classList.add('form-active');
+            regForm.classList.remove('form-active');
+            loginBtn.className = "text-[10px] uppercase tracking-widest text-brandPink border-b border-brandPink pb-2";
+            regBtn.className = "text-[10px] uppercase tracking-widest text-brandPink/40 hover:text-brandPink pb-2 transition";
+        } else {
+            regForm.classList.add('form-active');
+            loginForm.classList.remove('form-active');
+            regBtn.className = "text-[10px] uppercase tracking-widest text-brandPink border-b border-brandPink pb-2";
+            loginBtn.className = "text-[10px] uppercase tracking-widest text-brandPink/40 hover:text-brandPink pb-2 transition";
+        }
+    }
+
+    // 1. REGISTER LOGIC
+    document.getElementById('register-form').onsubmit = async (e) => {
+        e.preventDefault();
+        const submitBtn = e.target.querySelector('button');
+        const originalText = submitBtn.innerText;
+        submitBtn.innerText = "SENDING CODE...";
+        submitBtn.disabled = true;
+
+        pendingEmail = document.getElementById('reg-email').value;
+        
+        const userData = {
+            name: document.getElementById('reg-name').value,
+            email: pendingEmail,
+            password: document.getElementById('reg-password').value,
+            phone: document.getElementById('reg-phone').value,
+            whatsapp: document.getElementById('reg-whatsapp').value,
+            address: {
+                street: document.getElementById('reg-street').value,
+                city: document.getElementById('reg-city').value,
+                state: document.getElementById('reg-state').value,
+                country: "Nigeria"
+            }
+        };
+
+        try {
+            const res = await fetch(`${API_URL}/register`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(userData)
+            });
+            const data = await res.json();
             
-            const userData = {
-                name: document.getElementById('reg-name').value,
-                email: pendingEmail,
-                password: document.getElementById('reg-password').value,
-                phone: document.getElementById('reg-phone').value,
-                whatsapp: document.getElementById('reg-whatsapp').value,
-                address: {
-                    street: document.getElementById('reg-street').value,
-                    city: document.getElementById('reg-city').value,
-                    state: document.getElementById('reg-state').value,
-                    country: "Nigeria"
-                }
-            };
-
-            try {
-                const res = await fetch(`${API_URL}/register`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(userData)
-                });
-                const data = await res.json();
-                
-                if(res.ok) {
-                    // Hide Header Tabs & Reg Form, show OTP
-                    document.getElementById('tab-header').style.display = 'none';
-                    document.getElementById('register-form').classList.remove('form-active');
-                    document.getElementById('verify-form').classList.add('form-active');
-                } else {
-                    alert(data.error || "Registration failed");
-                }
-            } catch (err) { 
-                alert("Connection Error"); 
-            } finally { 
-                submitBtn.innerText = originalText;
-                submitBtn.disabled = false;
+            if(res.ok) {
+                document.getElementById('tab-header').style.display = 'none';
+                document.getElementById('register-form').classList.remove('form-active');
+                document.getElementById('verify-form').classList.add('form-active');
+            } else {
+                alert(data.error || "Registration failed");
             }
-        };
-
-        // 2. VERIFY OTP LOGIC
-        document.getElementById('verify-form').onsubmit = async (e) => {
-            e.preventDefault();
-            const otp = document.getElementById('otp-code').value;
-            const submitBtn = e.target.querySelector('button');
-            submitBtn.innerText = "VERIFYING...";
-
-            try {
-                const res = await fetch(`${API_URL}/verify-otp`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email: pendingEmail, otp })
-                });
-                const data = await res.json();
-                
-                if(data.token) {
-                    saveSession(data.token, data.user);
-                } else {
-                    alert(data.error || "Invalid Code");
-                }
-            } catch (err) { 
-                alert("Verification Error"); 
-            } finally {
-                submitBtn.innerText = "Confirm Activation";
-            }
-        };
-
-        // 3. LOGIN LOGIC
-        document.getElementById('login-form').onsubmit = async (e) => {
-            e.preventDefault();
-            const email = document.getElementById('login-email').value;
-            const password = document.getElementById('login-password').value;
-
-            try {
-                const res = await fetch(`${API_URL}/login`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email, password })
-                });
-                const data = await res.json();
-                if(data.token) {
-                    saveSession(data.token, data.user);
-                } else { 
-                    alert(data.error); 
-                }
-            } catch (err) { alert("Connection Error"); }
-        };
-
-        function saveSession(token, user) {
-            localStorage.setItem('motunde_token', token);
-            localStorage.setItem('motunde_user', JSON.stringify(user));
-            window.location.href = 'shop.html';
+        } catch (err) { 
+            alert("Connection Error"); 
+        } finally { 
+            submitBtn.innerText = originalText;
+            submitBtn.disabled = false;
         }
-    </script>
+    };
+
+    // 2. VERIFY OTP LOGIC
+    document.getElementById('verify-form').onsubmit = async (e) => {
+        e.preventDefault();
+        const otp = document.getElementById('otp-code').value;
+        const submitBtn = e.target.querySelector('button');
+        submitBtn.innerText = "VERIFYING...";
+
+        try {
+            const res = await fetch(`${API_URL}/verify-otp`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: pendingEmail, otp })
+            });
+            const data = await res.json();
+            
+            if(data.token) {
+                // Success: Redirect to SHOP
+                saveSession(data.token, data.user, 'shop.html');
+            } else {
+                alert(data.error || "Invalid Code");
+            }
+        } catch (err) { 
+            alert("Verification Error"); 
+        } finally {
+            submitBtn.innerText = "Confirm Activation";
+        }
+    };
+
+    // 3. LOGIN LOGIC
+    document.getElementById('login-form').onsubmit = async (e) => {
+        e.preventDefault();
+        const email = document.getElementById('login-email').value;
+        const password = document.getElementById('login-password').value;
+
+        try {
+            const res = await fetch(`${API_URL}/login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password })
+            });
+            const data = await res.json();
+            if(data.token) {
+                // Success: Redirect to SHOP
+                saveSession(data.token, data.user, 'shop.html');
+            } else { 
+                alert(data.error); 
+            }
+        } catch (err) { alert("Connection Error"); }
+    };
+
+    function saveSession(token, user, redirectTarget) {
+        localStorage.setItem('motunde_token', token);
+        localStorage.setItem('motunde_user', JSON.stringify(user));
+        window.location.href = redirectTarget;
+    }
+</script>
 </body>
 </html>
