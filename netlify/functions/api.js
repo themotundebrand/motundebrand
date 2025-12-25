@@ -113,6 +113,32 @@ router.post('/admin/login', async (req, res) => {
     } catch (e) { res.status(500).json({ error: "Login failed" }); }
 });
 
+// USE THIS FOR THE DASHBOARD CARD
+router.get('/admin/users/count', async (req, res) => {
+    try {
+        const db = await getDb();
+        const count = await db.collection("users").countDocuments();
+        res.json({ count });
+    } catch (e) {
+        res.status(500).json({ error: "Failed to count users" });
+    }
+});
+
+// USE THIS FOR THE CUSTOMER CRM TABLE
+router.get('/admin/users', async (req, res) => {
+    try {
+        const db = await getDb();
+        const users = await db.collection("users")
+            .find({})
+            .project({ password: 0 }) // SECURITY: Never send passwords to the frontend
+            .sort({ createdAt: -1 })  // Show newest members first
+            .toArray();
+        res.json(users);
+    } catch (e) {
+        res.status(500).json({ error: "Failed to fetch users" });
+    }
+});
+
 // --- PRODUCT MANAGEMENT (CREATE) ---
 router.post('/admin/products', authenticateAdmin, async (req, res) => {
     try {
