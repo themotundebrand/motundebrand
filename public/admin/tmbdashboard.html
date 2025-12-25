@@ -45,12 +45,12 @@
     <div class="flex">
         <div id="overlay" onclick="toggleSidebar()" class="mobile-overlay fixed inset-0 z-40 lg:hidden"></div>
         
-        <aside id="sidebar" class="sidebar fixed lg:static inset-y-0 left-0 z-50 w-64 bg-white border-r transform -translate-x-full lg:translate-x-0 h-screen flex flex-col flex-shrink-0">
+        <aside id="sidebar" class="sidebar fixed lg:static inset-y-0 left-0 z-50 w-64 bg-white border-r transform -translate-x-full lg:translate-x-0 h-screen flex flex-col">
             <div class="p-8 border-b text-center">
                 <h1 class="font-bold tracking-[0.3em] text-sm italic">TMB SYSTEM</h1>
             </div>
 
-            <nav class="flex-1 px-4 py-8 space-y-1 overflow-y-auto">
+            <nav class="flex-1 px-4 py-8 space-y-1">
                 <p class="text-[9px] uppercase tracking-[0.2em] text-gray-400 px-4 mb-4 font-bold">Inventory</p>
                 <a href="womenscents.html" class="nav-link flex items-center px-4 py-3 text-[10px] tracking-widest uppercase font-semibold">
                     <i class="fa-solid fa-venus mr-3 w-5 text-brandPinkDark"></i> Women Scents
@@ -83,9 +83,9 @@
             </div>
         </aside>
 
-        <main class="flex-1 min-h-screen px-6 lg:px-10 py-12">
-            <div class="max-w-full mx-auto">
-                <div class="flex justify-between items-end mb-10">
+        <main class="flex-1 min-h-screen p-6 lg:p-12">
+            <div class="max-w-7xl mx-auto">
+                <div class="flex justify-between items-end mb-12">
                     <div>
                         <h2 class="text-2xl font-light tracking-tight mb-1">Management Terminal</h2>
                         <p class="text-[9px] uppercase tracking-[0.3em] text-brandPinkDark font-bold">The Motunde Brand Dashboard</p>
@@ -95,7 +95,7 @@
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-6 gap-4 mb-10">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 mb-12">
                     
                     <a href="womenstock.html" class="stat-card bg-white p-6 border shadow-sm flex flex-col items-center text-center group hover:border-brandPinkDark">
                         <span class="text-[8px] uppercase tracking-widest text-gray-400 mb-4 font-bold group-hover:text-brandPinkDark">Women Scents</span>
@@ -126,12 +126,7 @@
                         <span id="pending-orders" class="text-2xl font-light text-brandPinkDark mb-2">...</span>
                         <span class="text-[7px] uppercase tracking-widest text-gray-400 font-bold">Review <i class="fa-solid fa-arrow-right ml-1"></i></span>
                     </a>
-                    
-                    <a href="customer-list.html" class="stat-card bg-white p-6 border shadow-sm flex flex-col items-center text-center group hover:border-brandKidsBlue">
-                    <span class="text-[8px] uppercase tracking-widest text-gray-400 mb-4 font-bold">Registered Members</span>
-                    <span id="user-count" class="text-2xl font-light mb-2">...</span>
-                     <span class="text-[7px] uppercase tracking-widest text-brandKidsBlue font-bold">View CRM <i class="fa-solid fa-arrow-right ml-1"></i></span>
-                    </a>
+
                     <a href="analytics.html" class="stat-card bg-white p-6 border shadow-sm flex flex-col items-center text-center group">
                         <span class="text-[8px] uppercase tracking-widest text-gray-400 mb-4 font-bold">Total Sales</span>
                         <span id="revenue-mtd" class="text-2xl font-light mb-2">...</span>
@@ -140,13 +135,13 @@
 
                 </div>
 
-                <div class="bg-white border p-10 text-center">
+                <div class="bg-white border p-12 text-center">
                     <div class="flex justify-center space-x-4 mb-6">
                         <div class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
                         <span class="text-[9px] uppercase tracking-widest font-bold">System Online</span>
                     </div>
                     <h3 class="text-xs uppercase tracking-[0.3em] font-bold mb-4">Central Control</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-4xl mx-auto">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-2xl mx-auto">
                         <a href="inventory-report.html" class="border p-4 text-[10px] uppercase tracking-widest hover:bg-brandBlack hover:text-white transition">Full Inventory Report</a>
                         <a href="customer-list.html" class="border p-4 text-[10px] uppercase tracking-widest hover:bg-brandBlack hover:text-white transition">Customer CRM</a>
                     </div>
@@ -157,6 +152,7 @@
 
     <script>
         const API_URL = '/api'; 
+        const INACTIVITY_LIMIT = 30 * 60 * 1000; 
 
         function toggleSidebar() {
             document.getElementById('sidebar').classList.toggle('-translate-x-full');
@@ -169,53 +165,46 @@
             window.location.href = 'tmbadmin-login.html';
         }
 
-async function fetchDashboardStats() {
-    try {
-        const token = localStorage.getItem('tmb_admin_token');
-        const headers = { 'Authorization': `Bearer ${token}` };
+        async function fetchDashboardStats() {
+            try {
+                const pRes = await fetch(`${API_URL}/products`);
+                const products = await pRes.json();
+                
+                const calculateCategoryStock = (cat) => {
+                    return products
+                        .filter(p => p.category === cat)
+                        .reduce((total, p) => {
+                            const productStock = (p.variants || []).reduce((sum, v) => sum + (parseInt(v.stock) || 0), 0);
+                            return total + productStock;
+                        }, 0);
+                };
 
-        // 1. Fetch Products for Stock
-        const pRes = await fetch(`${API_URL}/products`);
-        const products = await pRes.json();
-        
-        const calculateCategoryStock = (cat) => {
-            return products
-                .filter(p => p.category === cat)
-                .reduce((total, p) => {
-                    const productStock = (p.variants || []).reduce((sum, v) => sum + (parseInt(v.stock) || 0), 0);
-                    return total + productStock;
-                }, 0);
-        };
+                // Populate all stock counts
+                document.getElementById('women-count').innerText = calculateCategoryStock('women');
+                document.getElementById('men-count').innerText = calculateCategoryStock('men');
+                document.getElementById('mist-count').innerText = calculateCategoryStock('mist'); // Added Mist Logic
+                document.getElementById('kids-count').innerText = calculateCategoryStock('kids');
 
-        document.getElementById('women-count').innerText = calculateCategoryStock('women');
-        document.getElementById('men-count').innerText = calculateCategoryStock('men');
-        document.getElementById('mist-count').innerText = calculateCategoryStock('mist'); 
-        document.getElementById('kids-count').innerText = calculateCategoryStock('kids');
+                // Fetch Orders
+                const oRes = await fetch(`${API_URL}/admin/orders`, {
+                    headers: { 'Authorization': `Bearer ${localStorage.getItem('tmb_admin_token')}` }
+                });
+                
+                if (oRes.ok) {
+                    const orders = await oRes.json();
+                    const pending = orders.filter(o => o.status === 'pending').length;
+                    const totalRevenue = orders
+                        .filter(o => o.status === 'completed' || o.status === 'paid')
+                        .reduce((sum, o) => sum + (o.totalPrice || 0), 0);
 
-        // 2. Fetch Orders & Revenue
-        const oRes = await fetch(`${API_URL}/admin/orders`, { headers });
-        if (oRes.ok) {
-            const orders = await oRes.json();
-            const pending = orders.filter(o => o.status === 'pending').length;
-            const totalRevenue = orders
-                .filter(o => o.status === 'completed' || o.status === 'paid')
-                .reduce((sum, o) => sum + (o.totalPrice || 0), 0);
-
-            document.getElementById('pending-orders').innerText = pending;
-            document.getElementById('revenue-mtd').innerText = `₦ ${(totalRevenue / 1000).toFixed(0)}k`;
+                    document.getElementById('pending-orders').innerText = pending;
+                    document.getElementById('revenue-mtd').innerText = `₦ ${(totalRevenue / 1000).toFixed(0)}k`;
+                }
+            } catch (err) {
+                console.error("Dashboard Sync Error:", err);
+            }
         }
 
-        // 3. NEW: Fetch Total Registered Users
-        const uRes = await fetch(`${API_URL}/admin/users/count`, { headers });
-        if (uRes.ok) {
-            const data = await uRes.json();
-            document.getElementById('user-count').innerText = data.count;
-        }
-
-    } catch (err) {
-        console.error("Dashboard Sync Error:", err);
-    }
-}
         window.onload = () => {
             fetchDashboardStats();
             const dateEl = document.getElementById('current-date');
