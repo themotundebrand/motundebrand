@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TMB CRM | Customer Database</title>
+    <link rel="icon" type="image/png" href="https://i.imgur.com/CVKXV7R.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brandWhite: '#FFFFFF',
+                        brandBlack: '#000000',
+                        brandPinkDark: '#D48A96',
+                        brandMist: '#8AB6D4',
+                        brandKidsBlue: '#5BA4B5',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #FBFBFB; }
+        .sidebar { transition: all 0.3s ease; }
+        .nav-link:hover { background-color: #FBFBFB; color: #000; border-left: 4px solid #D48A96; }
+        .mobile-overlay { background: rgba(0,0,0,0.5); display: none; }
+        .mobile-overlay.active { display: block; }
+
+        /* Mobile-friendly table adjustment */
+        @media (max-width: 1024px) {
+            .responsive-table thead { display: none; }
+            .responsive-table tr { 
+                display: block; 
+                margin-bottom: 1rem; 
+                border: 1px solid #eee; 
+                background: white;
+                padding: 10px;
+            }
+            .responsive-table td { 
+                display: flex; 
+                justify-content: space-between; 
+                padding: 0.8rem 0.5rem; 
+                border-bottom: 1px solid #fafafa;
+                font-size: 12px;
+                text-align: right;
+            }
+            .responsive-table td:last-child { border-bottom: none; }
+            .responsive-table td::before { 
+                content: attr(data-label); 
+                font-weight: bold; 
+                text-transform: uppercase; 
+                color: #999;
+                text-align: left;
+                margin-right: 10px;
+            }
+        }
+    </style>
+</head>
+<body class="text-brandBlack">
+
+    <div class="lg:hidden bg-white border-b p-4 flex justify-between items-center sticky top-0 z-50">
+        <span class="font-bold tracking-widest text-xs uppercase">TMB CRM</span>
+        <button onclick="toggleSidebar()" class="text-brandBlack text-xl">
+            <i class="fa-solid fa-bars-staggered"></i>
+        </button>
+    </div>
+
+    <div class="flex">
+        <div id="overlay" onclick="toggleSidebar()" class="mobile-overlay fixed inset-0 z-40 lg:hidden"></div>
+        
+        <aside id="sidebar" class="sidebar fixed lg:static inset-y-0 left-0 z-50 w-64 bg-white border-r transform -translate-x-full lg:translate-x-0 h-screen flex flex-col flex-shrink-0">
+            <div class="p-8 border-b text-center">
+                <h1 class="font-bold tracking-[0.3em] text-sm italic">TMB SYSTEM</h1>
+            </div>
+
+            <nav class="flex-1 px-4 py-8 space-y-1 overflow-y-auto">
+                <p class="text-[9px] uppercase tracking-[0.2em] text-gray-400 px-4 mb-4 font-bold">Navigation</p>
+                <a href="tmbadmin-dashboard.html" class="nav-link flex items-center px-4 py-3 text-[10px] tracking-widest uppercase font-semibold">
+                    <i class="fa-solid fa-house mr-3 w-5 text-gray-400"></i> Dashboard
+                </a>
+                
+                <p class="text-[9px] uppercase tracking-[0.2em] text-gray-400 px-4 mb-4 mt-8 font-bold">Inventory</p>
+                <a href="womenscents.html" class="nav-link flex items-center px-4 py-3 text-[10px] tracking-widest uppercase font-semibold">
+                    <i class="fa-solid fa-venus mr-3 w-5 text-brandPinkDark"></i> Women Scents
+                </a>
+                <a href="menscents.html" class="nav-link flex items-center px-4 py-3 text-[10px] tracking-widest uppercase font-semibold">
+                    <i class="fa-solid fa-mars mr-3 w-5 text-gray-400"></i> Men Scents
+                </a>
+                <a href="bodymistspray.html" class="nav-link flex items-center px-4 py-3 text-[10px] tracking-widest uppercase font-semibold">
+                    <i class="fa-solid fa-spray-can mr-3 w-5 text-brandMist"></i> Mists & Sprays
+                </a>
+                
+                <div class="pt-8">
+                    <p class="text-[9px] uppercase tracking-[0.2em] text-gray-400 px-4 mb-4 font-bold">Business</p>
+                    <a href="orders.html" class="nav-link flex items-center px-4 py-3 text-[10px] tracking-widest uppercase font-semibold">
+                        <i class="fa-solid fa-bag-shopping mr-3 w-5 text-gray-400"></i> Orders
+                    </a>
+                    <a href="customer-list.html" class="nav-link flex items-center px-4 py-3 text-[10px] tracking-widest uppercase font-semibold border-left-4 border-brandPinkDark bg-gray-50">
+                        <i class="fa-solid fa-users mr-3 w-5 text-brandPinkDark"></i> Customer CRM
+                    </a>
+                </div>
+            </nav>
+
+            <div class="p-4 border-t">
+                <button onclick="logout()" class="w-full flex items-center justify-center px-4 py-3 text-[10px] uppercase tracking-widest font-bold bg-brandBlack text-white hover:bg-red-900 transition-all">
+                    <i class="fa-solid fa-power-off mr-2"></i> System Exit
+                </button>
+            </div>
+        </aside>
+
+        <main class="flex-1 min-h-screen px-6 lg:px-10 py-12">
+            <div class="max-w-full mx-auto">
+                
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-end mb-10 gap-4">
+                    <div>
+                        <h2 class="text-2xl font-light tracking-tight mb-1">Customer CRM</h2>
+                        <p class="text-[9px] uppercase tracking-[0.3em] text-brandPinkDark font-bold">Registered Members Directory</p>
+                    </div>
+                    
+                    <div class="w-full md:w-auto flex flex-col items-end">
+                        <input type="text" id="userSearch" onkeyup="filterUsers()" placeholder="SEARCH MEMBERS..." 
+                        class="border-b bg-transparent px-2 py-2 text-[10px] uppercase tracking-widest focus:outline-none focus:border-brandPinkDark w-full md:w-64 mb-2">
+                        <p id="total-count-label" class="text-[8px] uppercase tracking-widest text-gray-400 font-bold">Total: <span id="total-users">0</span> Members</p>
+                    </div>
+                </div>
+
+                <div class="bg-white border shadow-sm overflow-hidden">
+                    <table class="w-full text-left responsive-table border-collapse" id="usersTable">
+                        <thead class="bg-gray-50 border-b hidden lg:table-header-group">
+                            <tr>
+                                <th class="p-6 text-[9px] uppercase tracking-widest font-bold text-gray-500">Member Profile</th>
+                                <th class="p-6 text-[9px] uppercase tracking-widest font-bold text-gray-500">Contact Details</th>
+                                <th class="p-6 text-[9px] uppercase tracking-widest font-bold text-gray-500">Location</th>
+                                <th class="p-6 text-[9px] uppercase tracking-widest font-bold text-gray-500">Registration</th>
+                                <th class="p-6 text-[9px] uppercase tracking-widest font-bold text-gray-500 text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="user-list-body" class="divide-y divide-gray-100">
+                            <tr>
+                                <td colspan="5" class="p-10 text-center text-[10px] uppercase tracking-widest text-gray-400">Synchronizing database...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const API_URL = '/api';
+        const token = localStorage.getItem('tmb_admin_token');
+
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('-translate-x-full');
+            document.getElementById('overlay').classList.toggle('active');
+        }
+
+        function logout() {
+            localStorage.removeItem('tmb_admin_token');
+            window.location.href = 'tmbadmin-login.html';
+        }
+
+        async function fetchUsers() {
+            try {
+                const res = await fetch(`${API_URL}/admin/users`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                if (!res.ok) throw new Error('Unauthorized');
+
+                const users = await res.json();
+                document.getElementById('total-users').innerText = users.length;
+                renderUsers(users);
+            } catch (err) {
+                console.error(err);
+                document.getElementById('user-list-body').innerHTML = `<tr><td colspan="5" class="p-10 text-center text-red-500 text-[10px] uppercase tracking-widest">Connection Error: Session Expired</td></tr>`;
+            }
+        }
+
+        function renderUsers(users) {
+            const container = document.getElementById('user-list-body');
+            if(users.length === 0) {
+                container.innerHTML = `<tr><td colspan="5" class="p-10 text-center text-[10px] uppercase">No registered members found.</td></tr>`;
+                return;
+            }
+
+            container.innerHTML = users.map(user => `
+                <tr class="hover:bg-gray-50 transition">
+                    <td class="p-6" data-label="Member Profile">
+                        <div class="flex flex-col">
+                            <span class="text-xs font-bold uppercase tracking-wide">${user.name || 'User'}</span>
+                            <span class="text-[10px] text-gray-400 lowercase tracking-normal">${user.email}</span>
+                        </div>
+                    </td>
+                    <td class="p-6" data-label="Contact">
+                        <div class="flex flex-col text-[10px] uppercase">
+                            <span><i class="fa-solid fa-phone mr-2 text-gray-300"></i>${user.phone || 'N/A'}</span>
+                            <span class="text-brandPinkDark"><i class="fa-brands fa-whatsapp mr-2"></i>${user.whatsapp || 'N/A'}</span>
+                        </div>
+                    </td>
+                    <td class="p-6" data-label="Location">
+                        <span class="text-[10px] uppercase tracking-wider text-gray-600">${user.city || '-'}, ${user.state || '-'}</span>
+                    </td>
+                    <td class="p-6" data-label="Registration">
+                        <span class="text-[10px] text-gray-400 uppercase font-medium">${new Date(user.createdAt).toLocaleDateString('en-GB')}</span>
+                    </td>
+                    <td class="p-6 text-right" data-label="Actions">
+                        <button onclick="viewHistory('${user.email}')" class="text-[8px] uppercase tracking-widest border border-brandBlack px-3 py-2 hover:bg-brandBlack hover:text-white transition font-bold">
+                            View Orders
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function filterUsers() {
+            let input = document.getElementById('userSearch').value.toUpperCase();
+            let table = document.getElementById('usersTable');
+            let tr = table.getElementsByTagName('tr');
+
+            for (let i = 1; i < tr.length; i++) {
+                let text = tr[i].innerText.toUpperCase();
+                if (tr[i].parentNode.id === "user-list-body") {
+                    tr[i].style.display = text.indexOf(input) > -1 ? "" : "none";
+                }
+            }
+        }
+
+        function viewHistory(email) {
+            // Redirect to orders page with email as a filter
+            window.location.href = `orders.html?search=${encodeURIComponent(email)}`;
+        }
+
+        window.onload = fetchUsers;
+    </script>
+</body>
+</html>

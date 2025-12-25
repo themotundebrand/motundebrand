@@ -172,6 +172,32 @@ router.put('/admin/products/:id', authenticateAdmin, async (req, res) => {
     } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
+// USE THIS FOR THE DASHBOARD CARD
+router.get('/admin/users/count', async (req, res) => {
+    try {
+        const db = await getDb();
+        const count = await db.collection("users").countDocuments();
+        res.json({ count });
+    } catch (e) {
+        res.status(500).json({ error: "Failed to count users" });
+    }
+});
+
+// USE THIS FOR THE CUSTOMER CRM TABLE
+router.get('/admin/users', async (req, res) => {
+    try {
+        const db = await getDb();
+        const users = await db.collection("users")
+            .find({})
+            .project({ password: 0 }) // SECURITY: Never send passwords to the frontend
+            .sort({ createdAt: -1 })  // Show newest members first
+            .toArray();
+        res.json(users);
+    } catch (e) {
+        res.status(500).json({ error: "Failed to fetch users" });
+    }
+});
+
 // --- [NEW] FETCH STOCK FOR SPECIFIC PRODUCT (Used by Shop/Cart) ---
 router.get('/products/:id/stock', async (req, res) => {
     try {
@@ -450,6 +476,96 @@ router.get('/profile', async (req, res) => {
         res.json(user);
     } catch (e) {
         res.status(401).json({ error: "Session expired" });
+    }
+});
+const bcrypt = require('bcryptjs'); // Ensure bcrypt is installed
+
+// --- 1. UPDATE USER PROFILE (Name, Phone, WhatsApp, Address) ---
+router.put('/update', async (req, res) => {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+    if (!token) return res.status(401).json({ error: "Not logged in" });
+
+    try {
+        const decoded = jwt.verify(token, JWT_SECRET);
+        const db = await getDb();
+        
+        const { name, phone, whatsapp, address, city, state } = req.body;
+
+        // Update the user document
+        const result = await db.collection("users").updateOne(
+            { _id: new ObjectId(decoded.id) },
+            { 
+                $set: { 
+                    name, 
+                    phone, 
+                    whatsapp, 
+                    address, 
+                    city, 
+                    state,
+                    updatedAt: new Date() 
+                } 
+            }
+        );
+
+        if (result.matchedCount === 0) return res.status(404).json({ error: "User not found" });
+
+        res.json({ message: "Profile updated successfully" });
+    } catch (e) {
+        res.status(401).json({ error: "Unauthorized access" });
+    }
+});
+
+// --- 2. CHANGE PASSWORD ---
+router.post('/change-password', async (req, res) => {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+    if (!token) return res.status(401).json({ error: "Not logged in" });
+
+    try {
+        const decoded = jwt.verify(token, JWT_SECRET);
+        const { password } = req.body;
+
+        if (!password || password.length < 6) {
+            return res.status(400).json({ error: "Password must be at least 6 characters" });
+        }
+
+        const db = await getDb();
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        await db.collection("users").updateOne(
+            { _id: new ObjectId(decoded.id) },
+            { $set: { password: hashedPassword } }
+        );
+
+        res.json({ message: "Password updated successfully" });
+    } catch (e) {
+        res.status(401).json({ error: "Session expired" });
+    }
+});
+
+// --- 3. GET ORDER HISTORY ---
+router.get('/my-orders', async (req, res) => {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+    if (!token) return res.status(401).json({ error: "Not logged in" });
+
+    try {
+        const decoded = jwt.verify(token, JWT_SECRET);
+        const db = await getDb();
+        
+        // Find orders where the customer email matches the user email
+        // Or link via user ID if you store user_id in your orders collection
+        const user = await db.collection("users").findOne({ _id: new ObjectId(decoded.id) });
+        
+        const orders = await db.collection("orders")
+            .find({ email: user.email })
+            .sort({ createdAt: -1 })
+            .toArray();
+
+        res.json(orders);
+    } catch (e) {
+        res.status(500).json({ error: "Failed to fetch orders" });
     }
 });
 
