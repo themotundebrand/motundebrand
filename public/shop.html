@@ -594,65 +594,111 @@ function updateQty(productId, change) {
         document.body.style.overflow = '';
     }
 
-    // --- 8. Rendering & Data Fetching ---
-// --- 8. Rendering & Data Fetching ---
-    async function loadProducts() {
-        try {
-            const response = await fetch('/api/products');
-            if (!response.ok) throw new Error(`Server error: ${response.status}`);
-            const data = await response.json();
-            currentProducts = Array.isArray(data) ? data : [];
+// --- 8. Rendering & Data Fetching (Updated for Combo Sets) ---
+async function loadProducts() {
+    try {
+        const response = await fetch('/api/products');
+        if (!response.ok) throw new Error(`Server error: ${response.status}`);
+        const data = await response.json();
+        
+        // Ensure data is an array
+        currentProducts = Array.isArray(data) ? data : [];
 
-            const renderCard = (p) => {
-                const availableVariants = (p.variants || []).filter(v => v.stock > 0);
-                const isOutOfStock = availableVariants.length === 0;
-                const displayPrice = isOutOfStock ? (p.variants?.[0]?.price || 0) : availableVariants[0].price;
+        const renderCard = (p) => {
+            const availableVariants = (p.variants || []).filter(v => v.stock > 0);
+            const isOutOfStock = availableVariants.length === 0;
+            const displayPrice = isOutOfStock ? (p.variants?.[0]?.price || 0) : availableVariants[0].price;
 
-                return `
-                <div class="product-card bg-white p-3 group relative">
-                    ${isOutOfStock ? `<div class="absolute inset-0 z-10 bg-white/60 flex items-center justify-center"><span class="bg-black text-white text-[9px] px-4 py-2 uppercase">Sold Out</span></div>` : ''}
-                    <div onclick="openModal('${p._id}')" class="aspect-[4/5] overflow-hidden mb-4 bg-gray-50 cursor-pointer">
-                        <img id="img-${p._id}" src="${p.imageUrl}" 
-                             onerror="refreshBrokenImage('${p._id}', this)"
-                             class="w-full h-full object-cover transition duration-700 group-hover:scale-110 ${isOutOfStock ? 'grayscale' : ''}">
+            // --- Logic for Combo Contents Preview ---
+            let contentsMarkup = "";
+            if (p.category?.toLowerCase() === 'combo' && p.description) {
+                // We split by "|" or "-" based on your DB example
+                const items = p.description.split(/[|\-]+/).map(i => i.trim()).filter(i => i !== "");
+                // Show only first 2 items on the card to keep it clean
+                contentsMarkup = `
+                    <div class="mt-1 mb-2 px-1 text-left">
+                        <p class="text-[7px] text-gray-400 uppercase font-bold tracking-tighter">Includes:</p>
+                        <ul class="text-[7px] text-gray-500 leading-tight">
+                            ${items.slice(0, 2).map(item => `<li class="truncate">• ${item}</li>`).join('')}
+                            ${items.length > 2 ? `<li class="text-brandPinkDark text-[6px] font-bold">+ ${items.length - 2} MORE ITEMS</li>` : ''}
+                        </ul>
                     </div>
-                    <div class="text-center">
-                        <h3 class="uppercase font-bold text-[8px] tracking-widest mb-1 truncate">${p.name}</h3>
-                        <p id="price-${p._id}" class="text-brandPinkDark font-medium text-[10px] mb-2">₦${Number(displayPrice).toLocaleString()}</p>
-                        <select data-id="${p._id}" onchange="handleSizeChange(this, '${p._id}')" ${isOutOfStock ? 'disabled' : ''} class="w-full border border-gray-100 text-[8px] uppercase py-1.5 px-2 mb-2">
-                            ${availableVariants.map(v => `<option value="${v.size}" data-price="${v.price}" data-stock="${v.stock}">${v.size}</option>`).join('')}
-                            ${isOutOfStock ? '<option>No Sizes</option>' : ''}
-                        </select>
-                        <div class="flex items-center justify-between border border-gray-100 mb-3 ${isOutOfStock ? 'opacity-30' : ''}">
-                            <button onclick="updateQty('${p._id}', -1)" class="px-3 py-1">-</button>
-                            <span id="qty-${p._id}" class="text-[10px] font-bold">1</span>
-                            <button onclick="updateQty('${p._id}', 1)" class="px-3 py-1">+</button>
-                        </div>
-                        <button onclick="handleAddToCart('${p._id}')" id="btn-${p._id}" ${isOutOfStock ? 'disabled' : ''} class="w-full ${isOutOfStock ? 'bg-gray-200 text-gray-500' : 'bg-brandBlack text-brandPink'} text-[8px] py-2.5 uppercase tracking-widest">
-                            ${isOutOfStock ? 'Out of Stock' : 'Add to Bag'}
-                        </button>
-                    </div>
-                </div>`;
-            };
-
-            const populateGrid = (cat, elementId) => {
-                const gridEl = document.getElementById(elementId);
-                if (!gridEl) return;
-                const filtered = currentProducts.filter(p => p.category?.toLowerCase() === cat).slice(0, 5);
-                gridEl.innerHTML = filtered.length > 0 ? filtered.map(renderCard).join('') : `<p class="text-[10px] py-10 uppercase text-gray-400">Vault Opening Soon...</p>`;
-            };
-
-            populateGrid('women', 'women-grid');
-            populateGrid('men', 'men-grid');
-            populateGrid('kids', 'kids-grid');
-            populateGrid('combo', 'combo-grid');
-            const mistGrid = document.getElementById('mist-grid');
-            if (mistGrid) {
-                const mists = currentProducts.filter(p => p.category?.toLowerCase() === 'mist').slice(0, 6);
-                mistGrid.innerHTML = mists.length > 0 ? mists.map(renderCard).join('') : `<p class="text-[10px] py-10 uppercase text-gray-400">Vault Opening Soon...</p>`;
+                `;
             }
-        } catch (err) { console.error(err); }
+
+            return `
+            <div class="product-card bg-white p-3 group relative flex flex-col h-full">
+                ${isOutOfStock ? `<div class="absolute inset-0 z-10 bg-white/60 flex items-center justify-center"><span class="bg-black text-white text-[9px] px-4 py-2 uppercase">Sold Out</span></div>` : ''}
+                
+                <div onclick="openModal('${p._id}')" class="aspect-[4/5] overflow-hidden mb-3 bg-gray-50 cursor-pointer">
+                    <img id="img-${p._id}" src="${p.imageUrl}" 
+                         onerror="refreshBrokenImage('${p._id}', this)"
+                         class="w-full h-full object-cover transition duration-700 group-hover:scale-110 ${isOutOfStock ? 'grayscale' : ''}">
+                </div>
+
+                <div class="text-center flex-grow">
+                    <h3 class="uppercase font-bold text-[8px] tracking-widest mb-1 truncate">${p.name}</h3>
+                    
+                    ${contentsMarkup} <p id="price-${p._id}" class="text-brandPinkDark font-medium text-[10px] mb-2">₦${Number(displayPrice).toLocaleString()}</p>
+                    
+                    <select data-id="${p._id}" onchange="handleSizeChange(this, '${p._id}')" ${isOutOfStock ? 'disabled' : ''} 
+                            class="w-full border border-gray-100 text-[8px] uppercase py-1.5 px-2 mb-2 bg-white">
+                        ${availableVariants.map(v => `<option value="${v.size}" data-price="${v.price}" data-stock="${v.stock}">${v.size}</option>`).join('')}
+                        ${isOutOfStock ? '<option>No Sizes</option>' : ''}
+                    </select>
+
+                    <div class="flex items-center justify-between border border-gray-100 mb-3 ${isOutOfStock ? 'opacity-30' : ''}">
+                        <button onclick="updateQty('${p._id}', -1)" class="px-3 py-1 hover:bg-gray-50">-</button>
+                        <span id="qty-${p._id}" class="text-[10px] font-bold">1</span>
+                        <button onclick="updateQty('${p._id}', 1)" class="px-3 py-1 hover:bg-gray-50">+</button>
+                    </div>
+
+                    <button onclick="handleAddToCart('${p._id}')" id="btn-${p._id}" ${isOutOfStock ? 'disabled' : ''} 
+                            class="w-full ${isOutOfStock ? 'bg-gray-200 text-gray-500' : 'bg-brandBlack text-brandPink'} text-[8px] py-2.5 uppercase tracking-widest transition-colors hover:opacity-90">
+                        ${isOutOfStock ? 'Out of Stock' : 'Add to Bag'}
+                    </button>
+                </div>
+            </div>`;
+        };
+
+        const populateGrid = (cat, elementId) => {
+            const gridEl = document.getElementById(elementId);
+            if (!gridEl) return;
+            
+            const filtered = currentProducts
+                .filter(p => p.category?.toLowerCase().trim() === cat.toLowerCase())
+                .slice(0, 5); // Limit to 5 for the main shop rows
+
+            gridEl.innerHTML = filtered.length > 0 
+                ? filtered.map(renderCard).join('') 
+                : `<div class="col-span-full py-10 text-center text-[10px] uppercase text-gray-400 tracking-widest italic">Collection Landing Soon...</div>`;
+        };
+
+        // --- Execute Population ---
+        populateGrid('women', 'women-grid');
+        populateGrid('men', 'men-grid');
+        populateGrid('kids', 'kids-grid');
+        populateGrid('combo', 'combo-grid');
+
+        // Special handling for Mists row (uses 6 items instead of 5)
+        const mistGrid = document.getElementById('mist-grid');
+        if (mistGrid) {
+            const mists = currentProducts
+                .filter(p => {
+                    const c = p.category?.toLowerCase() || "";
+                    return c === 'mist' || c === 'mists' || c.includes('spray');
+                })
+                .slice(0, 6);
+            
+            mistGrid.innerHTML = mists.length > 0 
+                ? mists.map(renderCard).join('') 
+                : `<div class="col-span-full py-10 text-center text-[10px] uppercase text-gray-400">Mist Collection Pending...</div>`;
+        }
+
+    } catch (err) { 
+        console.error("Dashboard Render Error:", err); 
     }
+}
     
  function handleSizeChange(select, productId) {
     const selectedOption = select.options[select.selectedIndex];
