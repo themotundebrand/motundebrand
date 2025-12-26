@@ -29,6 +29,9 @@
         .active-link { background-color: #8AB6D4; color: #fff !important; }
         .mobile-overlay { background: rgba(0,0,0,0.5); display: none; }
         .mobile-overlay.active { display: block; }
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #8AB6D4; }
     </style>
 </head>
 <body class="text-brandBlack">
@@ -48,7 +51,7 @@
                 <a href="tmbdashboard.html"><h1 class="font-bold tracking-[0.3em] text-sm text-center hover:text-brandMist transition">TMB SYSTEM</h1></a>
             </div>
 
-            <nav class="flex-1 px-4 py-8 space-y-1">
+            <nav class="flex-1 px-4 py-8 space-y-1 overflow-y-auto">
                 <p class="text-[9px] uppercase tracking-[0.2em] text-gray-400 px-4 mb-4 font-bold">Main</p>
                 <a href="tmbdashboard.html" class="nav-link flex items-center px-4 py-3 text-[10px] tracking-widest uppercase font-semibold transition-all">
                     <i class="fa-solid fa-gauge-high mr-3 w-5 text-gray-400"></i> Dashboard
@@ -68,12 +71,12 @@
                     <i class="fa-solid fa-child mr-3 w-5 text-gray-400"></i> Kids Scents
                 </a>
 
-                   <div class="pt-8">
+                <div class="pt-8">
                     <p class="text-[9px] uppercase tracking-[0.2em] text-gray-400 px-4 mb-4 font-bold">Business</p>
-                     <a href="customer-list.html" class="nav-link flex items-center px-4 py-3 text-[10px] tracking-widest uppercase font-semibold">
-                        <i class="fa-solid fa-bag-shopping mr-3 w-5 text-gray-400"></i> Membership
+                    <a href="customer-list.html" class="nav-link flex items-center px-4 py-3 text-[10px] tracking-widest uppercase font-semibold">
+                        <i class="fa-solid fa-users mr-3 w-5 text-gray-400"></i> Membership
                     </a>
-                     <a href="orderstats.html" class="nav-link flex items-center px-4 py-3 text-[10px] tracking-widest uppercase font-semibold">
+                    <a href="orderstats.html" class="nav-link flex items-center px-4 py-3 text-[10px] tracking-widest uppercase font-semibold">
                         <i class="fa-solid fa-bag-shopping mr-3 w-5 text-gray-400"></i> Orders
                     </a>
                     <a href="analytics.html" class="nav-link flex items-center px-4 py-3 text-[10px] tracking-widest uppercase font-semibold">
@@ -93,31 +96,51 @@
             <div class="max-w-6xl mx-auto">
                 <div class="flex justify-between items-center mb-12">
                     <div>
-                        <h2 class="text-2xl font-light tracking-tight mb-1">Mists & Sprays Stock</h2>
-                        <p class="text-[9px] uppercase tracking-[0.3em] text-brandMist font-bold">Detailed Inventory Breakdown</p>
+                        <h2 class="text-2xl font-light tracking-tight mb-1">Mists & Sprays</h2>
+                        <p class="text-[9px] uppercase tracking-[0.3em] text-brandMist font-bold">Live Inventory Breakdown</p>
                     </div>
                     <button onclick="openAddModal()" class="bg-brandBlack text-white px-6 py-3 text-[10px] uppercase tracking-widest font-bold hover:bg-brandMist transition">
                         Add New Item
                     </button>
                 </div>
 
-                <div class="mb-16">
+                <div class="mb-12">
                     <div class="flex items-center mb-6">
-                        <div class="h-[1px] bg-gray-200 flex-1"></div>
-                        <h3 class="mx-4 text-[10px] uppercase tracking-[0.4em] font-bold text-brandMist">Section I: Body Mists</h3>
+                        <h3 class="mr-4 text-[10px] uppercase tracking-[0.4em] font-bold text-brandMist">Section I: Body Mists</h3>
                         <div class="h-[1px] bg-gray-200 flex-1"></div>
                     </div>
-                    <div class="bg-white border shadow-sm overflow-hidden">
+                    <div class="bg-white border shadow-sm overflow-hidden rounded-sm">
                         <table class="w-full text-left border-collapse">
                             <thead>
-                                <tr class="bg-gray-50 border-b">
-                                    <th class="px-8 py-4 text-[9px] uppercase tracking-widest font-bold text-gray-400">Product</th>
-                                    <th class="px-8 py-4 text-[9px] uppercase tracking-widest font-bold text-gray-400">Sizes & Stock</th>
-                                    <th class="px-8 py-4 text-[9px] uppercase tracking-widest font-bold text-gray-400">Status</th>
+                                <tr class="bg-gray-50 border-b text-[9px] uppercase tracking-widest font-bold text-gray-400">
+                                    <th class="px-8 py-4">Product</th>
+                                    <th class="px-8 py-4">Sizes & Stock</th>
+                                    <th class="px-8 py-4">Status</th>
                                 </tr>
                             </thead>
                             <tbody id="mist-list">
-                                <tr><td colspan="3" class="p-12 text-center text-xs uppercase tracking-widest text-gray-400">Scanning Mists...</td></tr>
+                                <tr><td colspan="3" class="p-12 text-center text-xs text-gray-400 uppercase">Scanning Mists...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="mb-12">
+                    <div class="flex items-center mb-6">
+                        <h3 class="mr-4 text-[10px] uppercase tracking-[0.4em] font-bold text-gray-400">Section II: Body Sprays</h3>
+                        <div class="h-[1px] bg-gray-200 flex-1"></div>
+                    </div>
+                    <div class="bg-white border shadow-sm overflow-hidden rounded-sm">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-gray-50 border-b text-[9px] uppercase tracking-widest font-bold text-gray-400">
+                                    <th class="px-8 py-4">Product</th>
+                                    <th class="px-8 py-4">Sizes & Stock</th>
+                                    <th class="px-8 py-4">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="spray-list">
+                                <tr><td colspan="3" class="p-12 text-center text-xs text-gray-400 uppercase">Scanning Sprays...</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -125,23 +148,25 @@
 
                 <div>
                     <div class="flex items-center mb-6">
-                        <div class="h-[1px] bg-gray-200 flex-1"></div>
-                        <h3 class="mx-4 text-[10px] uppercase tracking-[0.4em] font-bold text-gray-400">Section II: Body Sprays</h3>
-                        <div class="h-[1px] bg-gray-200 flex-1"></div>
+                        <h3 class="mr-4 text-[10px] uppercase tracking-[0.4em] font-bold text-red-400">Inventory Deduction Log</h3>
+                        <div class="h-[1px] bg-red-100 flex-1"></div>
                     </div>
-                    <div class="bg-white border shadow-sm overflow-hidden">
-                        <table class="w-full text-left border-collapse">
-                            <thead>
-                                <tr class="bg-gray-50 border-b">
-                                    <th class="px-8 py-4 text-[9px] uppercase tracking-widest font-bold text-gray-400">Product</th>
-                                    <th class="px-8 py-4 text-[9px] uppercase tracking-widest font-bold text-gray-400">Sizes & Stock</th>
-                                    <th class="px-8 py-4 text-[9px] uppercase tracking-widest font-bold text-gray-400">Status</th>
-                                </tr>
-                            </thead>
-                            <tbody id="spray-list">
-                                <tr><td colspan="3" class="p-12 text-center text-xs uppercase tracking-widest text-gray-400">Scanning Sprays...</td></tr>
-                            </tbody>
-                        </table>
+                    <div class="bg-white border border-red-50 shadow-sm overflow-hidden rounded-sm">
+                        <div class="max-h-80 overflow-y-auto custom-scrollbar">
+                            <table class="w-full text-left border-collapse">
+                                <thead class="sticky top-0 z-10">
+                                    <tr class="bg-red-50 border-b text-[9px] uppercase tracking-widest font-bold text-red-400">
+                                        <th class="px-8 py-4">Timestamp</th>
+                                        <th class="px-8 py-4">Product Unit</th>
+                                        <th class="px-8 py-4">Qty Out</th>
+                                        <th class="px-8 py-4 text-right">Revenue</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="sales-log" class="text-[11px]">
+                                    <tr><td colspan="4" class="p-12 text-center text-gray-400 uppercase tracking-widest">Awaiting sales data...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -165,8 +190,10 @@
                 const bodyMists = collection.filter(p => p.subCategory === 'Body Mist');
                 const bodySprays = collection.filter(p => p.subCategory === 'Body Spray');
 
-                renderTable('mist-list', bodyMists, "No Body Mists in inventory");
-                renderTable('spray-list', bodySprays, "No Body Sprays in inventory");
+                renderTable('mist-list', bodyMists, "No Body Mists found");
+                renderTable('spray-list', bodySprays, "No Body Sprays found");
+                
+                fetchSalesLog();
 
             } catch (err) {
                 console.error("Fetch Error:", err);
@@ -189,9 +216,9 @@
                 const totalStock = (product.variants || []).reduce((sum, v) => sum + (parseInt(v.stock) || 0), 0);
                 
                 const variantsHtml = (product.variants || []).map(v => `
-                    <div class="flex justify-between items-center mb-1 border-b border-gray-50 pb-1 last:border-0 w-32">
+                    <div class="flex justify-between items-center mb-1 border-b border-gray-50 pb-1 last:border-0 w-36">
                         <span class="text-[10px] font-bold text-gray-400 uppercase">${v.size}</span>
-                        <span class="text-[11px] ${v.stock < 5 ? 'text-red-500 font-bold' : 'text-gray-700'}">${v.stock} pcs</span>
+                        <span class="text-[11px] ${parseInt(v.stock) < 5 ? 'text-red-500 font-bold' : 'text-gray-700'}">${v.stock} pcs</span>
                     </div>
                 `).join('');
 
@@ -202,25 +229,82 @@
                                 <img src="${product.imageUrl || 'https://via.placeholder.com/40'}" class="w-12 h-12 object-cover mr-6 border border-gray-100 bg-gray-50 rounded-sm">
                                 <div>
                                     <p class="text-[11px] font-bold uppercase tracking-wider mb-1">${product.name}</p>
-                                    <p class="text-[9px] text-gray-400 uppercase tracking-widest">Total: ${totalStock} units</p>
+                                    <p class="text-[9px] text-gray-400 uppercase tracking-widest">Availability: ${totalStock} Units</p>
                                 </div>
                             </div>
                         </td>
                         <td class="px-8 py-6">
-                            <div class="inline-block">
-                                ${variantsHtml}
-                            </div>
+                            <div class="inline-block">${variantsHtml}</div>
                         </td>
                         <td class="px-8 py-6">
                             ${totalStock > 0 
-                                ? `<span class="text-[8px] font-bold px-3 py-1.5 uppercase tracking-widest text-green-600 bg-green-50 border border-green-100 rounded-sm">Active</span>`
-                                : `<span class="text-[8px] font-bold px-3 py-1.5 uppercase tracking-widest text-red-600 bg-red-50 border border-red-100 rounded-sm">Empty</span>`
+                                ? `<span class="text-[8px] font-bold px-3 py-1.5 uppercase tracking-widest text-brandMist bg-brandMistLight border border-blue-100 rounded-sm">In Stock</span>`
+                                : `<span class="text-[8px] font-bold px-3 py-1.5 uppercase tracking-widest text-red-600 bg-red-50 border border-red-100 rounded-sm">Out of Stock</span>`
                             }
                         </td>
                     </tr>
                 `;
                 container.innerHTML += row;
             });
+        }
+
+        async function fetchSalesLog() {
+            const token = localStorage.getItem('tmb_admin_token');
+            const logContainer = document.getElementById('sales-log');
+            
+            try {
+                const res = await fetch(`${API_URL}/admin/orders`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const orders = await res.json();
+                
+                let mistSales = [];
+                orders.forEach(order => {
+                    // Only track confirmed deductions
+                    if (['completed', 'paid', 'shipped'].includes(order.status)) {
+                        (order.items || []).forEach(item => {
+                            // Link to current category
+                            if (item.category === 'mist') {
+                                mistSales.push({
+                                    timestamp: order.createdAt,
+                                    name: item.name,
+                                    variant: item.variantName || item.size || 'Standard',
+                                    qty: item.quantity,
+                                    price: (item.price || 0) * (item.quantity || 0)
+                                });
+                            }
+                        });
+                    }
+                });
+
+                mistSales.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+                if (mistSales.length === 0) {
+                    logContainer.innerHTML = '<tr><td colspan="4" class="p-12 text-center text-gray-400 uppercase tracking-widest text-[9px]">No recent mist/spray sales</td></tr>';
+                    return;
+                }
+
+                logContainer.innerHTML = mistSales.map(sale => {
+                    const dt = new Date(sale.timestamp);
+                    return `
+                        <tr class="border-b hover:bg-gray-50 transition-colors">
+                            <td class="px-8 py-4">
+                                <span class="block font-bold text-gray-800">${dt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                                <span class="text-[9px] text-gray-400 uppercase">${dt.toLocaleDateString('en-GB')}</span>
+                            </td>
+                            <td class="px-8 py-4">
+                                <span class="block uppercase font-bold text-brandMist">${sale.name}</span>
+                                <span class="text-[9px] text-gray-400 uppercase">Variant: ${sale.variant}</span>
+                            </td>
+                            <td class="px-8 py-4 text-red-500 font-mono font-bold">-${sale.qty}</td>
+                            <td class="px-8 py-4 text-right font-bold">₦${sale.price.toLocaleString()}</td>
+                        </tr>
+                    `;
+                }).join('');
+
+            } catch (err) {
+                logContainer.innerHTML = '<tr><td colspan="4" class="p-12 text-center text-red-400 uppercase text-[9px]">Log Sync Error</td></tr>';
+            }
         }
 
         function logout() {

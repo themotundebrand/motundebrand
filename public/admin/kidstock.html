@@ -29,6 +29,9 @@
         .active-link { background-color: #5BA4B5; color: #fff !important; }
         .mobile-overlay { background: rgba(0,0,0,0.5); display: none; }
         .mobile-overlay.active { display: block; }
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #5BA4B5; }
     </style>
 </head>
 <body class="text-brandBlack">
@@ -40,7 +43,7 @@
         </button>
     </div>
 
-   <div class="flex">
+    <div class="flex">
         <div id="overlay" onclick="toggleSidebar()" class="mobile-overlay fixed inset-0 z-40 lg:hidden"></div>
         
         <aside id="sidebar" class="sidebar fixed lg:static inset-y-0 left-0 z-50 w-64 bg-white border-r transform -translate-x-full lg:translate-x-0 h-screen flex flex-col">
@@ -48,7 +51,7 @@
                 <a href="tmbdashboard.html"><h1 class="font-bold tracking-[0.3em] text-sm text-center hover:text-brandKidsDark transition">TMB SYSTEM</h1></a>
             </div>
 
-            <nav class="flex-1 px-4 py-8 space-y-1">
+            <nav class="flex-1 px-4 py-8 space-y-1 overflow-y-auto">
                 <p class="text-[9px] uppercase tracking-[0.2em] text-gray-400 px-4 mb-4 font-bold">Main</p>
                 <a href="tmbdashboard.html" class="nav-link flex items-center px-4 py-3 text-[10px] tracking-widest uppercase font-semibold transition-all">
                     <i class="fa-solid fa-gauge-high mr-3 w-5 text-gray-400"></i> Dashboard
@@ -70,8 +73,8 @@
 
                 <div class="pt-8">
                     <p class="text-[9px] uppercase tracking-[0.2em] text-gray-400 px-4 mb-4 font-bold">Business</p>
-                     <a href="customer-list.html" class="nav-link flex items-center px-4 py-3 text-[10px] tracking-widest uppercase font-semibold">
-                        <i class="fa-solid fa-bag-shopping mr-3 w-5 text-gray-400"></i> Membership
+                    <a href="customer-list.html" class="nav-link flex items-center px-4 py-3 text-[10px] tracking-widest uppercase font-semibold">
+                        <i class="fa-solid fa-users mr-3 w-5 text-gray-400"></i> Membership
                     </a>
                     <a href="orderstats.html" class="nav-link flex items-center px-4 py-3 text-[10px] tracking-widest uppercase font-semibold">
                         <i class="fa-solid fa-bag-shopping mr-3 w-5 text-gray-400"></i> Orders
@@ -94,26 +97,54 @@
                 <div class="flex justify-between items-center mb-12">
                     <div>
                         <h2 class="text-2xl font-light tracking-tight mb-1">Kids Collection</h2>
-                        <p class="text-[9px] uppercase tracking-[0.3em] text-brandKidsDark font-bold">Junior Stock Management</p>
+                        <p class="text-[9px] uppercase tracking-[0.3em] text-brandKidsDark font-bold">Live Junior Stock Management</p>
                     </div>
                     <button onclick="openAddModal()" class="bg-brandBlack text-white px-6 py-3 text-[10px] uppercase tracking-widest font-bold hover:bg-brandKidsDark transition">
                         Add New Scent
                     </button>
                 </div>
 
-                <div class="bg-white border shadow-sm overflow-hidden">
-                    <table class="w-full text-left border-collapse">
-                        <thead>
-                            <tr class="bg-gray-50 border-b">
-                                <th class="px-8 py-4 text-[9px] uppercase tracking-widest font-bold text-gray-400">Product</th>
-                                <th class="px-8 py-4 text-[9px] uppercase tracking-widest font-bold text-gray-400">Variant Sizes</th>
-                                <th class="px-8 py-4 text-[9px] uppercase tracking-widest font-bold text-gray-400">Stock Status</th>
-                            </tr>
-                        </thead>
-                        <tbody id="stock-list">
-                            <tr><td colspan="3" class="p-12 text-center text-xs uppercase tracking-widest text-gray-400">Syncing database...</td></tr>
-                        </tbody>
-                    </table>
+                <div class="mb-12">
+                    <h3 class="text-[10px] uppercase tracking-widest font-bold text-gray-400 mb-4 flex items-center">
+                        <i class="fa-solid fa-cubes mr-2 text-brandKidsDark"></i> Current Stock Inventory
+                    </h3>
+                    <div class="bg-white border shadow-sm overflow-hidden rounded-sm">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-gray-50 border-b text-[9px] uppercase tracking-widest font-bold text-gray-400">
+                                    <th class="px-8 py-4">Product Details</th>
+                                    <th class="px-8 py-4">Sizes & Quantities</th>
+                                    <th class="px-8 py-4">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="stock-list">
+                                <tr><td colspan="3" class="p-12 text-center text-xs uppercase tracking-widest text-gray-400">Syncing database...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div>
+                    <h3 class="text-[10px] uppercase tracking-widest font-bold text-gray-400 mb-4 flex items-center">
+                        <i class="fa-solid fa-receipt mr-2 text-brandKidsDark"></i> Actual Product Deductions (Purchases)
+                    </h3>
+                    <div class="bg-white border shadow-sm overflow-hidden rounded-sm">
+                        <div class="max-h-96 overflow-y-auto custom-scrollbar">
+                            <table class="w-full text-left border-collapse">
+                                <thead>
+                                    <tr class="bg-gray-50 border-b text-[9px] uppercase tracking-widest font-bold text-gray-400">
+                                        <th class="px-8 py-4">Exact Time & Date</th>
+                                        <th class="px-8 py-4">Scent Name</th>
+                                        <th class="px-8 py-4">Deducted</th>
+                                        <th class="px-8 py-4 text-right">Value</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="sales-log" class="text-[11px]">
+                                    <tr><td colspan="4" class="p-12 text-center text-gray-400 uppercase tracking-widest">Awaiting purchase data...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
             </div>
         </main>
@@ -131,57 +162,119 @@
             try {
                 const res = await fetch(`${API_URL}/products`);
                 const products = await res.json();
-                const kidsScents = products.filter(p => p.category === 'kids');
+                const kidsScents = products.filter(p => (p.category || '').toLowerCase() === 'kids');
                 
                 const listContainer = document.getElementById('stock-list');
                 listContainer.innerHTML = '';
 
                 if (kidsScents.length === 0) {
-                    listContainer.innerHTML = '<tr><td colspan="3" class="p-12 text-center text-xs text-gray-400 uppercase tracking-widest">No products found in Kids category</td></tr>';
+                    listContainer.innerHTML = '<tr><td colspan="3" class="p-12 text-center text-xs text-gray-400 uppercase tracking-widest">No Kids category products found</td></tr>';
+                } else {
+                    kidsScents.forEach(product => {
+                        const variantsHtml = (product.variants || []).map(v => `
+                            <div class="flex justify-between items-center mb-1 border-b border-gray-100 pb-1 last:border-0 w-36">
+                                <span class="text-[10px] font-bold text-gray-500 uppercase">${v.size}</span>
+                                <span class="text-[11px] font-medium ${parseInt(v.stock) < 5 ? 'text-red-500 font-bold' : 'text-gray-700'}">
+                                    ${v.stock} pcs
+                                </span>
+                            </div>
+                        `).join('');
+
+                        const totalStock = (product.variants || []).reduce((sum, v) => sum + (parseInt(v.stock) || 0), 0);
+
+                        const row = `
+                            <tr class="border-b hover:bg-gray-50 transition-colors">
+                                <td class="px-8 py-6">
+                                    <div class="flex items-center">
+                                        <img src="${product.imageUrl || 'https://via.placeholder.com/40'}" class="w-12 h-12 object-cover mr-6 border rounded-sm">
+                                        <div>
+                                            <p class="text-[11px] font-bold uppercase tracking-wider">${product.name}</p>
+                                            <p class="text-[9px] text-gray-400 uppercase tracking-widest mt-1">Stock Left: ${totalStock}</p>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-8 py-6">
+                                    <div class="inline-block">${variantsHtml}</div>
+                                </td>
+                                <td class="px-8 py-6">
+                                    ${totalStock > 0 
+                                        ? `<span class="bg-brandKidsLight text-brandKidsDark text-[8px] font-bold px-3 py-1.5 uppercase tracking-widest border border-teal-100 rounded-sm">Available</span>`
+                                        : `<span class="bg-red-50 text-red-600 text-[8px] font-bold px-3 py-1.5 uppercase tracking-widest border border-red-100 rounded-sm">Low/No Stock</span>`
+                                    }
+                                </td>
+                            </tr>
+                        `;
+                        listContainer.innerHTML += row;
+                    });
+                }
+                
+                fetchSalesLog();
+
+            } catch (err) {
+                console.error("Fetch Error:", err);
+                document.getElementById('stock-list').innerHTML = '<tr><td colspan="3" class="p-12 text-center text-xs text-red-400 uppercase tracking-widest">Database Sync Failed</td></tr>';
+            }
+        }
+
+        async function fetchSalesLog() {
+            const token = localStorage.getItem('tmb_admin_token');
+            const logContainer = document.getElementById('sales-log');
+            
+            try {
+                const res = await fetch(`${API_URL}/admin/orders`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const orders = await res.json();
+                
+                let kidsSales = [];
+                orders.forEach(order => {
+                    // Only display finalized deductions
+                    if (['completed', 'paid', 'shipped'].includes(order.status)) {
+                        (order.items || []).forEach(item => {
+                            kidsSales.push({
+                                timestamp: order.createdAt,
+                                name: item.name,
+                                variant: item.variantName || item.size || 'N/A',
+                                qty: item.quantity,
+                                price: (item.price || 0) * (item.quantity || 0)
+                            });
+                        });
+                    }
+                });
+
+                // Sort Newest to Oldest
+                kidsSales.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+                if (kidsSales.length === 0) {
+                    logContainer.innerHTML = '<tr><td colspan="4" class="p-12 text-center text-gray-400 uppercase tracking-widest text-[9px]">No recent deductions found</td></tr>';
                     return;
                 }
 
-                kidsScents.forEach(product => {
-                    const variantsHtml = (product.variants || []).map(v => `
-                        <div class="flex justify-between items-center mb-1 border-b border-gray-100 pb-1 last:border-0 w-32">
-                            <span class="text-[10px] font-bold text-gray-500 uppercase">${v.size}</span>
-                            <span class="text-[11px] font-medium ${v.stock < 5 ? 'text-red-500 font-bold' : 'text-gray-700'}">
-                                ${v.stock} pcs
-                            </span>
-                        </div>
-                    `).join('');
+                logContainer.innerHTML = kidsSales.map(sale => {
+                    const dt = new Date(sale.timestamp);
+                    const time = dt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+                    const date = dt.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
 
-                    const totalStock = (product.variants || []).reduce((sum, v) => sum + (parseInt(v.stock) || 0), 0);
-
-                    const row = `
+                    return `
                         <tr class="border-b hover:bg-gray-50 transition-colors">
-                            <td class="px-8 py-6">
-                                <div class="flex items-center">
-                                    <img src="${product.imageUrl || 'https://via.placeholder.com/40'}" class="w-12 h-12 object-cover mr-6 border rounded-sm">
-                                    <div>
-                                        <p class="text-[11px] font-bold uppercase tracking-wider">${product.name}</p>
-                                        <p class="text-[9px] text-gray-400 uppercase tracking-widest mt-1">Total units: ${totalStock}</p>
-                                    </div>
-                                </div>
+                            <td class="px-8 py-4">
+                                <span class="block font-bold text-gray-800">${time}</span>
+                                <span class="text-[9px] text-gray-400 uppercase">${date}</span>
                             </td>
-                            <td class="px-8 py-6">
-                                <div class="inline-block">
-                                    ${variantsHtml}
-                                </div>
+                            <td class="px-8 py-4">
+                                <span class="block uppercase font-bold text-brandKidsDark">${sale.name}</span>
+                                <span class="text-[9px] text-gray-400 uppercase">Size: ${sale.variant}</span>
                             </td>
-                            <td class="px-8 py-6">
-                                ${totalStock > 0 
-                                    ? `<span class="bg-green-50 text-green-600 text-[8px] font-bold px-3 py-1.5 uppercase tracking-widest border border-green-100 rounded-sm">In Stock</span>`
-                                    : `<span class="bg-red-50 text-red-600 text-[8px] font-bold px-3 py-1.5 uppercase tracking-widest border border-red-100 rounded-sm">Out of Stock</span>`
-                                }
+                            <td class="px-8 py-4">
+                                <span class="font-mono bg-red-50 text-red-600 px-2 py-0.5 rounded-sm font-bold">-${sale.qty}</span>
                             </td>
+                            <td class="px-8 py-4 text-right font-bold">₦${sale.price.toLocaleString()}</td>
                         </tr>
                     `;
-                    listContainer.innerHTML += row;
-                });
+                }).join('');
+
             } catch (err) {
-                console.error("Fetch Error:", err);
-                document.getElementById('stock-list').innerHTML = '<tr><td colspan="3" class="p-12 text-center text-xs text-red-400">Failed to connect to system.</td></tr>';
+                logContainer.innerHTML = '<tr><td colspan="4" class="p-12 text-center text-red-400 uppercase tracking-widest text-[9px]">Log Sync Failed</td></tr>';
             }
         }
 
