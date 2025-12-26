@@ -544,7 +544,6 @@ window.addEventListener('DOMContentLoaded', autoFillUserDetails);
         },
         totalPrice: subtotal + FLAT_SHIPPING_FEE,
         paymentMethod: method,
-        // The backend uses these top-level fields for fast lookups
         email: email.toLowerCase() 
     };
 
@@ -560,10 +559,17 @@ window.addEventListener('DOMContentLoaded', autoFillUserDetails);
         });
 
         if (response.ok) {
-            showAlert("Order Success", "Your order has been placed. We will contact you shortly via WhatsApp.");
+            const result = await response.json(); // Backend should return { orderId: "..." }
+            
+            // Clear local cart storage
             localStorage.removeItem('tmb_cart');
             cart = [];
-            renderCart();
+            
+            // Redirect to order confirmation page with the ID
+            // If the backend doesn't send an ID, it will fall back to an empty string
+            const orderId = result.orderId || result._id || '';
+            window.location.href = `order.html?id=${orderId}`;
+            
         } else {
             const errorData = await response.json();
             showAlert("Order Failed", errorData.error || "There was an issue processing your order.");
@@ -572,8 +578,11 @@ window.addEventListener('DOMContentLoaded', autoFillUserDetails);
         console.error("Checkout Error:", error);
         showAlert("Error", "Could not connect to the server. Please try again later.");
     } finally {
-        checkoutBtn.innerText = originalText;
-        checkoutBtn.disabled = false;
+        // Only reset button if redirect didn't happen
+        if (checkoutBtn) {
+            checkoutBtn.innerText = originalText;
+            checkoutBtn.disabled = false;
+        }
     }
 }
 

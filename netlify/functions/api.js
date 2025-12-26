@@ -251,26 +251,15 @@ router.get('/products/:id/stock', async (req, res) => {
     } catch (e) { res.status(500).json({ error: "Stock fetch failed" }); }
 });
 
-// --- UPDATED ORDER HANDLING (Supports Guest & Members) ---
+// --- UPDATED ORDER HANDLING (Supports Guest & Members + Email Notifications) ---
 router.post('/orders', async (req, res) => {
     try {
         const db = await getDb();
-        const { 
-            items, 
-            customerDetails, // { name, email, phone, address, city, etc }
-            totalPrice, 
-            paymentMethod,
-            userId // Optional: will be present if a member is logged in
-        } = req.body; 
+        const { items, customerDetails, totalPrice, paymentMethod, userId } = req.body; 
 
         if (!items || items.length === 0) return res.status(400).json({ error: "Empty cart" });
         
-        // Validation for Guest: Ensure they provided contact info
-        if (!customerDetails.email || !customerDetails.name || !customerDetails.address) {
-            return res.status(400).json({ error: "Missing shipping or contact details" });
-        }
-
-        // 1. Atomic stock decrement (same as before)
+        // 1. Atomic stock decrement logic
         const updateResults = await Promise.all(items.map(async (item) => {
             const qty = Math.abs(parseInt(item.quantity));
             const result = await db.collection("products").updateOne(
@@ -285,14 +274,12 @@ router.post('/orders', async (req, res) => {
         }));
 
         const failed = updateResults.filter(r => !r.success);
-        if (failed.length > 0) {
-            return res.status(400).json({ error: "Some items are now out of stock", failed });
-        }
+        if (failed.length > 0) return res.status(400).json({ error: "Stock error", failed });
 
-      // 2. Create the Order Object
+        // 2. Create the Order
         const finalOrder = {
             userId: userId ? new ObjectId(userId) : "GUEST", 
-            email: customerDetails.email.toLowerCase(), // This makes order history lookups fast
+            email: customerDetails.email.toLowerCase(),
             customerDetails,
             items,
             totalPrice,
@@ -303,10 +290,63 @@ router.post('/orders', async (req, res) => {
         };
 
         const result = await db.collection("orders").insertOne(finalOrder);
+        const orderId = result.insertedId;
+        const shortId = orderId.toString().slice(-6).toUpperCase();
+
+        // 3. Prepare Order Summary for Emails
+        const orderItemsHtml = items.map(item => `
+            <tr>
+                <td style="padding: 8px 0; border-bottom: 1px solid #eee; font-size: 12px;">
+                    ${item.name} (${item.size}) x ${item.quantity}
+                </td>
+                <td style="padding: 8px 0; border-bottom: 1px solid #eee; font-size: 12px; text-align: right;">
+                    ₦${(item.price * item.quantity).toLocaleString()}
+                </td>
+            </tr>
+        `).join('');
+
+        // --- EMAIL TO CUSTOMER ---
+        const customerMailOptions = {
+            from: `"The Motunde Brand" <${process.env.EMAIL_USER}>`,
+            to: customerDetails.email,
+            subject: `Order Received | #${shortId}`,
+            html: `<div style="font-family: sans-serif; max-width: 600px; margin: auto; border: 1px solid #eee; padding: 20px;">
+                <h2 style="text-align: center; letter-spacing: 2px;">THE MOTUNDE BRAND</h2>
+                <p>Hello ${customerDetails.name}, your order <b>#${shortId}</b> has been received and is being processed.</p>
+                <table style="width: 100%;">${orderItemsHtml}</table>
+                <p><b>Total: ₦${totalPrice.toLocaleString()}</b></p>
+                <p style="font-size: 12px; color: #666;">Our concierge will contact you on WhatsApp (${customerDetails.whatsapp}) shortly.</p>
+            </div>`
+        };
+
+        // --- EMAIL TO ADMIN ---
+        const adminMailOptions = {
+            from: `"Order Alert" <${process.env.EMAIL_USER}>`,
+            to: process.env.EMAIL_USER, // Your admin email
+            subject: `🚨 NEW ORDER: #${shortId} (${customerDetails.name})`,
+            html: `<div style="font-family: sans-serif; max-width: 600px; margin: auto; border: 2px solid #000; padding: 20px;">
+                <h2 style="background: #000; color: #fff; padding: 10px; text-align: center;">NEW ORDER RECEIVED</h2>
+                <p><b>Customer:</b> ${customerDetails.name} (${userId ? 'Member' : 'Guest'})</p>
+                <p><b>Email:</b> ${customerDetails.email}</p>
+                <p><b>WhatsApp:</b> ${customerDetails.whatsapp}</p>
+                <p><b>Phone:</b> ${customerDetails.phone}</p>
+                <hr>
+                <table style="width: 100%;">${orderItemsHtml}</table>
+                <p><b>Total Revenue: ₦${totalPrice.toLocaleString()}</b></p>
+                <p><b>Shipping Address:</b> ${customerDetails.address}, ${customerDetails.city}, ${customerDetails.state}</p>
+                <a href="https://wa.me/${customerDetails.whatsapp.replace(/\D/g,'')}" style="display: block; background: #25D366; color: white; text-align: center; padding: 10px; text-decoration: none; font-weight: bold; margin-top: 20px;">CHAT WITH CUSTOMER ON WHATSAPP</a>
+            </div>`
+        };
+
+        // Send both emails
+        await Promise.all([
+            transporter.sendMail(customerMailOptions),
+            transporter.sendMail(adminMailOptions)
+        ]).catch(err => console.error("Notification Error:", err));
 
         res.status(201).json({ 
             message: "Order successful", 
-            orderId: result.insertedId,
+            orderId: orderId,
             type: userId ? "Member Order" : "Guest Order"
         });
 
