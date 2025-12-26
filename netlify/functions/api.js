@@ -251,15 +251,39 @@ router.get('/products/:id/stock', async (req, res) => {
     } catch (e) { res.status(500).json({ error: "Stock fetch failed" }); }
 });
 
-// --- UPDATED ORDER HANDLING (Supports Guest & Members + Email Notifications) ---
 router.post('/orders', async (req, res) => {
     try {
         const db = await getDb();
-        const { items, customerDetails, totalPrice, paymentMethod, userId } = req.body; 
+        const { 
+            items, // Now expected to include 'image' URL from the frontend
+            customerDetails, 
+            totalPrice, 
+            paymentMethod, 
+            receiptBase64, 
+            receiptFileName 
+        } = req.body; 
 
+        // 1. Identification Logic
+        const authHeader = req.headers.authorization;
+        let finalUserId = "GUEST";
+        let userStatusLabel = "Guest";
+
+        if (authHeader && authHeader.startsWith('Bearer ')) {
+            const token = authHeader.split(' ')[1];
+            try {
+                const decoded = jwt.verify(token, process.env.JWT_SECRET);
+                finalUserId = new ObjectId(decoded.userId); 
+                userStatusLabel = "Registered Member";
+            } catch (err) {
+                console.log("Token invalid, processing as Guest.");
+            }
+        }
+
+        // 2. Validation
         if (!items || items.length === 0) return res.status(400).json({ error: "Empty cart" });
-        
-        // 1. Atomic stock decrement logic
+        if (!customerDetails?.email) return res.status(400).json({ error: "Email is required." });
+
+        // 3. Atomic stock decrement
         const updateResults = await Promise.all(items.map(async (item) => {
             const qty = Math.abs(parseInt(item.quantity));
             const result = await db.collection("products").updateOne(
@@ -276,16 +300,16 @@ router.post('/orders', async (req, res) => {
         const failed = updateResults.filter(r => !r.success);
         if (failed.length > 0) return res.status(400).json({ error: "Stock error", failed });
 
-        // 2. Create the Order
+        // 4. Create Order Object
         const finalOrder = {
-            userId: userId ? new ObjectId(userId) : "GUEST", 
+            userId: finalUserId,
             email: customerDetails.email.toLowerCase(),
             customerDetails,
-            items,
+            items, // Contains productId, name, size, quantity, price, AND image
             totalPrice,
-            paymentMethod: paymentMethod || 'bank_transfer',
+            paymentMethod,
             status: 'pending',
-            isGuest: !userId,
+            isGuest: finalUserId === "GUEST",
             createdAt: new Date()
         };
 
@@ -293,65 +317,98 @@ router.post('/orders', async (req, res) => {
         const orderId = result.insertedId;
         const shortId = orderId.toString().slice(-6).toUpperCase();
 
-        // 3. Prepare Order Summary for Emails
+        // 5. Prepare Email HTML with Images
         const orderItemsHtml = items.map(item => `
             <tr>
-                <td style="padding: 8px 0; border-bottom: 1px solid #eee; font-size: 12px;">
-                    ${item.name} (${item.size}) x ${item.quantity}
+                <td style="padding: 10px 0; border-bottom: 1px solid #eee;">
+                    <img src="${item.image || 'https://i.imgur.com/CVKXV7R.png'}" width="50" height="70" style="object-fit: cover; border-radius: 4px; display: block; float: left; margin-right: 15px;" />
+                    <div style="float: left;">
+                        <p style="margin: 0; font-size: 13px; font-weight: bold; text-transform: uppercase;">${item.name}</p>
+                        <p style="margin: 0; font-size: 11px; color: #666;">SIZE: ${item.size} | QTY: ${item.quantity}</p>
+                    </div>
                 </td>
-                <td style="padding: 8px 0; border-bottom: 1px solid #eee; font-size: 12px; text-align: right;">
+                <td style="padding: 10px 0; border-bottom: 1px solid #eee; font-size: 13px; text-align: right; vertical-align: middle;">
                     ₦${(item.price * item.quantity).toLocaleString()}
                 </td>
             </tr>
         `).join('');
 
-        // --- EMAIL TO CUSTOMER ---
-        const customerMailOptions = {
+        const emailPromises = [];
+
+        // --- CUSTOMER EMAIL ---
+        emailPromises.push(transporter.sendMail({
             from: `"The Motunde Brand" <${process.env.EMAIL_USER}>`,
             to: customerDetails.email,
-            subject: `Order Received | #${shortId}`,
-            html: `<div style="font-family: sans-serif; max-width: 600px; margin: auto; border: 1px solid #eee; padding: 20px;">
-                <h2 style="text-align: center; letter-spacing: 2px;">THE MOTUNDE BRAND</h2>
-                <p>Hello ${customerDetails.name}, your order <b>#${shortId}</b> has been received and is being processed.</p>
-                <table style="width: 100%;">${orderItemsHtml}</table>
-                <p><b>Total: ₦${totalPrice.toLocaleString()}</b></p>
-                <p style="font-size: 12px; color: #666;">Our concierge will contact you on WhatsApp (${customerDetails.whatsapp}) shortly.</p>
-            </div>`
-        };
+            subject: `Order Confirmation | #${shortId}`,
+            html: `
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; border: 1px solid #f0f0f0; padding: 40px; color: #000;">
+                    <center><h1 style="letter-spacing: 5px; font-size: 20px;">THE MOTUNDE BRAND</h1></center>
+                    <p style="font-size: 14px;">Hello ${customerDetails.name},</p>
+                    <p style="font-size: 14px; color: #555;">We have received your order. Our team is currently verifying your payment. Here is your summary:</p>
+                    <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
+                        ${orderItemsHtml}
+                    </table>
+                    <div style="text-align: right; font-weight: bold; font-size: 16px;">
+                        TOTAL PAID: ₦${totalPrice.toLocaleString()}
+                    </div>
+                    <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
+                    <p style="font-size: 12px; color: #888; text-align: center;">Order ID: ${orderId} | Status: ${userStatusLabel}</p>
+                </div>`
+        }));
 
-        // --- EMAIL TO ADMIN ---
-        const adminMailOptions = {
-            from: `"Order Alert" <${process.env.EMAIL_USER}>`,
-            to: process.env.EMAIL_USER, // Your admin email
-            subject: `🚨 NEW ORDER: #${shortId} (${customerDetails.name})`,
-            html: `<div style="font-family: sans-serif; max-width: 600px; margin: auto; border: 2px solid #000; padding: 20px;">
-                <h2 style="background: #000; color: #fff; padding: 10px; text-align: center;">NEW ORDER RECEIVED</h2>
-                <p><b>Customer:</b> ${customerDetails.name} (${userId ? 'Member' : 'Guest'})</p>
-                <p><b>Email:</b> ${customerDetails.email}</p>
-                <p><b>WhatsApp:</b> ${customerDetails.whatsapp}</p>
-                <p><b>Phone:</b> ${customerDetails.phone}</p>
-                <hr>
-                <table style="width: 100%;">${orderItemsHtml}</table>
-                <p><b>Total Revenue: ₦${totalPrice.toLocaleString()}</b></p>
-                <p><b>Shipping Address:</b> ${customerDetails.address}, ${customerDetails.city}, ${customerDetails.state}</p>
-                <a href="https://wa.me/${customerDetails.whatsapp.replace(/\D/g,'')}" style="display: block; background: #25D366; color: white; text-align: center; padding: 10px; text-decoration: none; font-weight: bold; margin-top: 20px;">CHAT WITH CUSTOMER ON WHATSAPP</a>
-            </div>`
-        };
+        // --- ADMIN EMAIL ---
+        const adminAttachments = [];
+        if (receiptBase64) {
+            adminAttachments.push({
+                filename: receiptFileName || 'receipt.jpg',
+                content: receiptBase64.split("base64,")[1],
+                encoding: 'base64'
+            });
+        }
 
-        // Send both emails
-        await Promise.all([
-            transporter.sendMail(customerMailOptions),
-            transporter.sendMail(adminMailOptions)
-        ]).catch(err => console.error("Notification Error:", err));
+        emailPromises.push(transporter.sendMail({
+            from: `"TMB Orders" <${process.env.EMAIL_USER}>`,
+            to: process.env.EMAIL_USER,
+            subject: `🚨 NEW ORDER #${shortId} - ${userStatusLabel}`,
+            attachments: adminAttachments,
+            html: `
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; border: 2px solid #000; padding: 20px;">
+                    <h2 style="background: #000; color: #fff; padding: 15px; text-align: center; margin: 0;">NEW ${userStatusLabel.toUpperCase()} ORDER</h2>
+                    <div style="padding: 20px; background: #fafafa;">
+                        <p><strong>Customer:</strong> ${customerDetails.name}</p>
+                        <p><strong>Phone/WhatsApp:</strong> ${customerDetails.whatsapp}</p>
+                        <p><strong>Address:</strong> ${customerDetails.address}, ${customerDetails.city}, ${customerDetails.state}</p>
+                    </div>
+                    <table style="width: 100%; margin-top: 20px;">
+                        ${orderItemsHtml}
+                    </table>
+                    <h3 style="text-align: right;">Revenue: ₦${totalPrice.toLocaleString()}</h3>
+                    <div style="background: #fff5f5; padding: 15px; border: 1px solid #feb2b2; margin-top: 15px;">
+                        <strong>Payment:</strong> ${paymentMethod.toUpperCase()}<br>
+                        <strong>Receipt:</strong> ${receiptBase64 ? "See attachment" : "NO RECEIPT UPLOADED"}
+                    </div>
+                    <a href="https://wa.me/${customerDetails.whatsapp.replace(/\D/g,'')}" style="display: block; background: #25D366; color: white; text-align: center; padding: 15px; text-decoration: none; margin-top: 20px; font-weight: bold; border-radius: 5px;">CHAT WITH CUSTOMER</a>
+                </div>`
+        }));
 
-        res.status(201).json({ 
-            message: "Order successful", 
-            orderId: orderId,
-            type: userId ? "Member Order" : "Guest Order"
-        });
+        Promise.all(emailPromises).catch(err => console.error("Email Error:", err));
 
-    } catch (e) { 
-        res.status(500).json({ error: "Order processing failed: " + e.message }); 
+        res.status(201).json({ orderId, status: userStatusLabel });
+
+    } catch (e) {
+        console.error("Order Error:", e);
+        res.status(500).json({ error: e.message });
+    }
+});
+
+router.get('/orders/:id', async (req, res) => {
+    try {
+        const db = await getDb();
+        const order = await db.collection("orders").findOne({ _id: new ObjectId(req.params.id) });
+        if (!order) return res.status(404).json({ error: "Order not found" });
+        res.json(order);
+    } catch (e) {
+        res.status(500).json({ error: "Error fetching order" });
     }
 });
 

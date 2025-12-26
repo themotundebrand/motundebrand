@@ -54,12 +54,22 @@
             
             <div class="inline-block bg-gray-50 px-6 py-2 rounded-full mb-8">
                 <p class="text-[9px] uppercase tracking-[0.3em] text-gray-400">Order Reference</p>
-                <p id="display-order-id" class="text-sm font-black tracking-widest text-brandBlack">#TMB-Loading...</p>
+                <p id="display-order-id" class="text-sm font-black tracking-widest text-brandBlack">#TMB-LOADING</p>
             </div>
 
             <p class="text-[10px] md:text-[12px] text-gray-500 uppercase tracking-[0.2em] mb-12 leading-loose max-w-lg mx-auto">
-                Thank you for choosing Motunde. An email confirmation has been sent to your inbox. Please keep your order number for tracking.
+                <span id="user-greeting">Thank you for choosing Motunde.</span> An email confirmation has been sent to your inbox.
             </p>
+
+            <div id="order-summary-container" class="hidden mb-12 text-left bg-gray-50 p-6 border border-gray-100">
+                <h3 class="text-[10px] font-black uppercase tracking-widest mb-6 border-b pb-2">Your Pieces</h3>
+                <div id="items-list" class="space-y-4">
+                    </div>
+                <div class="mt-6 pt-4 border-t border-gray-200 flex justify-between items-center">
+                    <p class="text-[10px] font-bold uppercase tracking-widest">Total Paid</p>
+                    <p id="final-total" class="font-black text-lg">₦0</p>
+                </div>
+            </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8 text-left border-y border-gray-50 py-10 mb-10">
                 <div class="space-y-6">
@@ -70,8 +80,8 @@
                             <svg class="w-4 h-4 text-brandBlack" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" stroke-width="1.5"></path></svg>
                         </div>
                         <div>
-                            <p class="text-[10px] font-bold uppercase tracking-widest">Email Notification</p>
-                            <p class="text-[9px] text-gray-500 uppercase tracking-widest mt-1">A summary of your order and payment status has been sent to your email address.</p>
+                            <p class="text-[10px] font-bold uppercase tracking-widest">Verification</p>
+                            <p class="text-[9px] text-gray-500 uppercase tracking-widest mt-1">Our team is currently verifying your payment receipt against the order details.</p>
                         </div>
                     </div>
 
@@ -80,17 +90,14 @@
                             <svg class="w-4 h-4 text-brandBlack" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" stroke-width="1.5"></path></svg>
                         </div>
                         <div>
-                            <p class="text-[10px] font-bold uppercase tracking-widest">WhatsApp Concierge</p>
-                            <p class="text-[9px] text-gray-500 uppercase tracking-widest mt-1">Our team will reach out via WhatsApp once your payment receipt is verified.</p>
+                            <p class="text-[10px] font-bold uppercase tracking-widest">WhatsApp Update</p>
+                            <p class="text-[9px] text-gray-500 uppercase tracking-widest mt-1">Expect a message from our concierge once processing is complete.</p>
                         </div>
                     </div>
                 </div>
 
                 <div class="bg-brandBlack p-8 flex flex-col justify-center text-center md:text-left">
                     <h4 class="text-brandPink text-[11px] font-black uppercase tracking-widest mb-4">Concierge Support</h4>
-                    <p class="text-white/60 text-[9px] uppercase tracking-widest leading-relaxed mb-6">
-                        Need to change shipping details or have a question? Our team is available 24/7.
-                    </p>
                     <a href="https://wa.me/2349025291629" class="bg-brandPink text-brandBlack text-center py-3 text-[9px] font-bold uppercase tracking-widest hover:bg-white transition-all">
                         Open WhatsApp Chat
                     </a>
@@ -101,32 +108,74 @@
                 <a href="shop.html" class="px-10 py-4 border border-brandBlack text-[10px] font-bold uppercase tracking-[0.3em] hover:bg-brandBlack hover:text-white transition-all">
                     Back to Shop
                 </a>
-                <a href="membership.html" class="px-10 py-4 bg-brandBlack text-brandPink text-[10px] font-bold uppercase tracking-[0.3em] hover:bg-gray-900 transition-all">
-                    My Account
+                <a id="account-btn" href="account.html" class="px-10 py-4 bg-brandBlack text-brandPink text-[10px] font-bold uppercase tracking-[0.3em] hover:bg-gray-900 transition-all">
+                    Join Membership
                 </a>
             </div>
         </div>
-
-        <p class="text-center mt-12 text-[8px] uppercase tracking-[0.4em] text-gray-400">
-            © 2026 The Motunde Brand. All Rights Reserved.
-        </p>
     </main>
 
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            // 1. Try to get the Order ID from the URL (e.g., order.html?id=12345)
+        document.addEventListener('DOMContentLoaded', async () => {
             const urlParams = new URLSearchParams(window.location.search);
             const orderId = urlParams.get('id');
-            
-            if (orderId) {
-                document.getElementById('display-order-id').innerText = `#TMB-${orderId.slice(-6).toUpperCase()}`;
+            const orderDisplay = document.getElementById('display-order-id');
+            const itemsList = document.getElementById('items-list');
+            const summaryContainer = document.getElementById('order-summary-container');
+            const finalTotal = document.getElementById('final-total');
+
+            // 1. Get Guest/Member Info
+            const token = localStorage.getItem('motunde_token');
+            const userData = localStorage.getItem('motunde_user');
+            const greetingEl = document.getElementById('user-greeting');
+            const accountBtn = document.getElementById('account-btn');
+
+            if (token && userData) {
+                const user = JSON.parse(userData);
+                greetingEl.innerText = `Thank you for your loyalty, ${user.name.split(' ')[0]}.`;
+                accountBtn.innerText = "View My Orders";
+                accountBtn.href = "membership.html";
             } else {
-                // Fallback: Generate a temporary random one if ID isn't passed
-                const randomId = Math.random().toString(36).substr(2, 6).toUpperCase();
-                document.getElementById('display-order-id').innerText = `#TMB-${randomId}`;
+                greetingEl.innerText = "Thank you for choosing Motunde.";
+                accountBtn.innerText = "Create Account";
+                accountBtn.href = "account.html";
             }
 
-            // 2. Clear Cart
+            // 2. Fetch Order Details to display items
+            if (orderId && orderId !== 'undefined') {
+                orderDisplay.innerText = `#TMB-${orderId.slice(-6).toUpperCase()}`;
+
+                try {
+                    // Note: You need a GET /api/orders/:id route on your backend
+                    const response = await fetch(`/api/orders/${orderId}`);
+                    if (response.ok) {
+                        const order = await response.json();
+                        
+                        summaryContainer.classList.remove('hidden');
+                        finalTotal.innerText = `₦${order.totalPrice.toLocaleString()}`;
+
+                        itemsList.innerHTML = order.items.map(item => `
+                            <div class="flex items-center gap-4">
+                                <div class="w-12 h-16 bg-gray-200 flex-shrink-0">
+                                    <img src="${item.image || 'https://i.imgur.com/CVKXV7R.png'}" class="w-full h-full object-cover">
+                                </div>
+                                <div class="flex-1">
+                                    <p class="text-[10px] font-bold uppercase tracking-widest">${item.name}</p>
+                                    <p class="text-[9px] text-gray-400 uppercase">Size: ${item.size} | Qty: ${item.quantity}</p>
+                                </div>
+                                <p class="text-[10px] font-bold">₦${(item.price * item.quantity).toLocaleString()}</p>
+                            </div>
+                        `).join('');
+                    }
+                } catch (err) {
+                    console.log("Could not load summary details.");
+                }
+            } else {
+                const randomId = Math.random().toString(36).substr(2, 6).toUpperCase();
+                orderDisplay.innerText = `#TMB-${randomId}`;
+            }
+
+            // 3. Final Step: Clear the cart
             localStorage.removeItem('tmb_cart');
         });
     </script>
