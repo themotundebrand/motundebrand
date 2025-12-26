@@ -64,7 +64,6 @@ const authenticateAdmin = (req, res, next) => {
         next();
     });
 };
-
 // --- DASHBOARD ANALYTICS ---
 router.get('/admin/analytics/stock-overview', authenticateAdmin, async (req, res) => {
     try {
@@ -77,17 +76,37 @@ router.get('/admin/analytics/stock-overview', authenticateAdmin, async (req, res
         let mistTotalStock = 0;
 
         products.forEach(product => {
-            const totalProductUnits = (product.variants || []).reduce((sum, v) => sum + (parseInt(v.stock) || 0), 0);
+            // Ensure we calculate the sum of all variant stocks for this product
+            // We use parseInt to handle any legacy string data remaining in the DB
+            const totalProductUnits = (product.variants || []).reduce((sum, v) => {
+                const stockValue = parseInt(v.stock) || 0;
+                return sum + stockValue;
+            }, 0);
+
             const category = (product.category || "").toLowerCase().trim();
             
-            if (category === 'women') womenTotalStock += totalProductUnits;
-            else if (category === 'men') menTotalStock += totalProductUnits;
-            else if (category === 'kids') kidTotalStock += totalProductUnits;
-            else if (category === 'mist') mistTotalStock += totalProductUnits;
+            // Refined matching to ensure 'mists & sprays' or similar variations are caught
+            if (category === 'women') {
+                womenTotalStock += totalProductUnits;
+            } else if (category === 'men') {
+                menTotalStock += totalProductUnits;
+            } else if (category === 'kids' || category === 'kid') {
+                kidTotalStock += totalProductUnits;
+            } else if (category === 'mist' || category === 'mists' || category.includes('spray')) {
+                mistTotalStock += totalProductUnits;
+            }
         });
 
-        res.json({ womenTotalStock, menTotalStock, kidTotalStock, mistTotalStock });
+        console.log(`Analytics Sync: W:${womenTotalStock} M:${menTotalStock} K:${kidTotalStock} Mist:${mistTotalStock}`);
+        
+        res.json({ 
+            womenTotalStock, 
+            menTotalStock, 
+            kidTotalStock, 
+            mistTotalStock 
+        });
     } catch (e) {
+        console.error("Analytics Error:", e);
         res.status(500).json({ error: "Failed to calculate stock totals" });
     }
 });

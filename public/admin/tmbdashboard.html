@@ -160,16 +160,6 @@
 <script>
     const API_URL = '/api'; 
 
-    function toggleSidebar() {
-        document.getElementById('sidebar').classList.toggle('-translate-x-full');
-        document.getElementById('overlay').classList.toggle('active');
-    }
-
-    function logout() {
-        localStorage.removeItem('tmb_admin_token');
-        window.location.href = 'tmbadmin-login.html';
-    }
-
     async function fetchDashboardStats() {
         const token = localStorage.getItem('tmb_admin_token');
         if (!token) {
@@ -180,17 +170,19 @@
         const headers = { 'Authorization': `Bearer ${token}` };
 
         try {
-            // 1. Fetch Analytics Overview
+            // 1. Fetch Analytics Overview - This should return the sum of all variant stocks
             const analyticsRes = await fetch(`${API_URL}/admin/analytics/stock-overview`, { headers });
             
-           if (analyticsRes.ok) {
-    const stats = await analyticsRes.json();
-    // Use the exact property names from your backend response
-    document.getElementById('women-count').innerText = stats.womenTotalStock || 0;
-    document.getElementById('men-count').innerText = stats.menTotalStock || 0;
-    document.getElementById('mist-count').innerText = stats.mistTotalStock || 0; 
-    document.getElementById('kids-count').innerText = stats.kidTotalStock || 0;
-}
+            if (analyticsRes.ok) {
+                const stats = await analyticsRes.json();
+                
+                // These IDs must match the spans in your HTML dashboard cards
+                // The values now represent current remaining stock units
+                document.getElementById('women-count').innerText = stats.womenTotalStock || 0;
+                document.getElementById('men-count').innerText = stats.menTotalStock || 0;
+                document.getElementById('mist-count').innerText = stats.mistTotalStock || 0; 
+                document.getElementById('kids-count').innerText = stats.kidTotalStock || 0;
+            }
 
             // 2. Fetch User Count
             const uRes = await fetch(`${API_URL}/admin/users/count`, { headers });
@@ -200,11 +192,12 @@
             }
 
             // 3. Fetch Orders for Revenue & Pending status
-            // Note: Ensure you have a GET /admin/orders route in your backend!
             const oRes = await fetch(`${API_URL}/admin/orders`, { headers });
             if (oRes.ok) {
                 const orders = await oRes.json();
                 const pending = orders.filter(o => o.status === 'pending').length;
+                
+                // Revenue only includes money from verified orders
                 const totalRevenue = orders
                     .filter(o => ['completed', 'paid', 'shipped'].includes(o.status))
                     .reduce((sum, o) => sum + (parseFloat(o.totalPrice) || 0), 0);
@@ -218,6 +211,16 @@
         } catch (err) {
             console.error("Dashboard Sync Error:", err);
         }
+    }
+
+    // Standard housekeeping functions
+    function toggleSidebar() {
+        document.getElementById('sidebar').classList.toggle('-translate-x-full');
+    }
+
+    function logout() {
+        localStorage.removeItem('tmb_admin_token');
+        window.location.href = 'tmbadmin-login.html';
     }
 
     window.onload = () => {
