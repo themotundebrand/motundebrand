@@ -406,20 +406,82 @@ router.post('/orders', async (req, res) => {
 
         const emailPromises = [];
 
-        // Customer Email
+    // --- CUSTOMER EMAIL ---
         emailPromises.push(transporter.sendMail({
             from: `"The Motunde Brand" <${process.env.EMAIL_USER}>`,
             to: customerDetails.email,
             subject: `Order Confirmation | #${shortId}`,
-            html: `<div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; border: 1px solid #f0f0f0; padding: 40px; color: #000;">
-                    <center><h1 style="letter-spacing: 5px; font-size: 20px;">THE MOTUNDE BRAND</h1></center>
-                    <p>Hello ${customerDetails.name}, summary of your order:</p>
-                    <table style="width: 100%; border-collapse: collapse;">${orderItemsHtml}</table>
-                    <p><strong>TOTAL: ₦${totalPrice.toLocaleString()}</strong></p>
-                   </div>`
+            html: `
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <style>
+                        @media only screen and (max-width: 600px) {
+                            .container { width: 100% !important; padding: 20px !important; }
+                            .col { display: block !important; width: 100% !important; }
+                        }
+                    </style>
+                </head>
+                <body style="margin: 0; padding: 0; background-color: #ffffff; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #000000;">
+                    <div class="container" style="max-width: 600px; margin: auto; padding: 40px; border: 1px solid #f4f4f4;">
+                        
+                        <center>
+                            <img src="https://i.imgur.com/CVKXV7R.png" alt="The Motunde Brand" width="70" style="display: block; margin-bottom: 20px;">
+                            <h1 style="text-transform: uppercase; letter-spacing: 6px; font-size: 18px; font-weight: 300; margin: 0;">The Motunde Brand</h1>
+                            <div style="width: 40px; height: 1px; background: #000; margin: 20px auto;"></div>
+                        </center>
+
+                        <p style="font-size: 14px; line-height: 1.6; margin-top: 30px;">
+                            Hello ${customerDetails.name},
+                        </p>
+                        <p style="font-size: 14px; line-height: 1.6; color: #555;">
+                            Thank you for your order. We have received your payment details and our team is currently verifying the transaction. You will receive another update once your order has been processed for shipping.
+                        </p>
+
+                        <h3 style="text-transform: uppercase; font-size: 11px; letter-spacing: 2px; border-bottom: 1px solid #000; padding-bottom: 10px; margin-top: 40px;">
+                            Order Summary #${shortId}
+                        </h3>
+
+                        <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top: 10px;">
+                            ${orderItemsHtml}
+                        </table>
+
+                        <table width="100%" style="margin-top: 20px; border-top: 1px solid #f0f0f0; padding-top: 20px;">
+                            <tr>
+                                <td style="font-size: 13px; color: #888;">Shipping & Handling</td>
+                                <td align="right" style="font-size: 13px; color: #888;">₦5,000</td>
+                            </tr>
+                            <tr>
+                                <td style="font-size: 15px; font-weight: bold; padding-top: 10px;">Amount Paid</td>
+                                <td align="right" style="font-size: 16px; font-weight: bold; padding-top: 10px;">₦${totalPrice.toLocaleString()}</td>
+                            </tr>
+                        </table>
+
+                        <div style="margin-top: 40px; background-color: #f9f9f9; padding: 20px;">
+                            <h4 style="text-transform: uppercase; font-size: 10px; letter-spacing: 1px; margin: 0 0 10px 0;">Shipping To:</h4>
+                            <p style="font-size: 12px; margin: 0; color: #444; line-height: 1.5;">
+                                ${customerDetails.address}<br>
+                                ${customerDetails.city}, ${customerDetails.state}<br>
+                                ${customerDetails.phone}
+                            </p>
+                        </div>
+
+                        <div style="margin-top: 50px; text-align: center; border-top: 1px solid #f4f4f4; padding-top: 30px;">
+                            <p style="font-size: 12px; color: #888; margin-bottom: 20px;">
+                                If you have any questions, simply reply to this email or contact us via WhatsApp.
+                            </p>
+                            <div style="font-size: 10px; text-transform: uppercase; letter-spacing: 2px; color: #bbb;">
+                                &copy; 2025 THE MOTUNDE BRAND
+                            </div>
+                        </div>
+
+                    </div>
+                </body>
+                </html>`
         }));
 
-        // Admin Email
+      // --- ADMIN EMAIL ---
         const adminAttachments = [];
         if (receiptBase64 && receiptBase64.includes("base64,")) {
             adminAttachments.push({
@@ -432,14 +494,81 @@ router.post('/orders', async (req, res) => {
         emailPromises.push(transporter.sendMail({
             from: `"TMB Orders" <${process.env.EMAIL_USER}>`,
             to: process.env.EMAIL_USER,
-            subject: `🚨 NEW ORDER #${shortId}`,
+            subject: `🚨 NEW ORDER #${shortId} - ${userStatusLabel}`,
             attachments: adminAttachments,
-            html: `<div style="border: 2px solid #000; padding: 20px;">
-                    <h2>NEW ORDER</h2>
-                    <p>Customer: ${customerDetails.name}</p>
-                    <p>Method: ${paymentMethod}</p>
-                    <table>${orderItemsHtml}</table>
-                   </div>`
+            html: `
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <style>
+                        @media only screen and (max-width: 600px) {
+                            .container { width: 100% !important; padding: 15px !important; }
+                            .col { display: block !important; width: 100% !important; margin-bottom: 10px; }
+                        }
+                    </style>
+                </head>
+                <body style="margin: 0; padding: 0; background-color: #f9f9f9; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;">
+                    <div class="container" style="max-width: 600px; margin: 20px auto; background-color: #ffffff; border: 1px solid #eeeeee; padding: 30px;">
+                        
+                        <center>
+                            <img src="https://i.imgur.com/CVKXV7R.png" alt="Logo" width="80" style="display: block; margin-bottom: 20px;">
+                            <h2 style="text-transform: uppercase; letter-spacing: 3px; font-size: 18px; color: #000; margin-bottom: 5px;">New Order Received</h2>
+                            <p style="font-size: 12px; color: #888; margin-top: 0;">Order ID: #${shortId} | Status: ${userStatusLabel}</p>
+                        </center>
+
+                        <hr style="border: 0; border-top: 1px solid #f0f0f0; margin: 25px 0;">
+
+                        <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                            <tr>
+                                <td class="col" width="50%" valign="top" style="padding-right: 10px;">
+                                    <p style="font-size: 11px; color: #888; text-transform: uppercase; margin-bottom: 5px; font-weight: bold;">Customer Details</p>
+                                    <p style="font-size: 13px; margin: 0; line-height: 1.6;">
+                                        <strong>${customerDetails.name}</strong><br>
+                                        ${customerDetails.email}<br>
+                                        ${customerDetails.phone}
+                                    </p>
+                                </td>
+                                <td class="col" width="50%" valign="top">
+                                    <p style="font-size: 11px; color: #888; text-transform: uppercase; margin-bottom: 5px; font-weight: bold;">Shipping Address</p>
+                                    <p style="font-size: 13px; margin: 0; line-height: 1.6;">
+                                        ${customerDetails.address}<br>
+                                        ${customerDetails.city}, ${customerDetails.state}
+                                    </p>
+                                </td>
+                            </tr>
+                        </table>
+
+                        <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top: 30px; border-top: 2px solid #000;">
+                            ${orderItemsHtml}
+                        </table>
+
+                        <div style="background-color: #fafafa; padding: 20px; margin-top: 20px; border-radius: 4px;">
+                            <table width="100%">
+                                <tr>
+                                    <td style="font-size: 13px; color: #666;">Payment Method:</td>
+                                    <td align="right" style="font-size: 13px; font-weight: bold; text-transform: uppercase;">${paymentMethod}</td>
+                                </tr>
+                                <tr>
+                                    <td style="font-size: 16px; font-weight: bold; padding-top: 10px;">Total Revenue:</td>
+                                    <td align="right" style="font-size: 18px; font-weight: 900; padding-top: 10px; color: #000;">₦${totalPrice.toLocaleString()}</td>
+                                </tr>
+                            </table>
+                        </div>
+
+                        <div style="margin-top: 30px;">
+                            <a href="https://wa.me/${customerDetails.whatsapp.replace(/\D/g,'')}" 
+                               style="display: block; background-color: #25D366; color: #ffffff; text-align: center; padding: 15px; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 14px; margin-bottom: 10px;">
+                               MESSAGE ON WHATSAPP
+                            </a>
+                        </div>
+
+                        <p style="font-size: 10px; color: #bbb; text-align: center; margin-top: 30px;">
+                            This is an automated notification from The Motunde Brand Admin System.
+                        </p>
+                    </div>
+                </body>
+                </html>`
         }));
 
         console.log("Sending emails...");
