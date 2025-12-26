@@ -229,6 +229,19 @@
         <div id="kids-grid" class="collection-grid"></div>
     </section>
 
+    <section id="combo" class="mb-16 md:mb-24 px-4 md:px-12 relative">
+    <div class="flex justify-between items-end mb-6 md:mb-8">
+        <div>
+            <h2 class="text-brandBlack text-[13px] md:text-xl font-light uppercase tracking-[0.2em] md:tracking-[0.3em]">Combo Deals</h2>
+            <div class="w-8 md:w-12 h-[1px] bg-orange-400 mt-1 md:mt-2"></div>
+        </div>
+        <a href="combocollection.html" class="text-[8px] md:text-[9px] uppercase tracking-widest text-orange-400 flex items-center gap-1 md:gap-2 font-bold">
+            View All <svg class="w-2.5 h-2.5 md:w-3 md:h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M17 8l4 4m0 0l-4 4m4-4H3" stroke-width="2"/></svg>
+        </a>
+    </div>
+    <div id="combo-grid" class="collection-grid"></div>
+</section>
+
     <section id="mist" class="mb-16 md:mb-24 px-4 md:px-12 relative">
         <div class="flex justify-between items-end mb-6 md:mb-8">
             <div>
@@ -632,6 +645,7 @@ function updateQty(productId, change) {
             populateGrid('women', 'women-grid');
             populateGrid('men', 'men-grid');
             populateGrid('kids', 'kids-grid');
+            populateGrid('combo', 'combo-grid');
             const mistGrid = document.getElementById('mist-grid');
             if (mistGrid) {
                 const mists = currentProducts.filter(p => p.category?.toLowerCase() === 'mist').slice(0, 6);
