@@ -417,6 +417,92 @@ router.post('/orders', async (req, res) => {
     }
 });
 
+// --- ADMIN: UPDATE ORDER STATUS (Confirm/Cancel) ---
+router.patch('/admin/orders/:id/status', authenticateAdmin, async (req, res) => {
+    try {
+        const db = await getDb();
+        const orderId = req.params.id;
+        const { status } = req.body; 
+
+        const order = await db.collection("orders").findOne({ _id: new ObjectId(orderId) });
+        if (!order) return res.status(404).json({ error: "Order not found" });
+
+        // 1. Stock Reversal (If Admin cancels, put items back in store)
+        if (status === 'cancelled' && order.status !== 'cancelled') {
+            await Promise.all(order.items.map(async (item) => {
+                await db.collection("products").updateOne(
+                    { _id: new ObjectId(item.productId), "variants.size": item.size },
+                    { $inc: { "variants.$.stock": parseInt(item.quantity) } }
+                );
+            }));
+        }
+
+        // 2. Update Database
+        await db.collection("orders").updateOne(
+            { _id: new ObjectId(orderId) },
+            { $set: { status: status, updatedAt: new Date() } }
+        );
+
+        const shortId = orderId.toString().slice(-6).toUpperCase();
+        const customerEmail = order.email; // Works for both Guest and Member
+        const customerName = order.customerDetails.name;
+
+        // 3. Conditional Email Notification
+        if (status === 'completed') {
+            // --- SHIPMENT CONFIRMATION EMAIL ---
+            await transporter.sendMail({
+                from: `"The Motunde Brand" <${process.env.EMAIL_USER}>`,
+                to: customerEmail,
+                subject: `Your Order is Confirmed | #${shortId}`,
+                html: `
+                    <div style="font-family: 'Helvetica', Arial, sans-serif; max-width: 600px; margin: auto; padding: 40px; border: 1px solid #f2f2f2; color: #000;">
+                        <center><img src="https://i.imgur.com/CVKXV7R.png" width="60" style="margin-bottom:20px;"></center>
+                        <h2 style="text-align: center; font-weight: 300; letter-spacing: 3px; text-transform: uppercase;">Excellence Confirmed</h2>
+                        <p>Hello ${customerName},</p>
+                        <p>We are pleased to inform you that your payment has been verified. Your order <strong>#${shortId}</strong> is now being prepared for shipment.</p>
+                        
+                        <div style="background: #fafafa; padding: 20px; border-radius: 4px; margin: 20px 0;">
+                            <p style="margin: 0; font-size: 13px;"><strong>Delivery Address:</strong><br>${order.customerDetails.address}, ${order.customerDetails.city}</p>
+                        </div>
+
+                        <p>Our delivery partner will reach out to you via <strong>${order.customerDetails.whatsapp || order.customerDetails.phone}</strong> once the package is in transit.</p>
+                        <br>
+                        <center>
+                            <a href="https://themotundebrand.com" style="background: #000; color: #fff; padding: 15px 30px; text-decoration: none; font-size: 12px; letter-spacing: 2px; font-weight: bold; border-radius: 2px;">VISIT STORE</a>
+                        </center>
+                        <hr style="border: 0; border-top: 1px solid #eee; margin-top: 40px;">
+                        <p style="font-size: 10px; color: #888; text-align: center; text-transform: uppercase;">The Motunde Brand &copy; ${new Date().getFullYear()}</p>
+                    </div>
+                `
+            });
+        } else if (status === 'cancelled') {
+            // --- CANCELLATION EMAIL ---
+            await transporter.sendMail({
+                from: `"The Motunde Brand" <${process.env.EMAIL_USER}>`,
+                to: customerEmail,
+                subject: `Update regarding your order | #${shortId}`,
+                html: `
+                    <div style="font-family: 'Helvetica', Arial, sans-serif; max-width: 600px; margin: auto; padding: 40px; border: 1px solid #f2f2f2; color: #000;">
+                        <center><img src="https://i.imgur.com/CVKXV7R.png" width="60" style="margin-bottom:20px;"></center>
+                        <h2 style="text-align: center; font-weight: 300; letter-spacing: 3px; text-transform: uppercase;">Order Update</h2>
+                        <p>Hello ${customerName},</p>
+                        <p>We regret to inform you that your order <strong>#${shortId}</strong> has been cancelled and will not be processed further.</p>
+                        <p>If you believe this is an error or if you have already made a payment that was not captured, please reply to this email or contact our support team on WhatsApp immediately.</p>
+                        <p>Thank you for your understanding.</p>
+                        <hr style="border: 0; border-top: 1px solid #eee; margin-top: 40px;">
+                        <p style="font-size: 10px; color: #888; text-align: center;">The Motunde Brand Support Team</p>
+                    </div>
+                `
+            });
+        }
+
+        res.json({ message: `Order marked as ${status}. Notification sent to ${customerEmail}` });
+    } catch (e) {
+        console.error("Status Update Error:", e);
+        res.status(500).json({ error: "Failed to update status and notify customer" });
+    }
+});
+
 router.get('/orders/:id', async (req, res) => {
     try {
         const db = await getDb();

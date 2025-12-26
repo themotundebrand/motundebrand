@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TMB Admin | Order Management</title>
+    <link rel="icon" type="image/png" href="https://i.imgur.com/CVKXV7R.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brandPinkDark: '#D48A96',
+                        brandBlack: '#000000',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #FBFBFB; }
+        .order-card { transition: all 0.2s ease; border-left: 4px solid transparent; }
+        .order-card.status-pending { border-left-color: #D48A96; }
+        .order-card.status-completed { border-left-color: #10B981; }
+        .order-card.status-cancelled { border-left-color: #EF4444; }
+    </style>
+</head>
+<body class="text-brandBlack">
+
+    <div class="flex flex-col lg:flex-row min-h-screen">
+        <aside class="w-full lg:w-64 bg-white border-r p-6">
+            <div class="mb-10 text-center">
+                <h1 class="font-bold tracking-[0.3em] text-sm italic">TMB SYSTEM</h1>
+                <p class="text-[8px] uppercase tracking-widest text-gray-400 mt-2">Order Management</p>
+            </div>
+            <nav class="space-y-2">
+                <a href="tmbdashboard.html" class="flex items-center px-4 py-3 text-[10px] uppercase tracking-widest font-semibold hover:bg-gray-50 transition">
+                    <i class="fa-solid fa-house mr-3 w-5"></i> Dashboard
+                </a>
+                <a href="#" class="flex items-center px-4 py-3 text-[10px] uppercase tracking-widest font-bold bg-gray-100 border-l-4 border-brandPinkDark">
+                    <i class="fa-solid fa-bag-shopping mr-3 w-5"></i> All Orders
+                </a>
+            </nav>
+        </aside>
+
+        <main class="flex-1 p-6 lg:p-12">
+            <header class="flex justify-between items-center mb-10">
+                <div>
+                    <h2 class="text-2xl font-light tracking-tight">Order Terminal</h2>
+                    <p class="text-[9px] uppercase tracking-[0.3em] text-brandPinkDark font-bold">Process & Verify Shipments</p>
+                </div>
+                <div class="flex gap-4">
+                    <select id="statusFilter" onchange="renderOrders()" class="text-[10px] uppercase tracking-widest border p-2 bg-white outline-none">
+                        <option value="all">All Status</option>
+                        <option value="pending">Pending</option>
+                        <option value="completed">Completed</option>
+                        <option value="cancelled">Cancelled</option>
+                    </select>
+                </div>
+            </header>
+
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+                <div class="bg-white border p-4 text-center">
+                    <p class="text-[8px] uppercase text-gray-400 font-bold">Total Orders</p>
+                    <p id="stat-total" class="text-xl font-light">-</p>
+                </div>
+                <div class="bg-white border p-4 text-center">
+                    <p class="text-[8px] uppercase text-gray-400 font-bold text-brandPinkDark">Pending</p>
+                    <p id="stat-pending" class="text-xl font-light text-brandPinkDark">-</p>
+                </div>
+            </div>
+
+            <div id="orders-list" class="space-y-6">
+                <div class="text-center py-20">
+                    <i class="fa-solid fa-circle-notch animate-spin text-brandPinkDark text-2xl"></i>
+                    <p class="text-[10px] uppercase tracking-widest mt-4">Syncing with Central Server...</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const API_URL = '/api';
+        let ALL_ORDERS = [];
+
+        async function fetchOrders() {
+            const token = localStorage.getItem('tmb_admin_token');
+            if (!token) { window.location.href = 'tmbadmin-login.html'; return; }
+
+            try {
+                const response = await fetch(`${API_URL}/admin/orders`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                if (!response.ok) throw new Error("Failed to fetch");
+                
+                ALL_ORDERS = await response.json();
+                updateStats();
+                renderOrders();
+            } catch (err) {
+                console.error(err);
+                document.getElementById('orders-list').innerHTML = `<p class="text-center text-red-500 text-xs">Error loading orders. Check console.</p>`;
+            }
+        }
+
+        function updateStats() {
+            document.getElementById('stat-total').innerText = ALL_ORDERS.length;
+            document.getElementById('stat-pending').innerText = ALL_ORDERS.filter(o => o.status === 'pending').length;
+        }
+
+        function renderOrders() {
+            const container = document.getElementById('orders-list');
+            const filter = document.getElementById('statusFilter').value;
+            
+            const filtered = ALL_ORDERS.filter(o => filter === 'all' || o.status === filter);
+
+            if (filtered.length === 0) {
+                container.innerHTML = `<div class="bg-white border p-10 text-center text-[10px] uppercase tracking-widest text-gray-400">No orders found in this category.</div>`;
+                return;
+            }
+
+            container.innerHTML = filtered.map(order => `
+                <div class="order-card bg-white border shadow-sm p-6 status-${order.status}">
+                    <div class="flex flex-col md:flex-row justify-between gap-6">
+                        <div class="flex-1">
+                            <div class="flex items-center gap-3 mb-2">
+                                <span class="text-[9px] px-2 py-0.5 border font-bold uppercase tracking-widest ${order.userId ? 'bg-blue-50 text-blue-600' : 'bg-gray-100 text-gray-600'}">
+                                    ${order.userId ? 'Registered Member' : 'Guest Checkout'}
+                                </span>
+                                <span class="text-[10px] text-gray-400 font-mono">#${order._id.slice(-8).toUpperCase()}</span>
+                            </div>
+                            <h3 class="font-bold text-sm uppercase tracking-wider">${order.shippingDetails?.firstName} ${order.shippingDetails?.lastName}</h3>
+                            <p class="text-[10px] text-gray-500 mt-1"><i class="fa-solid fa-envelope mr-1"></i> ${order.shippingDetails?.email}</p>
+                            <p class="text-[10px] text-gray-500"><i class="fa-solid fa-phone mr-1"></i> ${order.shippingDetails?.phone}</p>
+                            <p class="text-[10px] text-gray-500 mt-2 italic"><i class="fa-solid fa-location-dot mr-1"></i> ${order.shippingDetails?.address}, ${order.shippingDetails?.city}</p>
+                        </div>
+
+                        <div class="flex-[1.5] border-t md:border-t-0 md:border-l md:pl-6 pt-4 md:pt-0">
+                            <p class="text-[9px] uppercase tracking-widest text-gray-400 font-bold mb-3">Order Items</p>
+                            <div class="space-y-3">
+                                ${order.items.map(item => `
+                                    <div class="flex justify-between items-center text-[11px]">
+                                        <span><strong class="uppercase">${item.name}</strong> (x${item.quantity})</span>
+                                        <span class="text-gray-400">Size: ${item.variantName || 'Standard'}</span>
+                                    </div>
+                                `).join('')}
+                            </div>
+                            <div class="mt-4 pt-3 border-t flex justify-between items-center">
+                                <span class="text-[10px] font-bold uppercase tracking-widest">Total Amount</span>
+                                <span class="text-lg font-light text-brandPinkDark">₦ ${parseFloat(order.totalPrice).toLocaleString()}</span>
+                            </div>
+                        </div>
+
+                        <div class="flex flex-col justify-center gap-2 border-t md:border-t-0 md:border-l md:pl-6 pt-4 md:pt-0 min-w-[150px]">
+                            ${order.status === 'pending' ? `
+                                <button onclick="updateStatus('${order._id}', 'completed')" class="bg-brandBlack text-white text-[9px] uppercase tracking-[0.2em] py-3 px-4 font-bold hover:bg-green-700 transition">
+                                    Confirm & Ship
+                                </button>
+                                <button onclick="updateStatus('${order._id}', 'cancelled')" class="border border-gray-200 text-gray-400 text-[9px] uppercase tracking-[0.2em] py-3 px-4 font-bold hover:bg-red-50 hover:text-red-500 transition">
+                                    Cancel Order
+                                </button>
+                            ` : `
+                                <div class="text-center">
+                                    <p class="text-[9px] uppercase tracking-widest font-bold ${order.status === 'completed' ? 'text-green-500' : 'text-red-500'}">
+                                        Status: ${order.status}
+                                    </p>
+                                    <p class="text-[8px] text-gray-400 mt-1">${new Date(order.createdAt).toLocaleDateString()}</p>
+                                </div>
+                            `}
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function updateStatus(orderId, newStatus) {
+            const confirmMsg = newStatus === 'completed' ? "Mark this order as Shipped/Completed?" : "Are you sure you want to CANCEL this order?";
+            if (!confirm(confirmMsg)) return;
+
+            const token = localStorage.getItem('tmb_admin_token');
+            try {
+                const response = await fetch(`${API_URL}/admin/orders/${orderId}/status`, {
+                    method: 'PATCH',
+                    headers: { 
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ status: newStatus })
+                });
+
+                if (response.ok) {
+                    alert(`Order ${newStatus} successfully.`);
+                    fetchOrders(); // Refresh list
+                } else {
+                    alert("Failed to update order status.");
+                }
+            } catch (err) {
+                console.error(err);
+                alert("Network error updating status.");
+            }
+        }
+
+        window.onload = fetchOrders;
+    </script>
+</body>
+</html>
