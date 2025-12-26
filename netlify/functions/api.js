@@ -384,7 +384,7 @@ router.post('/orders', async (req, res) => {
                             Hello ${customerDetails.name},
                         </p>
                         <p style="font-size: 14px; line-height: 1.6; color: #555;">
-                            Thank you for your order. We have received your payment details and our team is currently verifying the transaction. You will receive another update once your order has been processed for shipping.
+                            Thank you for your order. We have received your payment details and our team is currently verifying the transaction. You will receive another update once your order verified.
                         </p>
 
                         <h3 style="text-transform: uppercase; font-size: 11px; letter-spacing: 2px; border-bottom: 1px solid #000; padding-bottom: 10px; margin-top: 40px;">
@@ -612,7 +612,7 @@ router.patch('/admin/orders/:id/status', authenticateAdmin, async (req, res) => 
                             <p style="margin: 0; font-size: 13px;"><strong>Delivery Address:</strong><br>${order.customerDetails.address}, ${order.customerDetails.city}</p>
                         </div>
 
-                        <p>Our delivery partner will reach out to you via <strong>${order.customerDetails.whatsapp || order.customerDetails.phone}</strong> once the package is in transit.</p>
+                        <p>Our delivery partner will reach out to you via <strong>${order.customerDetails.whatsapp || order.customerDetails.phone}</strong> to receive your order. Thank you!</p>
                         <br>
                         <center>
                             <a href="https://themotundebrand.com" style="background: #000; color: #fff; padding: 15px 30px; text-decoration: none; font-size: 12px; letter-spacing: 2px; font-weight: bold; border-radius: 2px;">VISIT STORE</a>
