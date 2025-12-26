@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deodorants & Roll-ons | TMB Management</title>
+    <link rel="icon" type="image/png" href="https://i.imgur.com/CVKXV7R.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brandWhite: '#FFFFFF',
+                        brandBlack: '#000000',
+                        brandPinkDark: '#D48A96',
+                        brandPinkLight: '#F7C8D0',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #FBFBFB; }
+        .sidebar { transition: all 0.3s ease; }
+        .nav-link:hover { background-color: #F7C8D0; color: #000; }
+        .active-link { background-color: #F7C8D0; color: #000; }
+        .input-field { border: 1px solid #e5e7eb; padding: 10px; font-size: 12px; width: 100%; transition: border-color 0.2s; }
+        .input-field:focus { outline: none; border-color: #D48A96; }
+        .mobile-overlay { background: rgba(0,0,0,0.5); display: none; }
+        .mobile-overlay.active { display: block; }
+        .truncate-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    </style>
+</head>
+<body class="text-brandBlack">
+
+    <div class="lg:hidden bg-white border-b p-4 flex justify-between items-center sticky top-0 z-50">
+        <span class="font-bold tracking-widest text-xs uppercase">TMB Admin</span>
+        <button onclick="toggleSidebar()" class="text-brandBlack text-xl">
+            <i class="fa-solid fa-bars-staggered"></i>
+        </button>
+    </div>
+
+    <div class="flex">
+        <div id="overlay" onclick="toggleSidebar()" class="mobile-overlay fixed inset-0 z-40 lg:hidden"></div>
+        
+        <aside id="sidebar" class="sidebar fixed lg:static inset-y-0 left-0 z-50 w-64 bg-white border-r transform -translate-x-full lg:translate-x-0 h-screen flex flex-col">
+            <div class="p-8 border-b">
+                <a href="tmbdashboard.html"><h1 class="font-bold tracking-[0.3em] text-sm text-center hover:text-brandPinkDark transition">TMB SYSTEM</h1></a>
+            </div>
+
+            <nav class="flex-1 px-4 py-8 space-y-1">
+                <p class="text-[9px] uppercase tracking-[0.2em] text-gray-400 px-4 mb-4 font-bold">Main</p>
+                <a href="tmbdashboard.html" class="nav-link flex items-center px-4 py-3 text-[10px] tracking-widest uppercase font-semibold transition-all">
+                    <i class="fa-solid fa-gauge-high mr-3 w-5 text-gray-400"></i> Dashboard
+                </a>
+                <p class="text-[9px] uppercase tracking-[0.2em] text-gray-400 px-4 mt-8 mb-4 font-bold">Inventory</p>
+                <a href="womenscents.html" class="nav-link flex items-center px-4 py-3 text-[10px] tracking-widest uppercase font-semibold transition-all">
+                    <i class="fa-solid fa-child mr-3 w-5 text-gray-400"></i> Women Scents
+                </a>
+                <a href="menscents.html" class="nav-link flex items-center px-4 py-3 text-[10px] tracking-widest uppercase font-semibold transition-all">
+                    <i class="fa-solid fa-mars mr-3 w-5 text-gray-400"></i> Men Scents
+                </a>
+                <a href="bodymistspray.html" class="nav-link flex items-center px-4 py-3 text-[10px] tracking-widest uppercase font-semibold transition-all">
+                    <i class="fa-solid fa-spray-can mr-3 w-5 text-gray-400"></i> Mists & Sprays
+                </a>
+                <a href="deodorants.html" class="nav-link active-link flex items-center px-4 py-3 text-[10px] tracking-widest uppercase font-semibold transition-all">
+                    <i class="fa-solid fa-soap mr-3 w-5 text-white"></i> Deodorants
+                </a>
+                <a href="kidscents.html" class="nav-link flex items-center px-4 py-3 text-[10px] tracking-widest uppercase font-semibold transition-all">
+                    <i class="fa-solid fa-baby mr-3 w-5 text-gray-400"></i> Kid Scents
+                </a>
+                <a href="comboscents.html" class="nav-link flex items-center px-4 py-3 text-[10px] tracking-widest uppercase font-semibold transition-all">
+                    <i class="fa-solid fa-boxes-stacked mr-3 w-5 text-gray-400"></i> Combo Deals
+                </a>
+
+                <div class="pt-8">
+                    <p class="text-[9px] uppercase tracking-[0.2em] text-gray-400 px-4 mb-4 font-bold">Business</p>
+                    <a href="customer-list.html" class="nav-link flex items-center px-4 py-3 text-[10px] tracking-widest uppercase font-semibold">
+                        <i class="fa-solid fa-users mr-3 w-5 text-gray-400"></i> Membership
+                    </a>
+                    <a href="orderstats.html" class="nav-link flex items-center px-4 py-3 text-[10px] tracking-widest uppercase font-semibold">
+                        <i class="fa-solid fa-bag-shopping mr-3 w-5 text-gray-400"></i> Orders
+                    </a>
+                </div>
+            </nav>
+
+            <div class="p-4 border-t">
+                <button onclick="logout()" class="w-full flex items-center justify-center px-4 py-3 text-[10px] uppercase tracking-widest font-bold bg-brandBlack text-white hover:bg-red-900 transition-all">
+                    <i class="fa-solid fa-power-off mr-2"></i> System Exit
+                </button>
+            </div>
+        </aside>
+
+        <main class="flex-1 min-h-screen p-4 lg:p-12">
+            <div class="max-w-full lg:max-w-[1400px]">
+                <div class="mb-8 lg:mb-12 text-center lg:text-left">
+                    <h2 class="text-xl lg:text-2xl font-light tracking-tight mb-1">Deodorant Collection</h2>
+                    <p class="text-[8px] lg:text-[9px] uppercase tracking-[0.3em] text-brandPinkDark font-bold">Hygiene & Stock Control</p>
+                </div>
+
+                <div id="formContainer" class="bg-white border p-5 lg:p-8 mb-10">
+                    <div class="flex justify-between items-center mb-6 border-b pb-4">
+                        <h3 id="formTitle" class="text-[10px] uppercase tracking-[0.2em] font-bold">Add New Deodorant</h3>
+                        <button id="cancelEdit" onclick="resetForm()" class="hidden text-[10px] uppercase text-red-500 font-bold">Cancel Edit</button>
+                    </div>
+                    
+                    <form id="addDeodorantForm" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <input type="hidden" id="editProductId">
+                        <div class="space-y-4">
+                            <div>
+                                <label class="text-[9px] uppercase font-bold text-gray-400 block mb-2">Product Type</label>
+                                <select id="pType" class="input-field" required>
+                                    <option value="" disabled selected>Select Type</option>
+                                    <option value="Deodorant">Deodorant</option>
+                                    <option value="Antiperspirant">Antiperspirant</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="text-[9px] uppercase font-bold text-gray-400 block mb-2">Product Name</label>
+                                <input type="text" id="pName" placeholder="e.g. Fresh Bloom Roll-on" class="input-field" required>
+                            </div>
+
+                            <div class="border p-4 bg-gray-50 rounded-sm">
+                                <label class="text-[9px] uppercase font-bold text-brandPinkDark block mb-4">Stock Variants</label>
+                                <div id="variantsContainer" class="space-y-3 mb-4"></div>
+                                <button type="button" onclick="addVariantRow()" class="text-[9px] uppercase font-bold bg-white border border-brandPinkDark text-brandPinkDark px-3 py-2 hover:bg-brandPinkDark hover:text-white transition w-full">
+                                    <i class="fa-solid fa-plus mr-1"></i> Add Variant
+                                </button>
+                            </div>
+
+                            <div>
+                                <label class="text-[9px] uppercase font-bold text-gray-400 block mb-2">Description</label>
+                                <textarea id="pDesc" rows="3" placeholder="Antiperspirant details..." class="input-field"></textarea>
+                            </div>
+                        </div>
+
+                        <div class="space-y-4">
+                            <label class="text-[9px] uppercase font-bold text-gray-400 block mb-2">Product Image</label>
+                            <div class="border-2 border-dashed border-gray-200 h-48 lg:h-64 flex flex-col items-center justify-center relative hover:border-brandPinkDark transition-colors">
+                                <input type="file" class="absolute inset-0 opacity-0 cursor-pointer" id="imageUpload" accept="image/*">
+                                <i class="fa-solid fa-cloud-arrow-up text-2xl text-gray-300 mb-2"></i>
+                                <p id="fileNameDisplay" class="text-[10px] text-gray-400 uppercase tracking-widest text-center px-4">Click to upload image</p>
+                            </div>
+                            <button type="submit" id="submitBtn" class="w-full bg-brandBlack text-white text-[10px] uppercase tracking-[0.2em] py-4 font-bold hover:bg-brandPinkDark transition-colors">
+                                Update Inventory
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <h3 class="text-[10px] uppercase tracking-[0.2em] font-bold mb-6">Current Inventory</h3>
+                <div id="inventoryGrid" class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 lg:gap-6">
+                    <p class="text-[10px] uppercase tracking-widest text-gray-400 col-span-full text-center py-12">Loading collection...</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div id="customAlert" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-4">
+        <div class="fixed inset-0 bg-black/50 backdrop-blur-sm"></div>
+        <div class="bg-white w-full max-w-sm relative z-10 p-8 border border-gray-100 shadow-2xl text-center">
+            <div id="alertIcon" class="mb-4 text-brandPinkDark text-3xl"><i class="fa-solid fa-circle-check"></i></div>
+            <h3 id="alertTitle" class="text-[10px] uppercase tracking-[0.2em] font-bold mb-2">System Notification</h3>
+            <p id="alertMessage" class="text-xs text-gray-500 mb-6 leading-relaxed"></p>
+            <button onclick="closeAlert()" class="w-full bg-brandBlack text-white text-[9px] uppercase tracking-widest py-3 font-bold hover:bg-brandPinkDark transition-colors">Acknowledge</button>
+        </div>
+    </div>
+
+    <div id="customConfirm" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-4">
+        <div class="fixed inset-0 bg-black/50 backdrop-blur-sm"></div>
+        <div class="bg-white w-full max-w-sm relative z-10 p-8 border border-gray-100 shadow-2xl text-center">
+            <div class="mb-4 text-red-400 text-3xl"><i class="fa-solid fa-circle-exclamation"></i></div>
+            <h3 class="text-[10px] uppercase tracking-[0.2em] font-bold mb-2">Confirm Action</h3>
+            <p id="confirmMessage" class="text-xs text-gray-500 mb-6 leading-relaxed"></p>
+            <div class="flex gap-3">
+                <button onclick="closeConfirm(false)" class="flex-1 border border-gray-200 text-gray-400 text-[9px] uppercase tracking-widest py-3 font-bold">Cancel</button>
+                <button onclick="closeConfirm(true)" class="flex-1 bg-red-500 text-white text-[9px] uppercase tracking-widest py-3 font-bold">Delete</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = '/api'; 
+        let globalProducts = [];
+        let confirmResolve;
+
+        // --- UTILITIES ---
+        function showAlert(message, isError = false) {
+            const modal = document.getElementById('customAlert');
+            document.getElementById('alertMessage').innerText = message;
+            document.getElementById('alertIcon').innerHTML = isError ? '<i class="fa-solid fa-circle-xmark text-red-500"></i>' : '<i class="fa-solid fa-circle-check"></i>';
+            modal.classList.remove('hidden');
+        }
+        function closeAlert() { document.getElementById('customAlert').classList.add('hidden'); }
+        function showConfirm(message) {
+            document.getElementById('confirmMessage').innerText = message;
+            document.getElementById('customConfirm').classList.remove('hidden');
+            return new Promise((resolve) => { confirmResolve = resolve; });
+        }
+        function closeConfirm(result) {
+            document.getElementById('customConfirm').classList.add('hidden');
+            if (confirmResolve) confirmResolve(result);
+        }
+        function logout() { localStorage.removeItem('tmb_admin_token'); window.location.href = 'tmbadmin-login.html'; }
+
+        // --- VARIANT MANAGEMENT ---
+        function addVariantRow(size = '', price = '', stock = '', variantId = '') {
+            const container = document.getElementById('variantsContainer');
+            const rowId = variantId || `new-${Date.now() + Math.random()}`;
+            const html = `
+                <div class="variant-row border-b border-gray-100 pb-3" id="row-${rowId}">
+                    <input type="hidden" class="v-id" value="${variantId}">
+                    <div class="grid grid-cols-12 gap-2 mb-2">
+                        <div class="col-span-4"><input type="text" placeholder="Size" class="input-field v-size" value="${size}" required></div>
+                        <div class="col-span-4"><input type="number" placeholder="Price" class="input-field v-price" value="${price}" required></div>
+                        <div class="col-span-4"><input type="number" placeholder="Stock" class="input-field v-stock" value="${stock}" required></div>
+                    </div>
+                    <div class="flex justify-end">
+                        <button type="button" onclick="removeVariantRow('row-${rowId}')" class="text-[8px] uppercase font-bold text-red-400">Remove</button>
+                    </div>
+                </div>`;
+            container.insertAdjacentHTML('beforeend', html);
+        }
+        function removeVariantRow(id) {
+            const rows = document.querySelectorAll('.variant-row');
+            if(rows.length > 1) document.getElementById(id).remove();
+            else showAlert("At least one variant is required.", true);
+        }
+
+        // --- DATA LOADING ---
+        window.onload = () => { addVariantRow(); loadProducts(); };
+
+        async function loadProducts() {
+            try {
+                const response = await fetch(`${API_URL}/products`);
+                const products = await response.json();
+                globalProducts = products.filter(p => p.category === 'deodorant');
+                const grid = document.getElementById('inventoryGrid');
+                
+                if (globalProducts.length === 0) {
+                    grid.innerHTML = '<p class="text-[10px] uppercase text-gray-400 col-span-full text-center py-12">No deodorants in inventory.</p>';
+                    return;
+                }
+
+                grid.innerHTML = globalProducts.map(product => `
+                    <div class="bg-white border p-2 lg:p-4 group">
+                        <div class="aspect-square bg-gray-50 mb-3 overflow-hidden border border-gray-100">
+                            <img src="${product.imageUrl}" alt="${product.name}" class="w-full h-full object-cover">
+                        </div>
+                        <p class="text-[7px] font-bold text-brandPinkDark mb-1 uppercase tracking-tighter">${product.productType || 'Roll-on'}</p>
+                        <h4 class="text-[10px] lg:text-xs font-bold uppercase tracking-wider mb-2 truncate-2 h-8 leading-tight">${product.name}</h4>
+                        <div class="space-y-1 mb-3">
+                            ${(product.variants || []).map(v => {
+                                const stockValue = Number(v.stock) || 0;
+                                let stockClass = stockValue <= 0 ? "text-red-600 bg-red-50" : (stockValue < 5 ? "text-orange-500" : "text-gray-400");
+                                return `
+                                <div class="text-[9px] border-b border-gray-50 pb-1 flex justify-between">
+                                    <span class="text-gray-500 uppercase">${v.size}</span>
+                                    <span class="font-bold">₦${Number(v.price).toLocaleString()}</span>
+                                    <span class="${stockClass} text-[7px] font-bold">${stockValue <= 0 ? 'SOLD OUT' : stockValue + ' UNIT'}</span>
+                                </div>`;
+                            }).join('')}
+                        </div>
+                        <div class="flex flex-col gap-2 border-t pt-3">
+                            <button onclick="editProduct('${product._id}')" class="text-[8px] uppercase font-bold text-brandPinkDark">Edit Details</button>
+                            <button onclick="deleteProduct('${product._id}')" class="text-[8px] uppercase font-bold text-red-400">Delete Item</button>
+                        </div>
+                    </div>`).join('');
+            } catch (err) { console.error(err); }
+        }
+
+        // --- FORM ACTIONS ---
+        function editProduct(id) {
+            const product = globalProducts.find(p => p._id === id);
+            if (!product) return;
+            document.getElementById('editProductId').value = product._id;
+            document.getElementById('pType').value = product.productType || ''; // LOAD PRODUCT TYPE
+            document.getElementById('pName').value = product.name;
+            document.getElementById('pDesc').value = product.description || '';
+            document.getElementById('variantsContainer').innerHTML = '';
+            product.variants.forEach(v => addVariantRow(v.size, v.price, v.stock, v._id));
+            document.getElementById('formTitle').innerText = "Edit Deodorant: " + product.name;
+            document.getElementById('submitBtn').innerText = "Save Changes";
+            document.getElementById('cancelEdit').classList.remove('hidden');
+            document.getElementById('imageUpload').required = false;
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function resetForm() {
+            document.getElementById('addDeodorantForm').reset();
+            document.getElementById('editProductId').value = '';
+            document.getElementById('pType').value = ''; // RESET PRODUCT TYPE
+            document.getElementById('variantsContainer').innerHTML = '';
+            addVariantRow();
+            document.getElementById('formTitle').innerText = "Add New Deodorant";
+            document.getElementById('submitBtn').innerText = "Update Inventory";
+            document.getElementById('cancelEdit').classList.add('hidden');
+            document.getElementById('imageUpload').required = true;
+            document.getElementById('fileNameDisplay').innerText = "Click to upload image";
+        }
+
+        document.getElementById('addDeodorantForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const editId = document.getElementById('editProductId').value;
+            const file = document.getElementById('imageUpload').files[0];
+            const token = localStorage.getItem('tmb_admin_token');
+
+            const variants = Array.from(document.querySelectorAll('.variant-row')).map(row => {
+                const vId = row.querySelector('.v-id').value;
+                const obj = {
+                    size: row.querySelector('.v-size').value,
+                    price: row.querySelector('.v-price').value,
+                    stock: row.querySelector('.v-stock').value
+                };
+                if (vId && !vId.startsWith('new-')) obj._id = vId;
+                return obj;
+            });
+
+            let imageBase64 = null;
+            if (file) {
+                imageBase64 = await new Promise(resolve => {
+                    const reader = new FileReader();
+                    reader.onload = () => resolve(reader.result.split(',')[1]);
+                    reader.readAsDataURL(file);
+                });
+            }
+
+            const payload = {
+                productType: document.getElementById('pType').value, // ADDED PRODUCT TYPE TO PAYLOAD
+                name: document.getElementById('pName').value,
+                description: document.getElementById('pDesc').value,
+                category: 'deodorant',
+                variants: variants,
+                ...(imageBase64 && { imageBase64, fileName: file.name, contentType: file.type })
+            };
+
+            const url = editId ? `${API_URL}/admin/products/${editId}` : `${API_URL}/admin/products`;
+            try {
+                const res = await fetch(url, {
+                    method: editId ? 'PUT' : 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify(payload)
+                });
+                if (res.ok) { showAlert("Success!"); setTimeout(() => location.reload(), 1000); }
+            } catch (err) { showAlert("Error processing.", true); }
+        };
+
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('-translate-x-full');
+            document.getElementById('overlay').classList.toggle('active');
+        }
+
+        document.getElementById('imageUpload').onchange = function() {
+            document.getElementById('fileNameDisplay').innerText = this.files[0]?.name || "Click to upload image";
+        };
+
+        async function deleteProduct(id) {
+            if(!await showConfirm("Delete this deodorant?")) return;
+            const token = localStorage.getItem('tmb_admin_token');
+            try {
+                const res = await fetch(`${API_URL}/admin/products/${id}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if(res.ok) location.reload();
+            } catch (err) { showAlert("Delete failed.", true); }
+        }
+    </script>
+</body>
+</html>

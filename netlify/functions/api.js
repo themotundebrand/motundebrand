@@ -75,7 +75,8 @@ router.get('/admin/analytics/stock-overview', authenticateAdmin, async (req, res
         let menTotalStock = 0;
         let kidTotalStock = 0;
         let mistTotalStock = 0;
-        let comboTotalStock = 0; // 1. ADD THIS
+        let comboTotalStock = 0;
+        let deoTotalStock = 0; // 1. ADD THIS
 
         products.forEach(product => {
             const totalProductUnits = (product.variants || []).reduce((sum, v) => {
@@ -95,6 +96,8 @@ router.get('/admin/analytics/stock-overview', authenticateAdmin, async (req, res
                 mistTotalStock += totalProductUnits;
             } else if (category.includes('combo')) { // 2. ADD THIS
                 comboTotalStock += totalProductUnits;
+            } else if (category.includes('deodorant')) { // 2. ADD THIS
+                deoTotalStock += totalProductUnits;
             }
         });
 
@@ -104,7 +107,8 @@ router.get('/admin/analytics/stock-overview', authenticateAdmin, async (req, res
             menTotalStock, 
             kidTotalStock, 
             mistTotalStock,
-            comboTotalStock 
+            comboTotalStock,
+            deoTotalStock
         });
     } catch (e) {
         res.status(500).json({ error: "Failed to calculate stock totals" });
