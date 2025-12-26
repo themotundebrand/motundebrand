@@ -268,10 +268,11 @@ router.get('/products/:id/stock', async (req, res) => {
 });
 
 router.post('/orders', async (req, res) => {
+    console.log("--- New Order Request Received ---");
     try {
         const db = await getDb();
         const { 
-            items, // Now expected to include 'image' URL from the frontend
+            items, 
             customerDetails, 
             totalPrice, 
             paymentMethod, 
@@ -296,32 +297,60 @@ router.post('/orders', async (req, res) => {
         }
 
         // 2. Validation
-        if (!items || items.length === 0) return res.status(400).json({ error: "Empty cart" });
-        if (!customerDetails?.email) return res.status(400).json({ error: "Email is required." });
+        if (!items || items.length === 0) {
+            console.error("Order Blocked: Empty Cart");
+            return res.status(400).json({ error: "Empty cart" });
+        }
+        if (!customerDetails?.email) {
+            console.error("Order Blocked: Missing Email");
+            return res.status(400).json({ error: "Email is required." });
+        }
 
         // 3. Atomic stock decrement
+        console.log("Processing Stock for items:", items.map(i => i.name));
         const updateResults = await Promise.all(items.map(async (item) => {
-            const qty = Math.abs(parseInt(item.quantity));
-            const result = await db.collection("products").updateOne(
-                { 
-                    _id: new ObjectId(item.productId), 
-                    "variants.size": item.size,
-                    "variants.stock": { $gte: qty } 
-                },
-                { $inc: { "variants.$.stock": -qty } }
-            );
-            return { name: item.name, success: result.modifiedCount > 0 };
+            try {
+                const qty = Math.abs(parseInt(item.quantity));
+                // Validate ProductId format to prevent 500 error
+                if (!item.productId || item.productId.length !== 24) {
+                    throw new Error(`Invalid Product ID: ${item.productId}`);
+                }
+
+                const result = await db.collection("products").updateOne(
+                    { 
+                        _id: new ObjectId(item.productId), 
+                        "variants.size": item.size,
+                        "variants.stock": { $gte: qty } 
+                    },
+                    { $inc: { "variants.$.stock": -qty } }
+                );
+                
+                return { 
+                    name: item.name, 
+                    size: item.size, 
+                    success: result.modifiedCount > 0 
+                };
+            } catch (itemErr) {
+                console.error(`Stock Update Logic Error for ${item.name}:`, itemErr.message);
+                return { name: item.name, success: false, error: itemErr.message };
+            }
         }));
 
         const failed = updateResults.filter(r => !r.success);
-        if (failed.length > 0) return res.status(400).json({ error: "Stock error", failed });
+        if (failed.length > 0) {
+            console.error("Stock Validation Failed for:", failed);
+            return res.status(400).json({ 
+                error: "Stock error. Some items may have sold out.", 
+                details: failed 
+            });
+        }
 
         // 4. Create Order Object
         const finalOrder = {
             userId: finalUserId,
             email: customerDetails.email.toLowerCase(),
             customerDetails,
-            items, // Contains productId, name, size, quantity, price, AND image
+            items, 
             totalPrice,
             paymentMethod,
             status: 'pending',
@@ -333,7 +362,7 @@ router.post('/orders', async (req, res) => {
         const orderId = result.insertedId;
         const shortId = orderId.toString().slice(-6).toUpperCase();
 
-        // 5. Prepare Email HTML with Images
+        // 5. Email HTML Construction
         const orderItemsHtml = items.map(item => `
             <tr>
                 <td style="padding: 10px 0; border-bottom: 1px solid #eee;">
@@ -365,16 +394,16 @@ router.post('/orders', async (req, res) => {
                         ${orderItemsHtml}
                     </table>
                     <div style="text-align: right; font-weight: bold; font-size: 16px;">
-                        TOTAL PAID: ₦${totalPrice.toLocaleString()}
+                        TOTAL: ₦${totalPrice.toLocaleString()}
                     </div>
                     <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
-                    <p style="font-size: 12px; color: #888; text-align: center;">Order ID: ${orderId} | Status: ${userStatusLabel}</p>
+                    <p style="font-size: 12px; color: #888; text-align: center;">Order ID: ${orderId}</p>
                 </div>`
         }));
 
         // --- ADMIN EMAIL ---
         const adminAttachments = [];
-        if (receiptBase64) {
+        if (receiptBase64 && receiptBase64.includes("base64,")) {
             adminAttachments.push({
                 filename: receiptFileName || 'receipt.jpg',
                 content: receiptBase64.split("base64,")[1],
@@ -389,31 +418,28 @@ router.post('/orders', async (req, res) => {
             attachments: adminAttachments,
             html: `
                 <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; border: 2px solid #000; padding: 20px;">
-                    <h2 style="background: #000; color: #fff; padding: 15px; text-align: center; margin: 0;">NEW ${userStatusLabel.toUpperCase()} ORDER</h2>
-                    <div style="padding: 20px; background: #fafafa;">
-                        <p><strong>Customer:</strong> ${customerDetails.name}</p>
-                        <p><strong>Phone/WhatsApp:</strong> ${customerDetails.whatsapp}</p>
-                        <p><strong>Address:</strong> ${customerDetails.address}, ${customerDetails.city}, ${customerDetails.state}</p>
-                    </div>
+                    <h2 style="background: #000; color: #fff; padding: 15px; text-align: center; margin: 0;">NEW ORDER</h2>
+                    <p><strong>Customer:</strong> ${customerDetails.name}</p>
+                    <p><strong>Phone:</strong> ${customerDetails.whatsapp}</p>
                     <table style="width: 100%; margin-top: 20px;">
                         ${orderItemsHtml}
                     </table>
-                    <h3 style="text-align: right;">Revenue: ₦${totalPrice.toLocaleString()}</h3>
-                    <div style="background: #fff5f5; padding: 15px; border: 1px solid #feb2b2; margin-top: 15px;">
-                        <strong>Payment:</strong> ${paymentMethod.toUpperCase()}<br>
-                        <strong>Receipt:</strong> ${receiptBase64 ? "See attachment" : "NO RECEIPT UPLOADED"}
-                    </div>
-                    <a href="https://wa.me/${customerDetails.whatsapp.replace(/\D/g,'')}" style="display: block; background: #25D366; color: white; text-align: center; padding: 15px; text-decoration: none; margin-top: 20px; font-weight: bold; border-radius: 5px;">CHAT WITH CUSTOMER</a>
+                    <h3 style="text-align: right;">Total: ₦${totalPrice.toLocaleString()}</h3>
+                    <p><strong>Method:</strong> ${paymentMethod}</p>
+                    <a href="https://wa.me/${customerDetails.whatsapp.replace(/\D/g,'')}" style="display: block; background: #25D366; color: white; text-align: center; padding: 15px; text-decoration: none; margin-top: 20px; font-weight: bold;">CHAT ON WHATSAPP</a>
                 </div>`
         }));
 
-        Promise.all(emailPromises).catch(err => console.error("Email Error:", err));
+        // CRITICAL FOR NETLIFY: Wait for emails before sending response
+        console.log("Sending emails...");
+        await Promise.all(emailPromises);
+        console.log("Emails sent. Finalizing response.");
 
         res.status(201).json({ orderId, status: userStatusLabel });
 
     } catch (e) {
-        console.error("Order Error:", e);
-        res.status(500).json({ error: e.message });
+        console.error("CRITICAL ORDER ERROR:", e);
+        res.status(500).json({ error: "Internal Server Error", message: e.message });
     }
 });
 

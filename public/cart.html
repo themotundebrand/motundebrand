@@ -447,6 +447,7 @@
     }
 
     // --- CHECKOUT LOGIC ---
+   // --- CHECKOUT LOGIC ---
     async function handleCheckout() {
         if (cart.length === 0) return showAlert("Empty Bag", "Please add items before checking out.");
         
@@ -476,6 +477,7 @@
             }
         }
 
+        // Change button state
         const checkoutBtn = document.querySelector('button[onclick="handleCheckout()"]');
         const originalText = checkoutBtn.innerText;
         checkoutBtn.innerText = "VERIFYING...";
@@ -501,20 +503,33 @@
             
             const orderData = {
                 items: cart.map(item => ({
-                    productId: item.id,
+                    // FIX: Ensure we use the correct ID property (id or _id)
+                    productId: item.id || item._id, 
                     name: item.name,
                     size: item.size,
                     quantity: item.quantity,
                     price: item.price,
                     image: item.image 
                 })),
-                customerDetails: { name, email: email.toLowerCase(), phone, whatsapp, address: street, city, state },
+                customerDetails: { 
+                    name, 
+                    email: email.toLowerCase(), 
+                    phone, 
+                    whatsapp, 
+                    address: street, 
+                    city, 
+                    state 
+                },
                 totalPrice: subtotal + FLAT_SHIPPING_FEE,
                 paymentMethod: method,
                 receiptBase64,
                 receiptFileName
             };
 
+            // LOG the data for debugging (Remove in production)
+            console.log("Sending Order Data:", orderData);
+
+            // Use relative path - netlify.toml handles the redirect to functions
             const response = await fetch('/api/orders', {
                 method: 'POST',
                 headers: { 
@@ -524,23 +539,27 @@
                 body: JSON.stringify(orderData)
             });
 
+            const result = await response.json();
+
             if (response.ok) {
-                const result = await response.json();
                 localStorage.removeItem('tmb_cart');
-                window.location.href = `order.html?id=${result.orderId || result._id}`;
+                // Ensure we handle both potential ID keys from backend
+                const finalOrderId = result.orderId || result._id;
+                window.location.href = `order.html?id=${finalOrderId}`;
             } else {
-                const errorData = await response.json();
-                showAlert("Order Failed", errorData.error || "Issue processing order.");
+                // If backend returns 400, this will show the specific error (e.g., "Stock error")
+                console.error("Backend Error:", result);
+                showAlert("Order Failed", result.error || "Issue processing order.");
                 checkoutBtn.innerText = originalText;
                 checkoutBtn.disabled = false;
             }
         } catch (error) {
+            console.error("Fetch Error:", error);
             showAlert("Error", "Could not process order. Please check your connection.");
             checkoutBtn.innerText = originalText;
             checkoutBtn.disabled = false;
         }
     }
-    
     renderCart();
 </script>
 </body>
