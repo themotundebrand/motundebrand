@@ -67,7 +67,7 @@
                  <a href="comboscents.html" class="nav-link active-link flex items-center px-4 py-3 text-[10px] tracking-widest uppercase font-semibold transition-all">
                     <i class="fa-solid fa-layer-group mr-3 w-5 text-white"></i> Combo Sets
                 </a>
-                
+
                 <div class="pt-8">
                     <p class="text-[9px] uppercase tracking-[0.2em] text-gray-400 px-4 mb-4 font-bold">Business</p>
                      <a href="customer-list.html" class="nav-link flex items-center px-4 py-3 text-[10px] tracking-widest uppercase font-semibold">
@@ -161,74 +161,80 @@
         </main>
     </div>
 <script>
-    const API_URL = '/api'; 
+    const API_URL = '/api';
 
-   async function fetchDashboardStats() {
-    const token = localStorage.getItem('tmb_admin_token');
-    if (!token) {
-        window.location.href = 'tmbadmin-login.html';
-        return;
-    }
-    
-    const headers = { 'Authorization': `Bearer ${token}` };
+    // Helper function to safely update text without crashing if ID is missing
+    const safeSet = (id, value) => {
+        const el = document.getElementById(id);
+        if (el) {
+            el.innerText = value ?? 0;
+            return true;
+        }
+        return false;
+    };
 
-    try {
-        // 1. Fetch Current Stock Levels (Remaining units in the database)
-        const analyticsRes = await fetch(`${API_URL}/admin/analytics/stock-overview`, { headers });
-        if (analyticsRes.ok) {
-            const stats = await analyticsRes.json();
-            document.getElementById('women-count').innerText = stats.womenTotalStock || 0;
-            document.getElementById('men-count').innerText = stats.menTotalStock || 0;
-            document.getElementById('mist-count').innerText = stats.mistTotalStock || 0; 
-            document.getElementById('kids-count').innerText = stats.kidTotalStock || 0;
-            document.getElementById('combo-count').innerText = stats.comboTotalStock || 0;
+    async function fetchDashboardStats() {
+        const token = localStorage.getItem('tmb_admin_token');
+        if (!token) {
+            window.location.href = 'tmbadmin-login.html';
+            return;
         }
 
-        // 2. Fetch User Count
-        const uRes = await fetch(`${API_URL}/admin/users/count`, { headers });
-        if (uRes.ok) {
-            const userData = await uRes.json();
-            document.getElementById('user-count').innerText = userData.count || 0;
-        }
+        const headers = { 'Authorization': `Bearer ${token}` };
 
-        // 3. Updated Order & Revenue Logic
-        const oRes = await fetch(`${API_URL}/admin/orders`, { headers });
-        if (oRes.ok) {
-            const orders = await oRes.json();
-            
-            // Pending orders = Orders awaiting your verification & stock deduction
-            const pending = orders.filter(o => o.status === 'pending').length;
-            
-            // Total Revenue = Only confirmed income (completed orders)
-            // This ensures your dashboard revenue matches your actual stock loss
-            const totalRevenue = orders
-                .filter(o => o.status === 'completed') 
-                .reduce((sum, o) => sum + (parseFloat(o.totalPrice) || 0), 0);
-
-            const pendingEl = document.getElementById('pending-orders');
-            pendingEl.innerText = pending;
-
-            // Visual Cue: If there are pending orders, make the number pulse red
-            if (pending > 0) {
-                pendingEl.classList.add('text-red-600', 'font-bold');
-            } else {
-                pendingEl.classList.remove('text-red-600');
-                pendingEl.classList.add('text-brandPinkDark');
+        try {
+            // 1. Fetch Current Stock Levels
+            const analyticsRes = await fetch(`${API_URL}/admin/analytics/stock-overview`, { headers });
+            if (analyticsRes.ok) {
+                const stats = await analyticsRes.json();
+                safeSet('women-count', stats.womenTotalStock);
+                safeSet('men-count', stats.menTotalStock);
+                safeSet('mist-count', stats.mistTotalStock);
+                safeSet('kids-count', stats.kidTotalStock);
+                safeSet('combo-count', stats.comboTotalStock);
             }
 
-            document.getElementById('revenue-mtd').innerText = totalRevenue >= 1000 
-                ? `₦ ${(totalRevenue / 1000).toFixed(1)}k` 
-                : `₦ ${totalRevenue.toLocaleString()}`;
+            // 2. Fetch User Count
+            const uRes = await fetch(`${API_URL}/admin/users/count`, { headers });
+            if (uRes.ok) {
+                const userData = await uRes.json();
+                safeSet('user-count', userData.count);
+            }
+
+            // 3. Updated Order & Revenue Logic
+            const oRes = await fetch(`${API_URL}/admin/orders`, { headers });
+            if (oRes.ok) {
+                const orders = await oRes.json();
+                
+                const pending = orders.filter(o => o.status === 'pending').length;
+                const totalRevenue = orders
+                    .filter(o => o.status === 'completed')
+                    .reduce((sum, o) => sum + (parseFloat(o.totalPrice) || 0), 0);
+
+                const pendingEl = document.getElementById('pending-orders');
+                if (pendingEl) {
+                    pendingEl.innerText = pending;
+                    if (pending > 0) {
+                        pendingEl.classList.add('text-red-600', 'font-bold');
+                    } else {
+                        pendingEl.classList.remove('text-red-600');
+                        pendingEl.classList.add('text-brandPinkDark');
+                    }
+                }
+
+                const revStr = totalRevenue >= 1000 
+                    ? `₦ ${(totalRevenue / 1000).toFixed(1)}k` 
+                    : `₦ ${totalRevenue.toLocaleString()}`;
+                safeSet('revenue-mtd', revStr);
+            }
+
+        } catch (err) {
+            console.error("Dashboard Sync Error:", err);
         }
-
-    } catch (err) {
-        console.error("Dashboard Sync Error:", err);
     }
-}
 
-    // Standard housekeeping functions
     function toggleSidebar() {
-        document.getElementById('sidebar').classList.toggle('-translate-x-full');
+        document.getElementById('sidebar')?.classList.toggle('-translate-x-full');
     }
 
     function logout() {
@@ -239,7 +245,7 @@
     window.onload = () => {
         fetchDashboardStats();
         const dateEl = document.getElementById('current-date');
-        if(dateEl) {
+        if (dateEl) {
             dateEl.innerText = new Date().toLocaleDateString('en-US', {
                 weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
             });
