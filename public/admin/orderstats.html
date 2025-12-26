@@ -170,61 +170,77 @@
             document.getElementById('stat-pending').innerText = ALL_ORDERS.filter(o => o.status === 'pending').length;
         }
 
-        function renderOrders() {
-            const container = document.getElementById('orders-list');
-            const filter = document.getElementById('statusFilter').value;
-            const filtered = ALL_ORDERS.filter(o => filter === 'all' || o.status === filter);
+function renderOrders() {
+    const container = document.getElementById('orders-list');
+    const filter = document.getElementById('statusFilter').value;
+    const filtered = ALL_ORDERS.filter(o => filter === 'all' || o.status === filter);
 
-            if (filtered.length === 0) {
-                container.innerHTML = `<div class="bg-white border p-10 text-center text-[10px] uppercase tracking-widest text-gray-400">No orders found.</div>`;
-                return;
-            }
+    if (filtered.length === 0) {
+        container.innerHTML = `<div class="bg-white border p-10 text-center text-[10px] uppercase tracking-widest text-gray-400">No orders found.</div>`;
+        return;
+    }
 
-            container.innerHTML = filtered.map(order => `
-                <div class="order-card bg-white border shadow-sm p-6 status-${order.status}">
-                    <div class="flex flex-col md:flex-row justify-between gap-6">
-                        <div class="flex-1">
-                            <div class="flex items-center gap-3 mb-2">
-                                <span class="text-[9px] px-2 py-0.5 border font-bold uppercase tracking-widest ${order.userId ? 'bg-blue-50 text-blue-600' : 'bg-gray-100 text-gray-600'}">
-                                    ${order.userId ? 'Member' : 'Guest'}
-                                </span>
-                                <span class="text-[10px] text-gray-400 font-mono">#${order._id.slice(-8).toUpperCase()}</span>
-                            </div>
-                            <h3 class="font-bold text-sm uppercase tracking-wider">${order.shippingDetails?.firstName} ${order.shippingDetails?.lastName}</h3>
-                            <p class="text-[10px] text-gray-500 mt-1"><i class="fa-solid fa-envelope mr-1"></i> ${order.shippingDetails?.email}</p>
-                            <p class="text-[10px] text-gray-500"><i class="fa-solid fa-location-dot mr-1"></i> ${order.shippingDetails?.city}</p>
+    container.innerHTML = filtered.map(order => {
+        // --- DATA MAPPING FIX ---
+        // This line checks all common keys where shipping data might be stored
+        const info = order.shippingDetails || order.shippingInfo || order.address || {};
+        
+        // Extract names: supports separate first/last names or a single fullName field
+        const firstName = info.firstName || info.fullName?.split(' ')[0] || "Customer";
+        const lastName = info.lastName || info.fullName?.split(' ')[1] || "";
+        
+        // Extract contact info
+        const email = info.email || "No email";
+        const phone = info.phone || "No phone";
+        const city = info.city || "No city";
+        // -----------------------
+
+        return `
+            <div class="order-card bg-white border shadow-sm p-6 status-${order.status}">
+                <div class="flex flex-col md:flex-row justify-between gap-6">
+                    <div class="flex-1">
+                        <div class="flex items-center gap-3 mb-2">
+                            <span class="text-[9px] px-2 py-0.5 border font-bold uppercase tracking-widest ${order.userId ? 'bg-blue-50 text-blue-600' : 'bg-gray-100 text-gray-600'}">
+                                ${order.userId ? 'Member' : 'Guest'}
+                            </span>
+                            <span class="text-[10px] text-gray-400 font-mono">#${order._id.slice(-8).toUpperCase()}</span>
                         </div>
+                        <h3 class="font-bold text-sm uppercase tracking-wider">${firstName} ${lastName}</h3>
+                        <p class="text-[10px] text-gray-500 mt-1"><i class="fa-solid fa-envelope mr-1"></i> ${email}</p>
+                        <p class="text-[10px] text-gray-500"><i class="fa-solid fa-phone mr-1"></i> ${phone}</p>
+                        <p class="text-[10px] text-gray-500"><i class="fa-solid fa-location-dot mr-1"></i> ${city}</p>
+                    </div>
 
-                        <div class="flex-[1.5] border-t md:border-t-0 md:border-l md:pl-6 pt-4 md:pt-0">
-                            <p class="text-[9px] uppercase tracking-widest text-gray-400 font-bold mb-3">Order Items</p>
-                            <div class="space-y-2">
-                                ${order.items.map(item => `
-                                    <div class="flex justify-between items-center text-[11px]">
-                                        <span><strong class="uppercase">${item.name}</strong> (x${item.quantity})</span>
-                                        <span class="text-gray-400">${item.variantName || 'Standard'}</span>
-                                    </div>
-                                `).join('')}
-                            </div>
-                            <div class="mt-4 pt-3 border-t flex justify-between items-center">
-                                <span class="text-lg font-light text-brandPinkDark">₦ ${parseFloat(order.totalPrice).toLocaleString()}</span>
-                            </div>
-                        </div>
-
-                        <div class="flex flex-col justify-center gap-2 border-t md:border-t-0 md:border-l md:pl-6 pt-4 md:pt-0 min-w-[150px]">
-                            ${order.status === 'pending' ? `
-                                <button onclick="updateStatus('${order._id}', 'completed')" class="bg-brandBlack text-white text-[9px] uppercase tracking-[0.2em] py-3 px-4 font-bold hover:bg-green-700 transition">Confirm & Ship</button>
-                                <button onclick="updateStatus('${order._id}', 'cancelled')" class="border border-gray-200 text-gray-400 text-[9px] uppercase tracking-[0.2em] py-3 px-4 font-bold hover:bg-red-50 hover:text-red-500 transition">Cancel</button>
-                            ` : `
-                                <div class="text-center">
-                                    <p class="text-[9px] uppercase tracking-widest font-bold ${order.status === 'completed' ? 'text-green-500' : 'text-red-500'}">${order.status}</p>
-                                    <p class="text-[8px] text-gray-400 mt-1">${new Date(order.createdAt).toLocaleDateString()}</p>
+                    <div class="flex-[1.5] border-t md:border-t-0 md:border-l md:pl-6 pt-4 md:pt-0">
+                        <p class="text-[9px] uppercase tracking-widest text-gray-400 font-bold mb-3">Order Items</p>
+                        <div class="space-y-2">
+                            ${order.items.map(item => `
+                                <div class="flex justify-between items-center text-[11px]">
+                                    <span><strong class="uppercase">${item.name}</strong> (x${item.quantity})</span>
+                                    <span class="text-gray-400">${item.variantName || 'Standard'}</span>
                                 </div>
-                            `}
+                            `).join('')}
+                        </div>
+                        <div class="mt-4 pt-3 border-t flex justify-between items-center">
+                            <span class="text-lg font-light text-brandPinkDark">₦ ${parseFloat(order.totalPrice).toLocaleString()}</span>
                         </div>
                     </div>
+
+                    <div class="flex flex-col justify-center gap-2 border-t md:border-t-0 md:border-l md:pl-6 pt-4 md:pt-0 min-w-[150px]">
+                        ${order.status === 'pending' ? `
+                            <button onclick="updateStatus('${order._id}', 'completed')" class="bg-brandBlack text-white text-[9px] uppercase tracking-[0.2em] py-3 px-4 font-bold hover:bg-green-700 transition">Confirm & Ship</button>
+                            <button onclick="updateStatus('${order._id}', 'cancelled')" class="border border-gray-200 text-gray-400 text-[9px] uppercase tracking-[0.2em] py-3 px-4 font-bold hover:bg-red-50 hover:text-red-500 transition">Cancel</button>
+                        ` : `
+                            <div class="text-center">
+                                <p class="text-[9px] uppercase tracking-widest font-bold ${order.status === 'completed' ? 'text-green-500' : 'text-red-500'}">${order.status}</p>
+                                <p class="text-[8px] text-gray-400 mt-1">${new Date(order.createdAt).toLocaleDateString()}</p>
+                            </div>
+                        `}
+                    </div>
                 </div>
-            `).join('');
-        }
+            </div>
+        `}).join('');
+}
 
         async function updateStatus(orderId, newStatus) {
             if (!confirm(`Mark order as ${newStatus}?`)) return;

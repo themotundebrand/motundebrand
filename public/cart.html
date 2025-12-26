@@ -291,6 +291,31 @@
     let cart = JSON.parse(localStorage.getItem('tmb_cart')) || [];
     const FLAT_SHIPPING_FEE = 5000;
 
+    // --- SIDEBAR LOGIC ---
+    function toggleSidebar(open) {
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('sidebar-overlay');
+        if (open) {
+            sidebar.classList.replace('sidebar-closed', 'sidebar-open');
+            overlay.classList.remove('hidden');
+        } else {
+            sidebar.classList.replace('sidebar-open', 'sidebar-closed');
+            overlay.classList.add('hidden');
+        }
+    }
+
+    // --- UI TOGGLES ---
+    function togglePaymentUI() {
+        const bankDetails = document.getElementById('bank-details');
+        const selectedMethod = document.querySelector('input[name="pay-method"]:checked').value;
+        
+        if (selectedMethod === 'bank') {
+            bankDetails.classList.remove('hidden');
+        } else {
+            bankDetails.classList.add('hidden');
+        }
+    }
+
     // --- MODAL CONTROLLER ---
     function showAlert(title, message) {
         const modal = document.getElementById('brand-modal');
@@ -343,19 +368,7 @@
 
     window.addEventListener('DOMContentLoaded', autoFillUserDetails);
 
-    // --- CART UTILITIES ---
-    async function fetchAvailableStock(productId, selectedSize) {
-        try {
-            const response = await fetch(`/api/products/${productId}/stock`);
-            const data = await response.json();
-            if (data.variants) {
-                const variant = data.variants.find(v => v.size === selectedSize);
-                return variant ? variant.stock : 0;
-            }
-            return 0;
-        } catch (error) { return 0; }
-    }
-
+    // --- NOTIFICATIONS ---
     function showNotification(message) {
         const toast = document.getElementById('notification-toast');
         const msgSpan = document.getElementById('toast-message');
@@ -366,6 +379,24 @@
             toast.classList.add('opacity-0', 'translate-y-10', 'pointer-events-none');
             toast.classList.remove('opacity-100', 'translate-y-0');
         }, 3500);
+    }
+
+    // --- CART ACTIONS ---
+    function updateQty(index, change) {
+        cart[index].quantity += change;
+        if (cart[index].quantity < 1) cart[index].quantity = 1;
+        saveAndRender();
+    }
+
+    function removeItem(index) {
+        cart.splice(index, 1);
+        saveAndRender();
+        showNotification("Item removed from bag");
+    }
+
+    function saveAndRender() {
+        localStorage.setItem('tmb_cart', JSON.stringify(cart));
+        renderCart();
     }
 
     function renderCart() {
@@ -391,7 +422,7 @@
                             <h4 class="text-[12px] uppercase tracking-widest font-bold">${item.name}</h4>
                             <p class="text-[10px] text-brandPinkDark font-bold mt-1">Size: ${item.size}</p>
                         </div>
-                        <button onclick="removeItem(${index})" class="text-gray-300 hover:text-red-500 text-2xl">&times;</button>
+                        <button onclick="removeItem(${index})" class="text-gray-300 hover:text-red-500 text-2xl leading-none">&times;</button>
                     </div>
                     <div class="flex justify-between items-center mt-6">
                         <div class="flex border border-gray-200 text-[10px]">
@@ -419,19 +450,30 @@
     async function handleCheckout() {
         if (cart.length === 0) return showAlert("Empty Bag", "Please add items before checking out.");
         
-        const name = document.getElementById('cust-name').value;
-        const email = document.getElementById('cust-email').value;
-        const phone = document.getElementById('cust-phone').value;
-        const whatsapp = document.getElementById('cust-whatsapp').value;
-        const method = document.querySelector('input[name="pay-method"]:checked').value;
+        const name = document.getElementById('cust-name').value.trim();
+        const email = document.getElementById('cust-email').value.trim();
+        const phone = document.getElementById('cust-phone').value.trim();
+        const whatsapp = document.getElementById('cust-whatsapp').value.trim();
+        const street = document.getElementById('cust-street').value.trim();
+        const city = document.getElementById('cust-city').value.trim();
+        const state = document.getElementById('cust-state').value.trim();
+        
+        const selectedMethodElement = document.querySelector('input[name="pay-method"]:checked');
+        const method = selectedMethodElement ? selectedMethodElement.value : null;
         const receiptInput = document.getElementById('receipt-upload');
 
-        if (!name || !email || !phone || !whatsapp) {
+        if (!name || !email || !phone || !whatsapp || !street || !city || !state) {
             return showAlert("Details Required", "Please fill in all contact and shipping information.");
         }
 
-        if (method === 'bank' && (!receiptInput.files || receiptInput.files.length === 0)) {
-            return showAlert("Receipt Required", "Please upload your payment screenshot to proceed.");
+        if (method === 'online') {
+            return showAlert("Maintenance", "Online Card Payment is currently unavailable. Please use Bank Transfer.");
+        }
+
+        if (method === 'bank') {
+            if (!receiptInput.files || receiptInput.files.length === 0) {
+                return showAlert("Receipt Required", "Please upload your payment screenshot to verify your order.");
+            }
         }
 
         const checkoutBtn = document.querySelector('button[onclick="handleCheckout()"]');
@@ -440,14 +482,13 @@
         checkoutBtn.disabled = true;
 
         try {
-            // Updated token handling
             const token = localStorage.getItem('motunde_token');
             const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
             
             let receiptBase64 = null;
             let receiptFileName = "";
 
-            if (method === 'bank' && receiptInput.files.length > 0) {
+            if (method === 'bank') {
                 const file = receiptInput.files[0];
                 receiptFileName = file.name;
                 receiptBase64 = await new Promise((resolve, reject) => {
@@ -458,31 +499,22 @@
                 });
             }
             
-           const orderData = {
-        items: cart.map(item => ({
-            productId: item.id,
-            name: item.name,
-            size: item.size,
-            quantity: item.quantity,
-            price: item.price,
-            image: item.image 
-        })),
-                customerDetails: {
-                    name,
-                    email: email.toLowerCase(),
-                    phone,
-                    whatsapp,
-                    address: document.getElementById('cust-street').value,
-                    city: document.getElementById('cust-city').value,
-                    state: document.getElementById('cust-state').value
-                },
+            const orderData = {
+                items: cart.map(item => ({
+                    productId: item.id,
+                    name: item.name,
+                    size: item.size,
+                    quantity: item.quantity,
+                    price: item.price,
+                    image: item.image 
+                })),
+                customerDetails: { name, email: email.toLowerCase(), phone, whatsapp, address: street, city, state },
                 totalPrice: subtotal + FLAT_SHIPPING_FEE,
                 paymentMethod: method,
                 receiptBase64,
                 receiptFileName
             };
 
-            // API Call with fixed Authorization Header
             const response = await fetch('/api/orders', {
                 method: 'POST',
                 headers: { 
@@ -495,9 +527,7 @@
             if (response.ok) {
                 const result = await response.json();
                 localStorage.removeItem('tmb_cart');
-                cart = [];
-                const orderId = result.orderId || result._id || '';
-                window.location.href = `order.html?id=${orderId}`;
+                window.location.href = `order.html?id=${result.orderId || result._id}`;
             } else {
                 const errorData = await response.json();
                 showAlert("Order Failed", errorData.error || "Issue processing order.");
@@ -505,13 +535,12 @@
                 checkoutBtn.disabled = false;
             }
         } catch (error) {
-            console.error("Checkout Error:", error);
             showAlert("Error", "Could not process order. Please check your connection.");
             checkoutBtn.innerText = originalText;
             checkoutBtn.disabled = false;
         }
     }
-
+    
     renderCart();
 </script>
 </body>
