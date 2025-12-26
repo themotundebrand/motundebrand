@@ -156,8 +156,7 @@
     }
 
     /**
-     * FETCH & DISPLAY CURRENT INVENTORY
-     * Shows what is currently on the shelves
+     * FETCH & DISPLAY CURRENT INVENTORY (MEN ONLY)
      */
     async function fetchMenInventory() {
         try {
@@ -174,7 +173,6 @@
                 listContainer.innerHTML = '<tr><td colspan="3" class="p-12 text-center text-xs text-gray-400 uppercase tracking-widest">No Men category products found in database</td></tr>';
             } else {
                 menScents.forEach(product => {
-                    // Generate rows for each size (variant)
                     const variantsHtml = (product.variants || []).map(v => `
                         <div class="flex justify-between items-center mb-1 border-b border-gray-50 pb-1 last:border-0 w-48">
                             <span class="text-[10px] font-bold text-gray-400 uppercase tracking-tighter">${v.size}</span>
@@ -187,7 +185,6 @@
                         </div>
                     `).join('');
 
-                    // Calculate Total items across all sizes for this product
                     const totalStock = (product.variants || []).reduce((sum, v) => sum + (parseInt(v.stock) || 0), 0);
 
                     const row = `
@@ -195,7 +192,7 @@
                             <td class="px-8 py-6">
                                 <div class="flex items-center">
                                     <div class="relative">
-                                        <img src="${product.imageUrl || 'https://via.placeholder.com/40'}" class="w-12 h-12 object-cover mr-6 border rounded-sm grayscale group-hover:grayscale-0 transition-all">
+                                        <img src="${product.imageUrl || 'https://via.placeholder.com/40'}" class="w-12 h-12 object-cover mr-6 border rounded-sm">
                                         ${totalStock <= 10 && totalStock > 0 ? '<div class="absolute -top-1 -left-1 w-3 h-3 bg-orange-500 rounded-full border-2 border-white"></div>' : ''}
                                     </div>
                                     <div>
@@ -219,8 +216,8 @@
                 });
             }
             
-            // After loading inventory, load the movement log
-            fetchSalesLog();
+            // Pass the products list to the sales log for cross-referencing
+            fetchSalesLog(products);
 
         } catch (err) {
             console.error("Fetch Error:", err);
@@ -229,62 +226,68 @@
     }
 
     /**
-     * FETCH & DISPLAY MOVEMENT LOG (DEDUCTIONS)
-     * Shows recent sales that decreased stock
+     * FETCH & DISPLAY MOVEMENT LOG (STRICT MEN FILTER)
      */
-    async function fetchSalesLog() {
+    async function fetchSalesLog(allProducts) {
         const token = localStorage.getItem('tmb_admin_token');
         const logContainer = document.getElementById('sales-log');
         
         try {
+            // 1. Create a set of Men scent names for high-speed cross-referencing
+            const menProductNames = new Set(
+                allProducts
+                    .filter(p => (p.category || '').toLowerCase() === 'men')
+                    .map(p => p.name)
+            );
+
+            // 2. Fetch all orders
             const res = await fetch(`${API_URL}/admin/orders`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             const orders = await res.json();
             
-            let menSales = [];
+            let filteredSales = [];
             orders.forEach(order => {
-                // We only track movements for orders that are confirmed/paid/shipped
-                if (['completed', 'paid', 'shipped'].includes(order.status.toLowerCase())) {
+                // Track deductions only for confirmed/successful orders
+                if (['completed', 'paid', 'shipped', 'delivered'].includes(order.status.toLowerCase())) {
                     (order.items || []).forEach(item => {
-                        // In a production setup, your order item would ideally include category. 
-                        // For now, we log items associated with successful orders.
-                        menSales.push({
-                            date: order.createdAt,
-                            name: item.name,
-                            variant: item.variantName || item.size || 'Standard',
-                            qty: item.quantity,
-                            price: (item.price || 0) * (item.quantity || 0)
-                        });
+                        // CROSS-REFERENCE CHECK: Only include if the item name is in the Men's Scent list
+                        if (menProductNames.has(item.name)) {
+                            filteredSales.push({
+                                date: order.createdAt,
+                                name: item.name,
+                                variant: item.variantName || item.size || 'Standard',
+                                qty: item.quantity,
+                                price: (item.price || 0) * (item.quantity || 0)
+                            });
+                        }
                     });
                 }
             });
 
-            // Sort so most recent sales appear at the top
-            menSales.sort((a, b) => new Date(b.date) - new Date(a.date));
+            // Sort by Date (Most recent first)
+            filteredSales.sort((a, b) => new Date(b.date) - new Date(a.date));
 
-            if (menSales.length === 0) {
-                logContainer.innerHTML = '<tr><td colspan="4" class="p-12 text-center text-gray-400 uppercase tracking-widest text-[9px]">No recent stock movements detected</td></tr>';
+            if (filteredSales.length === 0) {
+                logContainer.innerHTML = '<tr><td colspan="4" class="p-12 text-center text-gray-400 uppercase tracking-widest text-[9px]">No recent Men collection movements</td></tr>';
                 return;
             }
 
-            logContainer.innerHTML = menSales.slice(0, 20).map(sale => { // Show last 20 movements
+            // Display results
+            logContainer.innerHTML = filteredSales.slice(0, 20).map(sale => {
                 const d = new Date(sale.date);
-                const timeStr = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                const dateStr = d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
-
                 return `
                     <tr class="border-b hover:bg-gray-50 transition-colors">
                         <td class="px-8 py-4">
-                            <span class="block font-bold text-[10px]">${timeStr}</span>
-                            <span class="text-[9px] text-gray-400 uppercase tracking-tighter">${dateStr}</span>
+                            <span class="block font-bold text-[10px]">${d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                            <span class="text-[9px] text-gray-400 uppercase tracking-tighter">${d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })}</span>
                         </td>
                         <td class="px-8 py-4">
                             <span class="block uppercase font-bold text-gray-900 text-[10px]">${sale.name}</span>
                             <span class="text-[9px] text-gray-400 uppercase font-medium">Size: ${sale.variant}</span>
                         </td>
-                        <td class="px-8 py-4 font-mono text-red-600 font-bold text-[11px]">
-                            -${sale.qty}
+                        <td class="px-8 py-4">
+                            <span class="bg-gray-100 text-gray-900 px-2 py-1 rounded-sm font-mono font-bold text-[10px]">-${sale.qty}</span>
                         </td>
                         <td class="px-8 py-4 text-right font-bold text-[10px]">
                             ₦${sale.price.toLocaleString()}
@@ -304,7 +307,6 @@
         window.location.href = 'tmbadmin-login.html';
     }
 
-    // Initialize page
     window.onload = fetchMenInventory;
 </script>
 </body>

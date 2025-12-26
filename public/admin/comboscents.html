@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Combo Sets | TMB Management</title>
+    <link rel="icon" type="image/png" href="https://i.imgur.com/CVKXV7R.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brandWhite: '#FFFFFF',
+                        brandBlack: '#000000',
+                        brandComboDark: '#6D8C69',
+                        brandComboLight: '#E8F0E7',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #FBFBFB; }
+        .sidebar { transition: all 0.3s ease; }
+        .nav-link:hover { background-color: #E8F0E7; color: #000; }
+        .active-link { background-color: #6D8C69; color: #fff; }
+        .input-field { border: 1px solid #e5e7eb; padding: 10px; font-size: 12px; width: 100%; transition: border-color 0.2s; }
+        .input-field:focus { outline: none; border-color: #6D8C69; }
+        .mobile-overlay { background: rgba(0,0,0,0.5); display: none; }
+        .mobile-overlay.active { display: block; }
+        .truncate-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    </style>
+</head>
+<body class="text-brandBlack">
+
+    <div class="lg:hidden bg-white border-b p-4 flex justify-between items-center sticky top-0 z-50">
+        <span class="font-bold tracking-widest text-xs uppercase">TMB Admin</span>
+        <button onclick="toggleSidebar()" class="text-brandBlack text-xl">
+            <i class="fa-solid fa-bars-staggered"></i>
+        </button>
+    </div>
+
+    <div class="flex">
+        <div id="overlay" onclick="toggleSidebar()" class="mobile-overlay fixed inset-0 z-40 lg:hidden"></div>
+        
+        <aside id="sidebar" class="sidebar fixed lg:static inset-y-0 left-0 z-50 w-64 bg-white border-r transform -translate-x-full lg:translate-x-0 h-screen flex flex-col">
+            <div class="p-8 border-b">
+                <a href="tmbdashboard.html"><h1 class="font-bold tracking-[0.3em] text-sm text-center hover:text-brandComboDark transition">TMB SYSTEM</h1></a>
+            </div>
+
+            <nav class="flex-1 px-4 py-8 space-y-1 overflow-y-auto">
+                <p class="text-[9px] uppercase tracking-[0.2em] text-gray-400 px-4 mb-4 font-bold">Main</p>
+                <a href="tmbdashboard.html" class="nav-link flex items-center px-4 py-3 text-[10px] tracking-widest uppercase font-semibold transition-all">
+                    <i class="fa-solid fa-gauge-high mr-3 w-5 text-gray-400"></i> Dashboard
+                </a>
+                <p class="text-[9px] uppercase tracking-[0.2em] text-gray-400 px-4 mt-8 mb-4 font-bold">Inventory</p>
+                <a href="womenscents.html" class="nav-link flex items-center px-4 py-3 text-[10px] tracking-widest uppercase font-semibold transition-all">
+                    <i class="fa-solid fa-venus mr-3 w-5 text-gray-400"></i> Women Scents
+                </a>
+                <a href="menscents.html" class="nav-link flex items-center px-4 py-3 text-[10px] tracking-widest uppercase font-semibold transition-all">
+                    <i class="fa-solid fa-mars mr-3 w-5 text-gray-400"></i> Men Scents
+                </a>
+                <a href="comboscents.html" class="nav-link active-link flex items-center px-4 py-3 text-[10px] tracking-widest uppercase font-semibold transition-all">
+                    <i class="fa-solid fa-layer-group mr-3 w-5 text-white"></i> Combo Sets
+                </a>
+                </nav>
+
+            <div class="p-4 border-t">
+                <button onclick="logout()" class="w-full flex items-center justify-center px-4 py-3 text-[10px] uppercase tracking-widest font-bold bg-brandBlack text-white hover:bg-red-900 transition-all">
+                    <i class="fa-solid fa-power-off mr-2"></i> System Exit
+                </button>
+            </div>
+        </aside>
+
+        <main class="flex-1 min-h-screen p-4 lg:p-12">
+            <div class="max-w-full lg:max-w-[1400px]">
+                <div class="mb-8 lg:mb-12 text-center lg:text-left">
+                    <h2 class="text-xl lg:text-2xl font-light tracking-tight mb-1">Combo Sets Collection</h2>
+                    <p class="text-[8px] lg:text-[9px] uppercase tracking-[0.3em] text-brandComboDark font-bold">Bundled Offers & Promotions</p>
+                </div>
+
+                <div id="formContainer" class="bg-white border p-5 lg:p-8 mb-10 shadow-sm">
+                    <div class="flex justify-between items-center mb-6 border-b pb-4">
+                        <h3 id="formTitle" class="text-[10px] uppercase tracking-[0.2em] font-bold">Create New Combo Set</h3>
+                        <button id="cancelEdit" onclick="resetForm()" class="hidden text-[10px] uppercase text-red-500 font-bold">Cancel Edit</button>
+                    </div>
+                    
+                <form id="addComboForm" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <input type="hidden" id="editProductId">
+    <div class="space-y-4">
+        <div>
+            <label class="text-[9px] uppercase font-bold text-gray-400 block mb-2">Combo Name</label>
+            <input type="text" id="pName" placeholder="e.g. Luxury Executive Bundle" class="input-field" required>
+        </div>
+
+        <div class="border p-4 bg-gray-50 rounded-sm space-y-3">
+            <label class="text-[9px] uppercase font-bold text-brandComboDark block mb-2">Set Contents (Admin Input)</label>
+            
+            <div class="grid grid-cols-1 gap-2">
+                <input type="text" id="itemPerfume" placeholder="Perfume Name (e.g. Oud Touch - 100ml)" class="input-field">
+                <input type="text" id="itemDeodorant" placeholder="Deodorant (e.g. Smart Black - 200ml)" class="input-field">
+                <input type="text" id="itemSpray" placeholder="Body Spray (e.g. Victor - 250ml)" class="input-field">
+                <input type="text" id="itemMist" placeholder="Body Mist (e.g. Pink Chiffon - 250ml)" class="input-field">
+                <input type="text" id="itemExtra1" placeholder="Additional Item 1" class="input-field">
+                <input type="text" id="itemExtra2" placeholder="Additional Item 2" class="input-field">
+            </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+            <div>
+                <label class="text-[9px] uppercase font-bold text-gray-400 block mb-2">Total Set Price (₦)</label>
+                <input type="number" id="comboPrice" placeholder="Amount" class="input-field" required>
+            </div>
+            <div>
+                <label class="text-[9px] uppercase font-bold text-gray-400 block mb-2">Available Sets</label>
+                <input type="number" id="comboStock" placeholder="Stock Quantity" class="input-field" required>
+            </div>
+        </div>
+    </div>
+
+    <div class="space-y-4">
+        <label class="text-[9px] uppercase font-bold text-gray-400 block mb-2">Promo Image</label>
+        <div class="border-2 border-dashed border-gray-200 h-48 lg:h-64 flex flex-col items-center justify-center relative hover:border-brandComboDark transition-colors bg-white">
+            <input type="file" class="absolute inset-0 opacity-0 cursor-pointer" id="imageUpload" accept="image/*">
+            <i class="fa-solid fa-boxes-packing text-2xl text-gray-300 mb-2"></i>
+            <p id="fileNameDisplay" class="text-[10px] text-gray-400 uppercase tracking-widest text-center px-4">Upload Set Photo</p>
+        </div>
+        <button type="submit" id="submitBtn" class="w-full bg-brandBlack text-white text-[10px] uppercase tracking-[0.2em] py-4 font-bold hover:bg-brandComboDark transition-colors">
+            Update Combo Inventory
+        </button>
+    </div>
+</form>
+                </div>
+
+                <h3 class="text-[10px] uppercase tracking-[0.2em] font-bold mb-6">Active Combo Offers</h3>
+                <div id="inventoryGrid" class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 lg:gap-6">
+                    </div>
+            </div>
+        </main>
+    </div>
+
+    <div id="customAlert" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-4">
+        <div class="fixed inset-0 bg-black/50 backdrop-blur-sm"></div>
+        <div class="bg-white w-full max-w-sm relative z-10 p-8 border border-gray-100 shadow-2xl text-center">
+            <div id="alertIcon" class="mb-4 text-brandComboDark text-3xl"></div>
+            <h3 id="alertTitle" class="text-[10px] uppercase tracking-[0.2em] font-bold mb-2">System Notification</h3>
+            <p id="alertMessage" class="text-xs text-gray-500 mb-6"></p>
+            <button onclick="closeAlert()" class="w-full bg-brandBlack text-white text-[9px] uppercase tracking-widest py-3 font-bold hover:bg-brandComboDark">Acknowledge</button>
+        </div>
+    </div>
+
+    <div id="customConfirm" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-4">
+        <div class="fixed inset-0 bg-black/50 backdrop-blur-sm"></div>
+        <div class="bg-white w-full max-w-sm relative z-10 p-8 border border-gray-100 shadow-2xl text-center">
+            <div class="mb-4 text-red-400 text-3xl"><i class="fa-solid fa-circle-exclamation"></i></div>
+            <h3 class="text-[10px] uppercase tracking-[0.2em] font-bold mb-2">Confirm Removal</h3>
+            <p id="confirmMessage" class="text-xs text-gray-500 mb-6"></p>
+            <div class="flex gap-3">
+                <button onclick="closeConfirm(false)" class="flex-1 border text-gray-400 text-[9px] uppercase tracking-widest py-3">Cancel</button>
+                <button onclick="closeConfirm(true)" class="flex-1 bg-red-500 text-white text-[9px] uppercase tracking-widest py-3">Delete</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+      const API_URL = '/api'; 
+let globalProducts = [];
+let confirmResolve;
+
+// System Utilities
+function showAlert(message, isError = false) {
+    const modal = document.getElementById('customAlert');
+    document.getElementById('alertMessage').innerText = message;
+    document.getElementById('alertIcon').innerHTML = isError ? 
+        '<i class="fa-solid fa-circle-xmark text-red-500"></i>' : 
+        '<i class="fa-solid fa-circle-check text-brandComboDark"></i>';
+    modal.classList.remove('hidden');
+}
+function closeAlert() { document.getElementById('customAlert').classList.add('hidden'); }
+function showConfirm(message) {
+    document.getElementById('confirmMessage').innerText = message;
+    document.getElementById('customConfirm').classList.remove('hidden');
+    return new Promise((resolve) => { confirmResolve = resolve; });
+}
+function closeConfirm(result) {
+    document.getElementById('customConfirm').classList.add('hidden');
+    if (confirmResolve) confirmResolve(result);
+}
+function logout() {
+    localStorage.removeItem('tmb_admin_token');
+    window.location.href = 'tmbadmin-login.html';
+}
+
+// Logic
+async function loadProducts() {
+    try {
+        const response = await fetch(`${API_URL}/products`);
+        const products = await response.json();
+        globalProducts = products.filter(p => p.category === 'combo');
+        const grid = document.getElementById('inventoryGrid');
+        
+        if (globalProducts.length === 0) {
+            grid.innerHTML = '<p class="text-[10px] uppercase text-gray-400 col-span-full text-center py-12">No combos currently active.</p>';
+            return;
+        }
+
+        grid.innerHTML = globalProducts.map(product => {
+            const items = product.description ? product.description.split(' | ') : [];
+            const pricing = product.variants[0] || { price: 0, stock: 0 };
+
+            return `
+            <div class="bg-white border p-3 group shadow-sm">
+                <div class="aspect-square bg-gray-50 mb-3 overflow-hidden relative border border-gray-100">
+                    <img src="${product.imageUrl}" class="w-full h-full object-cover">
+                    <div class="absolute top-2 right-2 bg-brandComboDark text-white text-[7px] font-bold px-2 py-1 uppercase">Combo Set</div>
+                </div>
+                <h4 class="text-[10px] font-bold uppercase tracking-wider mb-2 truncate-2 h-8 leading-tight">${product.name}</h4>
+                <div class="space-y-1 mb-3">
+                    ${items.filter(i => i.trim() !== "").map(item => `
+                        <div class="text-[8px] flex border-b border-gray-50 pb-1 text-gray-500 uppercase">
+                           <i class="fa-solid fa-check text-brandComboDark mr-1 mt-0.5"></i> ${item}
+                        </div>`).join('')}
+                    <div class="pt-2 flex justify-between items-center">
+                        <span class="text-[10px] font-bold">₦${Number(pricing.price).toLocaleString()}</span>
+                        <span class="bg-brandComboLight text-brandComboDark text-[8px] px-2 py-0.5 font-bold uppercase">Stock: ${pricing.stock}</span>
+                    </div>
+                </div>
+                <div class="flex flex-col gap-2 border-t pt-3">
+                    <button onclick="editProduct('${product._id}')" class="text-[8px] uppercase font-bold text-brandComboDark text-center">Manage Combo</button>
+                    <button onclick="deleteProduct('${product._id}')" class="text-[8px] uppercase font-bold text-red-400 text-center">Remove Offer</button>
+                </div>
+            </div>`;
+        }).join('');
+    } catch (err) { console.error(err); }
+}
+
+function editProduct(id) {
+    const product = globalProducts.find(p => p._id === id);
+    if (!product) return;
+    
+    document.getElementById('editProductId').value = product._id;
+    document.getElementById('pName').value = product.name;
+    
+    // Split combined description back into individual inputs
+    const items = product.description ? product.description.split(' | ') : [];
+    document.getElementById('itemPerfume').value = items[0] || '';
+    document.getElementById('itemDeodorant').value = items[1] || '';
+    document.getElementById('itemSpray').value = items[2] || '';
+    document.getElementById('itemMist').value = items[3] || '';
+    document.getElementById('itemExtra1').value = items[4] || '';
+    document.getElementById('itemExtra2').value = items[5] || '';
+
+    // Handle price and stock
+    if(product.variants && product.variants.length > 0) {
+        document.getElementById('comboPrice').value = product.variants[0].price;
+        document.getElementById('comboStock').value = product.variants[0].stock;
+    }
+
+    document.getElementById('formTitle').innerText = "Editing Combo: " + product.name;
+    document.getElementById('submitBtn').innerText = "Apply Changes";
+    document.getElementById('cancelEdit').classList.remove('hidden');
+    document.getElementById('imageUpload').required = false;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function resetForm() {
+    document.getElementById('addComboForm').reset();
+    document.getElementById('editProductId').value = '';
+    document.getElementById('formTitle').innerText = "Create New Combo Set";
+    document.getElementById('submitBtn').innerText = "Update Combo Inventory";
+    document.getElementById('cancelEdit').classList.add('hidden');
+    document.getElementById('imageUpload').required = true;
+}
+
+document.getElementById('addComboForm').onsubmit = async (e) => {
+    e.preventDefault();
+    const editId = document.getElementById('editProductId').value;
+    const submitBtn = document.getElementById('submitBtn');
+    const file = document.getElementById('imageUpload').files[0];
+    const token = localStorage.getItem('tmb_admin_token');
+
+    // Combine 6 fields into one string
+    const items = [
+        document.getElementById('itemPerfume').value,
+        document.getElementById('itemDeodorant').value,
+        document.getElementById('itemSpray').value,
+        document.getElementById('itemMist').value,
+        document.getElementById('itemExtra1').value,
+        document.getElementById('itemExtra2').value
+    ].join(' | ');
+
+    const variants = [{
+        size: "Combo Set",
+        price: document.getElementById('comboPrice').value,
+        stock: document.getElementById('comboStock').value
+    }];
+
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = 'PROCESSING...';
+
+    let imageBase64 = null;
+    if (file) {
+        imageBase64 = await new Promise(resolve => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result.split(',')[1]);
+            reader.readAsDataURL(file);
+        });
+    }
+
+    const payload = {
+        name: document.getElementById('pName').value,
+        description: items,
+        category: 'combo',
+        variants: variants,
+        ...(imageBase64 && { imageBase64, fileName: file.name, contentType: file.type })
+    };
+
+    try {
+        const res = await fetch(editId ? `${API_URL}/admin/products/${editId}` : `${API_URL}/admin/products`, {
+            method: editId ? 'PUT' : 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+            body: JSON.stringify(payload)
+        });
+        if(res.ok) {
+            showAlert("Combo inventory updated.");
+            setTimeout(() => location.reload(), 1000);
+        }
+    } catch (err) { 
+        showAlert("Error updating collection", true); 
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = 'Update Combo Inventory';
+    }
+};
+
+async function deleteProduct(id) {
+    if(await showConfirm("Delete this combo set?")) {
+        const token = localStorage.getItem('tmb_admin_token');
+        await fetch(`${API_URL}/admin/products/${id}`, { 
+            method: 'DELETE', 
+            headers: { 'Authorization': `Bearer ${token}` } 
+        });
+        location.reload();
+    }
+}
+
+function toggleSidebar() {
+    document.getElementById('sidebar').classList.toggle('-translate-x-full');
+    document.getElementById('overlay').classList.toggle('active');
+}
+
+document.getElementById('imageUpload').onchange = function() {
+    document.getElementById('fileNameDisplay').innerText = this.files[0].name;
+};
+
+window.onload = () => { loadProducts(); };
+    </script>
+</body>
+</html>

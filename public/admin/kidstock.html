@@ -150,7 +150,7 @@
         </main>
     </div>
 
-  <script>
+ <script>
     const API_URL = '/api';
 
     function toggleSidebar() {
@@ -160,7 +160,6 @@
 
     /**
      * FETCH & DISPLAY KIDS INVENTORY
-     * Displays current stock levels for the Kids category
      */
     async function fetchKidsInventory() {
         try {
@@ -177,7 +176,6 @@
                 listContainer.innerHTML = '<tr><td colspan="3" class="p-12 text-center text-xs text-gray-400 uppercase tracking-widest">No Kids category products found in database</td></tr>';
             } else {
                 kidsScents.forEach(product => {
-                    // Create rows for each size variant
                     const variantsHtml = (product.variants || []).map(v => `
                         <div class="flex justify-between items-center mb-1 border-b border-gray-50 pb-1 last:border-0 w-40">
                             <span class="text-[10px] font-bold text-gray-500 uppercase">${v.size}</span>
@@ -211,7 +209,7 @@
                             </td>
                             <td class="px-8 py-6">
                                 ${totalStock > 0 
-                                    ? `<span class="bg-brandKidsLight text-brandKidsDark text-[8px] font-bold px-3 py-1.5 uppercase tracking-widest border border-teal-100 rounded-sm">Available</span>`
+                                    ? `<span class="bg-teal-50 text-teal-600 text-[8px] font-bold px-3 py-1.5 uppercase tracking-widest border border-teal-100 rounded-sm">Available</span>`
                                     : `<span class="bg-red-50 text-red-600 text-[8px] font-bold px-3 py-1.5 uppercase tracking-widest border border-red-100 rounded-sm">Sold Out</span>`
                                 }
                             </td>
@@ -221,8 +219,8 @@
                 });
             }
             
-            // Sync the deduction log
-            fetchSalesLog();
+            // Pass the product list to filter the sales log specifically for kids items
+            fetchSalesLog(products);
 
         } catch (err) {
             console.error("Fetch Error:", err);
@@ -231,58 +229,63 @@
     }
 
     /**
-     * FETCH & DISPLAY MOVEMENT LOG (DEDUCTIONS)
-     * Lists recently sold items that reduced stock levels
+     * FETCH & DISPLAY MOVEMENT LOG (STRICT KIDS FILTER)
      */
-    async function fetchSalesLog() {
+    async function fetchSalesLog(allProducts) {
         const token = localStorage.getItem('tmb_admin_token');
         const logContainer = document.getElementById('sales-log');
         
         try {
+            // 1. Identify which names belong to the Kids category
+            const kidsProductNames = new Set(
+                allProducts
+                    .filter(p => (p.category || '').toLowerCase() === 'kids')
+                    .map(p => p.name)
+            );
+
+            // 2. Fetch Orders
             const res = await fetch(`${API_URL}/admin/orders`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             const orders = await res.json();
             
-            let kidsSales = [];
+            let filteredKidsSales = [];
             orders.forEach(order => {
-                // Deduct only when payment is confirmed or order is shipped/complete
-                const validStatuses = ['completed', 'paid', 'shipped'];
+                const validStatuses = ['completed', 'paid', 'shipped', 'delivered'];
                 if (validStatuses.includes(order.status.toLowerCase())) {
                     (order.items || []).forEach(item => {
-                        // Log movement
-                        kidsSales.push({
-                            timestamp: order.createdAt,
-                            name: item.name,
-                            variant: item.variantName || item.size || 'N/A',
-                            qty: item.quantity,
-                            price: (item.price || 0) * (item.quantity || 0)
-                        });
+                        // CROSS-REFERENCE: Only include if the item is a Kids product
+                        if (kidsProductNames.has(item.name)) {
+                            filteredKidsSales.push({
+                                timestamp: order.createdAt,
+                                name: item.name,
+                                variant: item.variantName || item.size || 'N/A',
+                                qty: item.quantity,
+                                price: (item.price || 0) * (item.quantity || 0)
+                            });
+                        }
                     });
                 }
             });
 
-            // Sort: Newest movements at the top
-            kidsSales.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+            // Sort: Newest first
+            filteredKidsSales.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
 
-            if (kidsSales.length === 0) {
-                logContainer.innerHTML = '<tr><td colspan="4" class="p-12 text-center text-gray-400 uppercase tracking-widest text-[9px]">No recent stock movements found</td></tr>';
+            if (filteredKidsSales.length === 0) {
+                logContainer.innerHTML = '<tr><td colspan="4" class="p-12 text-center text-gray-400 uppercase tracking-widest text-[9px]">No recent Kids collection movements detected</td></tr>';
                 return;
             }
 
-            logContainer.innerHTML = kidsSales.slice(0, 15).map(sale => {
+            logContainer.innerHTML = filteredKidsSales.slice(0, 15).map(sale => {
                 const dt = new Date(sale.timestamp);
-                const timeStr = dt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                const dateStr = dt.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
-
                 return `
                     <tr class="border-b hover:bg-gray-50 transition-colors">
                         <td class="px-8 py-4">
-                            <span class="block font-bold text-gray-800 text-[10px]">${timeStr}</span>
-                            <span class="text-[9px] text-gray-400 uppercase font-medium">${dateStr}</span>
+                            <span class="block font-bold text-gray-800 text-[10px]">${dt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                            <span class="text-[9px] text-gray-400 uppercase font-medium">${dt.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })}</span>
                         </td>
                         <td class="px-8 py-4">
-                            <span class="block uppercase font-bold text-brandKidsDark text-[10px]">${sale.name}</span>
+                            <span class="block uppercase font-bold text-teal-600 text-[10px]">${sale.name}</span>
                             <span class="text-[9px] text-gray-400 uppercase font-medium">Size: ${sale.variant}</span>
                         </td>
                         <td class="px-8 py-4">
@@ -306,7 +309,6 @@
         window.location.href = 'tmbadmin-login.html';
     }
 
-    // Initial Load
     window.onload = fetchKidsInventory;
 </script>
 </body>
