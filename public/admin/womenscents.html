@@ -183,239 +183,273 @@
         </div>
     </div>
 
-    <script>
-        const API_URL = '/api'; 
-        let globalProducts = [];
-        let confirmResolve;
+  <script>
+    const API_URL = '/api'; 
+    let globalProducts = [];
+    let confirmResolve;
 
-        function showAlert(message, isError = false) {
-            const modal = document.getElementById('customAlert');
-            const msgPara = document.getElementById('alertMessage');
-            const icon = document.getElementById('alertIcon');
-            msgPara.innerText = message;
-            icon.innerHTML = isError ? '<i class="fa-solid fa-circle-xmark text-red-500"></i>' : '<i class="fa-solid fa-circle-check"></i>';
-            modal.classList.remove('hidden');
-        }
+    // --- SYSTEM UTILITIES ---
+    function showAlert(message, isError = false) {
+        const modal = document.getElementById('customAlert');
+        const msgPara = document.getElementById('alertMessage');
+        const icon = document.getElementById('alertIcon');
+        msgPara.innerText = message;
+        icon.innerHTML = isError ? '<i class="fa-solid fa-circle-xmark text-red-500"></i>' : '<i class="fa-solid fa-circle-check"></i>';
+        modal.classList.remove('hidden');
+    }
 
-        function closeAlert() {
-            document.getElementById('customAlert').classList.add('hidden');
-        }
+    function closeAlert() {
+        document.getElementById('customAlert').classList.add('hidden');
+    }
 
-        function showConfirm(message) {
-            document.getElementById('confirmMessage').innerText = message;
-            document.getElementById('customConfirm').classList.remove('hidden');
-            return new Promise((resolve) => { confirmResolve = resolve; });
-        }
+    function showConfirm(message) {
+        document.getElementById('confirmMessage').innerText = message;
+        document.getElementById('customConfirm').classList.remove('hidden');
+        return new Promise((resolve) => { confirmResolve = resolve; });
+    }
 
-        function closeConfirm(result) {
-            document.getElementById('customConfirm').classList.add('hidden');
-            if (confirmResolve) confirmResolve(result);
-        }
+    function closeConfirm(result) {
+        document.getElementById('customConfirm').classList.add('hidden');
+        if (confirmResolve) confirmResolve(result);
+    }
 
-        function logout() {
-            localStorage.removeItem('tmb_admin_token');
-            window.location.href = 'tmbadmin-login.html';
-        }
+    function logout() {
+        localStorage.removeItem('tmb_admin_token');
+        window.location.href = 'tmbadmin-login.html';
+    }
 
-        function addVariantRow(size = '', price = '', stock = '') {
-            const container = document.getElementById('variantsContainer');
-            const rowId = Date.now() + Math.random();
-            const html = `
-                <div class="variant-row border-b border-gray-100 pb-3" id="row-${rowId}">
-                    <div class="grid grid-cols-12 gap-2 mb-2">
-                        <div class="col-span-4">
-                            <input type="text" placeholder="Size" class="input-field v-size" value="${size}" required>
-                        </div>
-                        <div class="col-span-4">
-                            <input type="number" placeholder="Price" class="input-field v-price" value="${price}" required>
-                        </div>
-                        <div class="col-span-4">
-                            <input type="number" placeholder="Stock" class="input-field v-stock" value="${stock}" required>
-                        </div>
+    // --- VARIANT MANAGEMENT ---
+    // Updated to handle hidden variant IDs for stock deduction sync
+    function addVariantRow(size = '', price = '', stock = '', variantId = '') {
+        const container = document.getElementById('variantsContainer');
+        const rowId = variantId || `new-${Date.now() + Math.random()}`;
+        const html = `
+            <div class="variant-row border-b border-gray-100 pb-3" id="row-${rowId}">
+                <input type="hidden" class="v-id" value="${variantId}">
+                <div class="grid grid-cols-12 gap-2 mb-2">
+                    <div class="col-span-4">
+                        <input type="text" placeholder="Size" class="input-field v-size" value="${size}" required>
                     </div>
-                    <div class="flex justify-end">
-                        <button type="button" onclick="removeVariantRow('row-${rowId}')" class="text-[8px] uppercase font-bold text-red-400">
-                            <i class="fa-solid fa-trash-can mr-1"></i> Remove
-                        </button>
+                    <div class="col-span-4">
+                        <input type="number" placeholder="Price" class="input-field v-price" value="${price}" required>
+                    </div>
+                    <div class="col-span-4">
+                        <input type="number" placeholder="Stock" class="input-field v-stock" value="${stock}" required>
                     </div>
                 </div>
-            `;
-            container.insertAdjacentHTML('beforeend', html);
-        }
+                <div class="flex justify-end">
+                    <button type="button" onclick="removeVariantRow('row-${rowId}')" class="text-[8px] uppercase font-bold text-red-400">
+                        <i class="fa-solid fa-trash-can mr-1"></i> Remove
+                    </button>
+                </div>
+            </div>
+        `;
+        container.insertAdjacentHTML('beforeend', html);
+    }
 
-        function removeVariantRow(id) {
-            const rows = document.querySelectorAll('.variant-row');
-            if(rows.length > 1) {
-                document.getElementById(id).remove();
-            } else {
-                showAlert("At least one variant is required.", true);
+    function removeVariantRow(id) {
+        const rows = document.querySelectorAll('.variant-row');
+        if(rows.length > 1) {
+            document.getElementById(id).remove();
+        } else {
+            showAlert("At least one variant is required.", true);
+        }
+    }
+
+    // --- DATA LOADING & RENDERING ---
+    window.onload = () => { 
+        addVariantRow(); 
+        loadProducts(); 
+    };
+
+    async function loadProducts() {
+        try {
+            const response = await fetch(`${API_URL}/products`);
+            const products = await response.json();
+            globalProducts = products.filter(p => p.category === 'women');
+            const grid = document.getElementById('inventoryGrid');
+            
+            if (globalProducts.length === 0) {
+                grid.innerHTML = '<p class="text-[10px] uppercase text-gray-400 col-span-full text-center py-12">No products found.</p>';
+                return;
             }
-        }
 
-        window.onload = () => { 
-            addVariantRow(); 
-            loadProducts(); 
-        };
-
-        async function loadProducts() {
-            try {
-                const response = await fetch(`${API_URL}/products`);
-                const products = await response.json();
-                globalProducts = products.filter(p => p.category === 'women');
-                const grid = document.getElementById('inventoryGrid');
-                
-                if (globalProducts.length === 0) {
-                    grid.innerHTML = '<p class="text-[10px] uppercase text-gray-400 col-span-full text-center py-12">No products found.</p>';
-                    return;
-                }
-
-                grid.innerHTML = globalProducts.map(product => `
-                    <div class="bg-white border p-2 lg:p-4 group">
-                        <div class="aspect-square bg-gray-50 mb-3 overflow-hidden relative border border-gray-100">
-                            <img src="${product.imageUrl}" alt="${product.name}" class="w-full h-full object-cover">
-                        </div>
-                        <h4 class="text-[10px] lg:text-xs font-bold uppercase tracking-wider mb-2 truncate-2 h-8 leading-tight">${product.name}</h4>
-                        
-                        <div class="space-y-1 mb-3">
-                            ${(product.variants || []).map(v => {
-                                const stockStatus = Number(v.stock) <= 0 ? 'text-red-500 font-bold' : 'text-gray-400';
-                                return `
-                                <div class="text-[9px] border-b border-gray-50 pb-1">
-                                    <div class="flex justify-between mb-0.5">
-                                        <span class="text-gray-500 uppercase">${v.size}</span>
-                                        <span class="font-bold">₦${Number(v.price).toLocaleString()}</span>
-                                    </div>
-                                    <div class="text-right">
-                                        <span class="${stockStatus}">${v.stock || 0} IN STOCK</span>
-                                    </div>
-                                </div>
-                                `;
-                            }).join('')}
-                        </div>
-                        
-                        <div class="flex flex-col gap-2 border-t pt-3">
-                            <button onclick="editProduct('${product._id}')" class="text-[8px] uppercase tracking-widest text-brandPinkDark hover:underline font-bold text-center">Edit Details</button>
-                            <button onclick="deleteProduct('${product._id}')" class="text-[8px] uppercase tracking-widest text-red-400 hover:text-red-700 font-bold transition text-center">Delete Item</button>
-                        </div>
+            grid.innerHTML = globalProducts.map(product => `
+                <div class="bg-white border p-2 lg:p-4 group">
+                    <div class="aspect-square bg-gray-50 mb-3 overflow-hidden relative border border-gray-100">
+                        <img src="${product.imageUrl}" alt="${product.name}" class="w-full h-full object-cover">
                     </div>
-                `).join('');
-            } catch (err) { console.error(err); }
+                    <h4 class="text-[10px] lg:text-xs font-bold uppercase tracking-wider mb-2 truncate-2 h-8 leading-tight">${product.name}</h4>
+                    
+                    <div class="space-y-1 mb-3">
+                        ${(product.variants || []).map(v => {
+                            const stockValue = Number(v.stock) || 0;
+                            let stockClass = "text-gray-400";
+                            let stockLabel = `${stockValue} IN STOCK`;
+
+                            if (stockValue <= 0) {
+                                stockClass = "text-red-600 font-black bg-red-50 px-1";
+                                stockLabel = "SOLD OUT";
+                            } else if (stockValue < 5) {
+                                stockClass = "text-orange-500 font-bold";
+                                stockLabel = `LOW STOCK: ${stockValue}`;
+                            }
+
+                            return `
+                            <div class="text-[9px] border-b border-gray-50 pb-1">
+                                <div class="flex justify-between mb-0.5">
+                                    <span class="text-gray-500 uppercase">${v.size}</span>
+                                    <span class="font-bold">₦${Number(v.price).toLocaleString()}</span>
+                                </div>
+                                <div class="text-right">
+                                    <span class="${stockClass} text-[7px] tracking-tighter uppercase">${stockLabel}</span>
+                                </div>
+                            </div>
+                            `;
+                        }).join('')}
+                    </div>
+                    
+                    <div class="flex flex-col gap-2 border-t pt-3">
+                        <button onclick="editProduct('${product._id}')" class="text-[8px] uppercase tracking-widest text-brandPinkDark hover:underline font-bold text-center">Edit Details</button>
+                        <button onclick="deleteProduct('${product._id}')" class="text-[8px] uppercase tracking-widest text-red-400 hover:text-red-700 font-bold transition text-center">Delete Item</button>
+                    </div>
+                </div>
+            `).join('');
+        } catch (err) { console.error(err); }
+    }
+
+    // --- FORM ACTIONS ---
+    function editProduct(id) {
+        const product = globalProducts.find(p => p._id === id);
+        if (!product) return;
+        
+        document.getElementById('editProductId').value = product._id;
+        document.getElementById('pName').value = product.name;
+        document.getElementById('pDesc').value = product.description || '';
+        document.getElementById('variantsContainer').innerHTML = '';
+        
+        if (product.variants && product.variants.length > 0) {
+            product.variants.forEach(v => addVariantRow(v.size, v.price, v.stock, v._id));
+        } else {
+            addVariantRow(product.size, product.price, 0);
         }
+        
+        document.getElementById('formTitle').innerText = "Edit Fragrance: " + product.name;
+        document.getElementById('submitBtn').innerText = "Save Changes";
+        document.getElementById('cancelEdit').classList.remove('hidden');
+        document.getElementById('imageUpload').required = false;
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
 
-        function editProduct(id) {
-            const product = globalProducts.find(p => p._id === id);
-            if (!product) return;
-            document.getElementById('editProductId').value = product._id;
-            document.getElementById('pName').value = product.name;
-            document.getElementById('pDesc').value = product.description || '';
-            document.getElementById('variantsContainer').innerHTML = '';
-            if (product.variants && product.variants.length > 0) {
-                product.variants.forEach(v => addVariantRow(v.size, v.price, v.stock));
-            } else {
-                addVariantRow(product.size, product.price, 0);
-            }
-            document.getElementById('formTitle').innerText = "Edit Fragrance: " + product.name;
-            document.getElementById('submitBtn').innerText = "Save Changes";
-            document.getElementById('cancelEdit').classList.remove('hidden');
-            document.getElementById('imageUpload').required = false;
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
+    function resetForm() {
+        document.getElementById('addScentForm').reset();
+        document.getElementById('editProductId').value = '';
+        document.getElementById('variantsContainer').innerHTML = '';
+        addVariantRow();
+        document.getElementById('formTitle').innerText = "Add New Fragrance";
+        document.getElementById('submitBtn').innerText = "Update Collection";
+        document.getElementById('cancelEdit').classList.add('hidden');
+        document.getElementById('imageUpload').required = true;
+        document.getElementById('fileNameDisplay').innerText = "Click to upload image";
+    }
 
-        function resetForm() {
-            document.getElementById('addScentForm').reset();
-            document.getElementById('editProductId').value = '';
-            document.getElementById('variantsContainer').innerHTML = '';
-            addVariantRow();
-            document.getElementById('formTitle').innerText = "Add New Fragrance";
-            document.getElementById('submitBtn').innerText = "Update Collection";
-            document.getElementById('cancelEdit').classList.add('hidden');
-            document.getElementById('imageUpload').required = true;
-            document.getElementById('fileNameDisplay').innerText = "Click to upload image";
-        }
+    document.getElementById('addScentForm').onsubmit = async (e) => {
+        e.preventDefault();
+        const editId = document.getElementById('editProductId').value;
+        const submitBtn = document.getElementById('submitBtn');
+        const file = document.getElementById('imageUpload').files[0];
+        const token = localStorage.getItem('tmb_admin_token');
 
-        document.getElementById('addScentForm').onsubmit = async (e) => {
-            e.preventDefault();
-            const editId = document.getElementById('editProductId').value;
-            const submitBtn = document.getElementById('submitBtn');
-            const file = document.getElementById('imageUpload').files[0];
-            const token = localStorage.getItem('tmb_admin_token');
-
-            const rows = document.querySelectorAll('.variant-row');
-            const variants = Array.from(rows).map(row => ({
+        // Extract variants with their IDs to maintain DB sync
+        const rows = document.querySelectorAll('.variant-row');
+        const variants = Array.from(rows).map(row => {
+            const vId = row.querySelector('.v-id').value;
+            const variantObj = {
                 size: row.querySelector('.v-size').value,
                 price: row.querySelector('.v-price').value,
                 stock: row.querySelector('.v-stock').value
-            }));
-
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> PROCESSING...';
-
-            let imageBase64 = null;
-            if (file) {
-                const reader = new FileReader();
-                imageBase64 = await new Promise(resolve => {
-                    reader.onload = () => resolve(reader.result.split(',')[1]);
-                    reader.readAsDataURL(file);
-                });
-            }
-
-            const payload = {
-                name: document.getElementById('pName').value,
-                description: document.getElementById('pDesc').value,
-                category: 'women',
-                variants: variants,
-                ...(imageBase64 && { imageBase64, fileName: file.name, contentType: file.type })
             };
+            // Only attach ID if it's an existing variant (not a new row)
+            if (vId && !vId.startsWith('new-')) {
+                variantObj._id = vId;
+            }
+            return variantObj;
+        });
 
-            const url = editId ? `${API_URL}/admin/products/${editId}` : `${API_URL}/admin/products`;
-            const method = editId ? 'PUT' : 'POST';
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> PROCESSING...';
 
-            try {
-                const response = await fetch(url, {
-                    method: method,
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify(payload)
-                });
+        let imageBase64 = null;
+        if (file) {
+            const reader = new FileReader();
+            imageBase64 = await new Promise(resolve => {
+                reader.onload = () => resolve(reader.result.split(',')[1]);
+                reader.readAsDataURL(file);
+            });
+        }
 
-                if (response.ok) {
-                    showAlert(editId ? "Inventory updated successfully." : "New fragrance added successfully.");
-                    setTimeout(() => location.reload(), 1500);
-                } else {
-                    const errData = await response.json();
-                    showAlert(errData.error || "Update failed.", true);
-                }
-            } catch (err) { showAlert("Server error.", true); }
-            finally { submitBtn.disabled = false; submitBtn.innerText = "Update Collection"; }
+        const payload = {
+            name: document.getElementById('pName').value,
+            description: document.getElementById('pDesc').value,
+            category: 'women',
+            variants: variants,
+            ...(imageBase64 && { imageBase64, fileName: file.name, contentType: file.type })
         };
 
-        function toggleSidebar() {
-            document.getElementById('sidebar').classList.toggle('-translate-x-full');
-            document.getElementById('overlay').classList.toggle('active');
-        }
-        
-        document.getElementById('imageUpload').onchange = function() {
-            const name = this.files[0]?.name || "Click to upload image";
-            document.getElementById('fileNameDisplay').innerText = name;
-        };
+        const url = editId ? `${API_URL}/admin/products/${editId}` : `${API_URL}/admin/products`;
+        const method = editId ? 'PUT' : 'POST';
 
-        async function deleteProduct(id) {
-            const confirmed = await showConfirm("Permanently remove this scent from inventory?");
-            if(!confirmed) return;
-            const token = localStorage.getItem('tmb_admin_token');
-            try {
-                const res = await fetch(`${API_URL}/admin/products/${id}`, {
-                    method: 'DELETE',
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                if(res.ok) {
-                    showAlert("Deleted successfully.");
-                    setTimeout(() => location.reload(), 1000);
-                }
-            } catch (err) { showAlert("Error deleting.", true); }
+        try {
+            const response = await fetch(url, {
+                method: method,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify(payload)
+            });
+
+            if (response.ok) {
+                showAlert(editId ? "Inventory updated successfully." : "New fragrance added successfully.");
+                setTimeout(() => location.reload(), 1500);
+            } else {
+                const errData = await response.json();
+                showAlert(errData.error || "Update failed.", true);
+            }
+        } catch (err) { 
+            showAlert("Server error. Check your connection.", true); 
+        } finally { 
+            submitBtn.disabled = false; 
+            submitBtn.innerText = "Update Collection"; 
         }
-    </script>
+    };
+
+    // --- UI INTERNALS ---
+    function toggleSidebar() {
+        document.getElementById('sidebar').classList.toggle('-translate-x-full');
+        document.getElementById('overlay').classList.toggle('active');
+    }
+    
+    document.getElementById('imageUpload').onchange = function() {
+        const name = this.files[0]?.name || "Click to upload image";
+        document.getElementById('fileNameDisplay').innerText = name;
+    };
+
+    async function deleteProduct(id) {
+        const confirmed = await showConfirm("Permanently remove this scent from inventory?");
+        if(!confirmed) return;
+        const token = localStorage.getItem('tmb_admin_token');
+        try {
+            const res = await fetch(`${API_URL}/admin/products/${id}`, {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if(res.ok) {
+                showAlert("Deleted successfully.");
+                setTimeout(() => location.reload(), 1000);
+            }
+        } catch (err) { showAlert("Error deleting.", true); }
+    }
+</script>
 </body>
 </html>

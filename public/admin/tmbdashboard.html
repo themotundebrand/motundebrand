@@ -160,58 +160,67 @@
 <script>
     const API_URL = '/api'; 
 
-    async function fetchDashboardStats() {
-        const token = localStorage.getItem('tmb_admin_token');
-        if (!token) {
-            window.location.href = 'tmbadmin-login.html';
-            return;
-        }
-        
-        const headers = { 'Authorization': `Bearer ${token}` };
-
-        try {
-            // 1. Fetch Analytics Overview - This should return the sum of all variant stocks
-            const analyticsRes = await fetch(`${API_URL}/admin/analytics/stock-overview`, { headers });
-            
-            if (analyticsRes.ok) {
-                const stats = await analyticsRes.json();
-                
-                // These IDs must match the spans in your HTML dashboard cards
-                // The values now represent current remaining stock units
-                document.getElementById('women-count').innerText = stats.womenTotalStock || 0;
-                document.getElementById('men-count').innerText = stats.menTotalStock || 0;
-                document.getElementById('mist-count').innerText = stats.mistTotalStock || 0; 
-                document.getElementById('kids-count').innerText = stats.kidTotalStock || 0;
-            }
-
-            // 2. Fetch User Count
-            const uRes = await fetch(`${API_URL}/admin/users/count`, { headers });
-            if (uRes.ok) {
-                const userData = await uRes.json();
-                document.getElementById('user-count').innerText = userData.count || 0;
-            }
-
-            // 3. Fetch Orders for Revenue & Pending status
-            const oRes = await fetch(`${API_URL}/admin/orders`, { headers });
-            if (oRes.ok) {
-                const orders = await oRes.json();
-                const pending = orders.filter(o => o.status === 'pending').length;
-                
-                // Revenue only includes money from verified orders
-                const totalRevenue = orders
-                    .filter(o => ['completed', 'paid', 'shipped'].includes(o.status))
-                    .reduce((sum, o) => sum + (parseFloat(o.totalPrice) || 0), 0);
-
-                document.getElementById('pending-orders').innerText = pending;
-                document.getElementById('revenue-mtd').innerText = totalRevenue >= 1000 
-                    ? `₦ ${(totalRevenue / 1000).toFixed(1)}k` 
-                    : `₦ ${totalRevenue.toLocaleString()}`;
-            }
-
-        } catch (err) {
-            console.error("Dashboard Sync Error:", err);
-        }
+   async function fetchDashboardStats() {
+    const token = localStorage.getItem('tmb_admin_token');
+    if (!token) {
+        window.location.href = 'tmbadmin-login.html';
+        return;
     }
+    
+    const headers = { 'Authorization': `Bearer ${token}` };
+
+    try {
+        // 1. Fetch Current Stock Levels (Remaining units in the database)
+        const analyticsRes = await fetch(`${API_URL}/admin/analytics/stock-overview`, { headers });
+        if (analyticsRes.ok) {
+            const stats = await analyticsRes.json();
+            document.getElementById('women-count').innerText = stats.womenTotalStock || 0;
+            document.getElementById('men-count').innerText = stats.menTotalStock || 0;
+            document.getElementById('mist-count').innerText = stats.mistTotalStock || 0; 
+            document.getElementById('kids-count').innerText = stats.kidTotalStock || 0;
+        }
+
+        // 2. Fetch User Count
+        const uRes = await fetch(`${API_URL}/admin/users/count`, { headers });
+        if (uRes.ok) {
+            const userData = await uRes.json();
+            document.getElementById('user-count').innerText = userData.count || 0;
+        }
+
+        // 3. Updated Order & Revenue Logic
+        const oRes = await fetch(`${API_URL}/admin/orders`, { headers });
+        if (oRes.ok) {
+            const orders = await oRes.json();
+            
+            // Pending orders = Orders awaiting your verification & stock deduction
+            const pending = orders.filter(o => o.status === 'pending').length;
+            
+            // Total Revenue = Only confirmed income (completed orders)
+            // This ensures your dashboard revenue matches your actual stock loss
+            const totalRevenue = orders
+                .filter(o => o.status === 'completed') 
+                .reduce((sum, o) => sum + (parseFloat(o.totalPrice) || 0), 0);
+
+            const pendingEl = document.getElementById('pending-orders');
+            pendingEl.innerText = pending;
+
+            // Visual Cue: If there are pending orders, make the number pulse red
+            if (pending > 0) {
+                pendingEl.classList.add('text-red-600', 'font-bold');
+            } else {
+                pendingEl.classList.remove('text-red-600');
+                pendingEl.classList.add('text-brandPinkDark');
+            }
+
+            document.getElementById('revenue-mtd').innerText = totalRevenue >= 1000 
+                ? `₦ ${(totalRevenue / 1000).toFixed(1)}k` 
+                : `₦ ${totalRevenue.toLocaleString()}`;
+        }
+
+    } catch (err) {
+        console.error("Dashboard Sync Error:", err);
+    }
+}
 
     // Standard housekeeping functions
     function toggleSidebar() {

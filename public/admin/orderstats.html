@@ -242,35 +242,61 @@ function renderOrders() {
                         </div>
                     </div>
 
-                    <div class="flex flex-col justify-center gap-2 border-t md:border-t-0 md:border-l md:pl-6 pt-4 md:pt-0 min-w-[150px]">
-                        ${order.status === 'pending' ? `
-                            <button onclick="updateStatus('${order._id}', 'completed')" class="bg-brandBlack text-white text-[9px] uppercase tracking-[0.2em] py-3 px-4 font-bold hover:bg-green-700 transition">Confirm & Ship</button>
-                            <button onclick="updateStatus('${order._id}', 'cancelled')" class="border border-gray-200 text-gray-400 text-[9px] uppercase tracking-[0.2em] py-3 px-4 font-bold hover:bg-red-50 hover:text-red-500 transition">Cancel</button>
-                        ` : `
-                            <div class="text-center">
-                                <p class="text-[9px] uppercase tracking-widest font-bold ${order.status === 'completed' ? 'text-green-500' : 'text-red-500'}">${order.status}</p>
-                                <p class="text-[8px] text-gray-400 mt-1">${new Date(order.createdAt).toLocaleDateString()}</p>
-                            </div>
-                        `}
-                    </div>
+                  <div class="flex flex-col justify-center gap-2 border-t md:border-t-0 md:border-l md:pl-6 pt-4 md:pt-0 min-w-[150px]">
+    ${order.status === 'pending' ? `
+        <button onclick="updateStatus('${order._id}', 'completed')" class="bg-brandBlack text-white text-[9px] uppercase tracking-[0.2em] py-3 px-4 font-bold hover:bg-green-700 transition">Confirm & Ship</button>
+        <button onclick="updateStatus('${order._id}', 'cancelled')" class="border border-gray-200 text-gray-400 text-[9px] uppercase tracking-[0.2em] py-3 px-4 font-bold hover:bg-red-50 hover:text-red-500 transition">Cancel</button>
+    ` : `
+        <div class="text-center">
+            <p class="text-[9px] uppercase tracking-widest font-bold ${order.status === 'completed' ? 'text-green-500' : 'text-red-500'}">
+                <i class="fa-solid ${order.status === 'completed' ? 'fa-check-double' : 'fa-xmark'} mr-1"></i>
+                ${order.status}
+            </p>
+            ${order.status === 'completed' ? `
+                <span class="text-[7px] uppercase bg-green-50 text-green-600 px-1 py-0.5 rounded mt-1 inline-block font-bold">Stock Deducted</span>
+            ` : ''}
+            <p class="text-[8px] text-gray-400 mt-2">${new Date(order.createdAt).toLocaleDateString()}</p>
+        </div>
+    `}
+</div>
                 </div>
             </div>
         `}).join('');
 }
 
-        async function updateStatus(orderId, newStatus) {
-            if (!confirm(`Mark order as ${newStatus}?`)) return;
-            const token = localStorage.getItem('tmb_admin_token');
-            try {
-                const response = await fetch(`${API_URL}/admin/orders/${orderId}/status`, {
-                    method: 'PATCH',
-                    headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ status: newStatus })
-                });
-                if (response.ok) fetchOrders();
-                else alert("Update failed.");
-            } catch (err) { alert("Network error."); }
+      async function updateStatus(orderId, newStatus) {
+    // 1. Set context-specific warning
+    const actionText = newStatus === 'completed' 
+        ? "Confirming will verify payment and PERMANENTLY deduct items from stock. Proceed?" 
+        : `Mark order as ${newStatus}?`;
+
+    if (!confirm(actionText)) return;
+
+    const token = localStorage.getItem('tmb_admin_token');
+    
+    try {
+        const response = await fetch(`${API_URL}/admin/orders/${orderId}/status`, {
+            method: 'PATCH',
+            headers: { 
+                'Authorization': `Bearer ${token}`, 
+                'Content-Type': 'application/json' 
+            },
+            body: JSON.stringify({ status: newStatus })
+        });
+        
+        if (response.ok) {
+            // Refresh the list to show "Stock Deducted" badge
+            fetchOrders();
+        } else {
+            // Capture specific backend errors (e.g., "Product not found" or "Database error")
+            const errorData = await response.json();
+            alert(`Update failed: ${errorData.error || 'Unknown error'}`);
         }
+    } catch (err) { 
+        console.error("Status Update Error:", err);
+        alert("Network error. Please check your connection to the TMB System."); 
+    }
+}
 
         window.onload = fetchOrders;
     </script>

@@ -287,7 +287,7 @@ router.get('/products/:id/stock', async (req, res) => {
 });
 
 router.post('/orders', async (req, res) => {
-    console.log("--- New Order Request Received ---");
+    console.log("--- New Order Request Received (Inventory Pending) ---");
     try {
         const db = await getDb();
         const { 
@@ -319,78 +319,7 @@ router.post('/orders', async (req, res) => {
         if (!items || items.length === 0) return res.status(400).json({ error: "Empty cart" });
         if (!customerDetails?.email) return res.status(400).json({ error: "Email is required." });
 
-        // 3. Updated Atomic Stock Decrement (Handles String-to-Number issue)
-        console.log("Processing Stock for items:", items.map(i => i.name));
-        
-        const updateResults = await Promise.all(items.map(async (item) => {
-            try {
-                const qty = Math.abs(parseInt(item.quantity));
-                if (!item.productId || item.productId.length !== 24) {
-                    throw new Error(`Invalid Product ID: ${item.productId}`);
-                }
-
-                const productObjectId = new ObjectId(item.productId);
-
-                // STEP A: Fetch the product to check current stock type
-                const product = await db.collection("products").findOne({ _id: productObjectId });
-                if (!product) throw new Error("Product not found");
-
-                // STEP B: Update with type conversion if necessary
-                // This query looks for the specific size variant
-                const result = await db.collection("products").updateOne(
-                    { 
-                        _id: productObjectId, 
-                        "variants.size": item.size 
-                    },
-                    [
-                        {
-                            $set: {
-                                "variants": {
-                                    $map: {
-                                        input: "$variants",
-                                        as: "v",
-                                        in: {
-                                            $cond: [
-                                                { $eq: ["$$v.size", item.size] },
-                                                {
-                                                    $mergeObjects: [
-                                                        "$$v",
-                                                        { 
-                                                            // Force stock to be a number and subtract
-                                                            stock: { $subtract: [{ $toInt: "$$v.stock" }, qty] } 
-                                                        }
-                                                    ]
-                                                },
-                                                "$$v"
-                                            ]
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    ]
-                );
-                
-                return { 
-                    name: item.name, 
-                    success: result.modifiedCount > 0 
-                };
-            } catch (itemErr) {
-                console.error(`Stock Update Error for ${item.name}:`, itemErr.message);
-                return { name: item.name, success: false, error: itemErr.message };
-            }
-        }));
-
-        const failed = updateResults.filter(r => !r.success);
-        if (failed.length > 0) {
-            console.error("Stock Validation Failed for:", failed);
-            return res.status(400).json({ 
-                error: "Stock error. Some items may have sold out or have invalid stock data.", 
-                details: failed 
-            });
-        }
-
-        // 4. Create Order Object
+        // 3. Create Order Object (Stock is NOT decremented here)
         const finalOrder = {
             userId: finalUserId,
             email: customerDetails.email.toLowerCase(),
@@ -398,7 +327,7 @@ router.post('/orders', async (req, res) => {
             items, 
             totalPrice,
             paymentMethod,
-            status: 'pending',
+            status: 'pending', // Order stays pending until Admin confirms
             isGuest: finalUserId === "GUEST",
             createdAt: new Date()
         };
@@ -611,24 +540,58 @@ router.patch('/admin/orders/:id/status', authenticateAdmin, async (req, res) => 
         const order = await db.collection("orders").findOne({ _id: new ObjectId(orderId) });
         if (!order) return res.status(404).json({ error: "Order not found" });
 
-        // 1. Stock Reversal (If Admin cancels, put items back in store)
-        if (status === 'cancelled' && order.status !== 'cancelled') {
+        // 1. INVENTORY DEDUCTION (Triggered only when Admin clicks 'completed')
+        // We only deduct if the order is moving to 'completed' and hasn't been completed before
+        if (status === 'completed' && order.status !== 'completed') {
+            console.log(`Deducting stock for Order #${orderId}`);
+            
             await Promise.all(order.items.map(async (item) => {
+                const qty = Math.abs(parseInt(item.quantity));
+                
+                // Using the atomic update with type conversion to ensure stock stays a number
                 await db.collection("products").updateOne(
-                    { _id: new ObjectId(item.productId), "variants.size": item.size },
-                    { $inc: { "variants.$.stock": parseInt(item.quantity) } }
+                    { 
+                        _id: new ObjectId(item.productId), 
+                        "variants.size": item.size 
+                    },
+                    [
+                        {
+                            $set: {
+                                "variants": {
+                                    $map: {
+                                        input: "$variants",
+                                        as: "v",
+                                        in: {
+                                            $cond: [
+                                                { $eq: ["$$v.size", item.size] },
+                                                {
+                                                    $mergeObjects: [
+                                                        "$$v",
+                                                        { 
+                                                            stock: { $subtract: [{ $toInt: "$$v.stock" }, qty] } 
+                                                        }
+                                                    ]
+                                                },
+                                                "$$v"
+                                            ]
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    ]
                 );
             }));
         }
 
-        // 2. Update Database
+        // 2. Update Order Status in Database
         await db.collection("orders").updateOne(
             { _id: new ObjectId(orderId) },
             { $set: { status: status, updatedAt: new Date() } }
         );
 
         const shortId = orderId.toString().slice(-6).toUpperCase();
-        const customerEmail = order.email; // Works for both Guest and Member
+        const customerEmail = order.email;
         const customerName = order.customerDetails.name;
 
         // 3. Conditional Email Notification
@@ -643,7 +606,7 @@ router.patch('/admin/orders/:id/status', authenticateAdmin, async (req, res) => 
                         <center><img src="https://i.imgur.com/CVKXV7R.png" width="60" style="margin-bottom:20px;"></center>
                         <h2 style="text-align: center; font-weight: 300; letter-spacing: 3px; text-transform: uppercase;">Excellence Confirmed</h2>
                         <p>Hello ${customerName},</p>
-                        <p>We are pleased to inform you that your payment has been verified. Your order <strong>#${shortId}</strong> is now being prepared for shipment.</p>
+                        <p>We are pleased to inform you that your payment has been verified. Your order <strong>#${shortId}</strong> is now being prepared for shipment and your items have been reserved.</p>
                         
                         <div style="background: #fafafa; padding: 20px; border-radius: 4px; margin: 20px 0;">
                             <p style="margin: 0; font-size: 13px;"><strong>Delivery Address:</strong><br>${order.customerDetails.address}, ${order.customerDetails.city}</p>
@@ -680,7 +643,7 @@ router.patch('/admin/orders/:id/status', authenticateAdmin, async (req, res) => 
             });
         }
 
-        res.json({ message: `Order marked as ${status}. Notification sent to ${customerEmail}` });
+        res.json({ message: `Order marked as ${status}. Inventory updated and notification sent.` });
     } catch (e) {
         console.error("Status Update Error:", e);
         res.status(500).json({ error: "Failed to update status and notify customer" });

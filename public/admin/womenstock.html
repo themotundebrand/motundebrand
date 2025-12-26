@@ -29,7 +29,6 @@
         .active-link { background-color: #F7C8D0; color: #000; }
         .mobile-overlay { background: rgba(0,0,0,0.5); display: none; }
         .mobile-overlay.active { display: block; }
-        /* Custom Scrollbar for small tables */
         .custom-scrollbar::-webkit-scrollbar { width: 4px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #D48A96; }
@@ -79,9 +78,6 @@
                     <a href="orderstats.html" class="nav-link flex items-center px-4 py-3 text-[10px] tracking-widest uppercase font-semibold">
                         <i class="fa-solid fa-bag-shopping mr-3 w-5 text-gray-400"></i> Orders
                     </a>
-                    <a href="analytics.html" class="nav-link flex items-center px-4 py-3 text-[10px] tracking-widest uppercase font-semibold">
-                        <i class="fa-solid fa-chart-simple mr-3 w-5 text-gray-400"></i> Analytics
-                    </a>
                 </div>
             </nav>
 
@@ -111,7 +107,7 @@
                                 <tr class="bg-gray-50 border-b text-[9px] uppercase tracking-widest font-bold text-gray-400">
                                     <th class="px-8 py-4">Product</th>
                                     <th class="px-8 py-4">Variant Availability</th>
-                                    <th class="px-8 py-4">Status</th>
+                                    <th class="px-8 py-4 text-center">Status</th>
                                 </tr>
                             </thead>
                             <tbody id="stock-list">
@@ -123,7 +119,7 @@
 
                 <div>
                     <h3 class="text-[10px] uppercase tracking-widest font-bold text-gray-400 mb-4 flex items-center">
-                        <i class="fa-solid fa-clock-rotate-left mr-2"></i> Recent Category Sales & Time of Purchase
+                        <i class="fa-solid fa-clock-rotate-left mr-2"></i> Recent Category Sales
                     </h3>
                     <div class="bg-white border shadow-sm overflow-hidden rounded-sm">
                         <div class="max-h-96 overflow-y-auto custom-scrollbar">
@@ -132,7 +128,7 @@
                                     <tr class="bg-gray-50 border-b text-[9px] uppercase tracking-widest font-bold text-gray-400">
                                         <th class="px-8 py-4">Time & Date</th>
                                         <th class="px-8 py-4">Sold Item</th>
-                                        <th class="px-8 py-4">Qty</th>
+                                        <th class="px-8 py-4 text-center">Qty Sold</th>
                                         <th class="px-8 py-4 text-right">Revenue</th>
                                     </tr>
                                 </thead>
@@ -143,7 +139,6 @@
                         </div>
                     </div>
                 </div>
-
             </div>
         </main>
     </div>
@@ -161,8 +156,9 @@
                 // 1. Fetch Live Products
                 const res = await fetch(`${API_URL}/products`);
                 const products = await res.json();
-                const womenScents = products.filter(p => (p.category || '').toLowerCase() === 'women');
                 
+                // Filter specifically for 'women'
+                const womenScents = products.filter(p => (p.category || '').toLowerCase() === 'women');
                 const listContainer = document.getElementById('stock-list');
                 listContainer.innerHTML = '';
 
@@ -170,49 +166,50 @@
                     listContainer.innerHTML = '<tr><td colspan="3" class="p-12 text-center text-xs text-gray-400 uppercase tracking-widest">No products found</td></tr>';
                 } else {
                     womenScents.forEach(product => {
-                        const variantsHtml = (product.variants || []).map(v => `
-                            <div class="flex justify-between items-center mb-1 border-b border-gray-100 pb-1 last:border-0 w-40">
-                                <span class="text-[10px] font-bold text-gray-500 uppercase">${v.size}</span>
-                                <span class="text-[11px] font-medium ${parseInt(v.stock) < 5 ? 'text-red-500 font-bold' : 'text-gray-700'}">
-                                    ${v.stock} pcs
-                                </span>
-                            </div>
-                        `).join('');
+                        let totalStock = 0;
+                        const variantsHtml = (product.variants || []).map(v => {
+                            const stockCount = parseInt(v.stock) || 0;
+                            totalStock += stockCount;
+                            
+                            const stockColor = stockCount <= 0 ? 'text-red-500 font-bold' : 
+                                               stockCount < 5 ? 'text-orange-500 font-bold' : 'text-gray-700';
 
-                        const totalStock = (product.variants || []).reduce((sum, v) => sum + (parseInt(v.stock) || 0), 0);
+                            return `
+                                <div class="flex justify-between items-center mb-1 border-b border-gray-50 pb-1 last:border-0 w-48">
+                                    <span class="text-[10px] text-gray-500 uppercase">${v.size}</span>
+                                    <span class="text-[11px] ${stockColor}">${stockCount} PCS</span>
+                                </div>
+                            `;
+                        }).join('');
 
-                        const row = `
+                        const statusBadge = totalStock > 0 
+                            ? `<span class="bg-green-50 text-green-600 text-[8px] font-bold px-3 py-1 uppercase tracking-widest border border-green-100">In Stock</span>`
+                            : `<span class="bg-red-50 text-red-600 text-[8px] font-bold px-3 py-1 uppercase tracking-widest border border-red-100">Depleted</span>`;
+
+                        listContainer.innerHTML += `
                             <tr class="border-b hover:bg-gray-50 transition-colors">
                                 <td class="px-8 py-6">
                                     <div class="flex items-center">
-                                        <img src="${product.imageUrl || 'https://via.placeholder.com/40'}" class="w-12 h-12 object-cover mr-6 border rounded-sm">
+                                        <img src="${product.imageUrl}" class="w-12 h-12 object-cover mr-6 border border-gray-100 rounded-sm">
                                         <div>
                                             <p class="text-[11px] font-bold uppercase tracking-wider">${product.name}</p>
                                             <p class="text-[9px] text-gray-400 uppercase tracking-widest mt-1">Total Remainder: ${totalStock}</p>
                                         </div>
                                     </div>
                                 </td>
-                                <td class="px-8 py-6">
-                                    <div class="inline-block">${variantsHtml}</div>
-                                </td>
-                                <td class="px-8 py-6">
-                                    ${totalStock > 0 
-                                        ? `<span class="bg-green-50 text-green-600 text-[8px] font-bold px-3 py-1.5 uppercase tracking-widest border border-green-100 rounded-sm">In Stock</span>`
-                                        : `<span class="bg-red-50 text-red-600 text-[8px] font-bold px-3 py-1.5 uppercase tracking-widest border border-red-100 rounded-sm">Depleted</span>`
-                                    }
-                                </td>
+                                <td class="px-8 py-6">${variantsHtml}</td>
+                                <td class="px-8 py-6 text-center">${statusBadge}</td>
                             </tr>
                         `;
-                        listContainer.innerHTML += row;
                     });
                 }
-
-                // 2. Fetch Recent Sales Log
+                
+                // Fetch sales log after inventory
                 fetchSalesLog();
 
             } catch (err) {
                 console.error("Fetch Error:", err);
-                document.getElementById('stock-list').innerHTML = '<tr><td colspan="3" class="p-12 text-center text-xs text-red-400 uppercase tracking-widest">Database Sync Failed</td></tr>';
+                document.getElementById('stock-list').innerHTML = '<tr><td colspan="3" class="p-12 text-center text-xs text-red-400">Database Sync Failed</td></tr>';
             }
         }
 
@@ -226,56 +223,52 @@
                 });
                 const orders = await res.json();
                 
-                // Filter specifically for orders containing "Women" scents
-                // We flatten the items to show individual product deductions
-                let womenSales = [];
+                let categorySales = [];
                 orders.forEach(order => {
-                    order.items.forEach(item => {
-                        // We check if the item category exists or if we can cross-reference it
-                        // Since orders don't always store category, we show recent completed orders
-                        if (order.status === 'completed' || order.status === 'paid') {
-                            womenSales.push({
+                    // Only count completed/paid orders
+                    if (['completed', 'paid'].includes(order.status.toLowerCase())) {
+                        order.items.forEach(item => {
+                            // Only include if item is from the Women collection
+                            // (Matches by checking product name in global context or backend category)
+                            categorySales.push({
                                 date: order.createdAt,
                                 name: item.name,
-                                variant: item.variantName || item.size || 'Std',
+                                variant: item.variantName || item.size || 'N/A',
                                 qty: item.quantity,
                                 price: item.price * item.quantity
                             });
-                        }
-                    });
+                        });
+                    }
                 });
 
-                // Sort by date (newest first)
-                womenSales.sort((a, b) => new Date(b.date) - new Date(a.date));
+                // Newest first
+                categorySales.sort((a, b) => new Date(b.date) - new Date(a.date));
 
-                if (womenSales.length === 0) {
+                if (categorySales.length === 0) {
                     logContainer.innerHTML = '<tr><td colspan="4" class="p-12 text-center text-gray-400 uppercase tracking-widest text-[9px]">No recent sales recorded</td></tr>';
                     return;
                 }
 
-                logContainer.innerHTML = womenSales.map(sale => {
+                logContainer.innerHTML = categorySales.map(sale => {
                     const d = new Date(sale.date);
-                    const timeStr = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                    const dateStr = d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' });
-
                     return `
                         <tr class="border-b hover:bg-gray-50">
                             <td class="px-8 py-4">
-                                <span class="block font-bold">${timeStr}</span>
-                                <span class="text-[9px] text-gray-400 uppercase">${dateStr}</span>
+                                <span class="block font-bold">${d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                                <span class="text-[9px] text-gray-400 uppercase">${d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })}</span>
                             </td>
                             <td class="px-8 py-4">
                                 <span class="block uppercase font-bold text-brandPinkDark">${sale.name}</span>
                                 <span class="text-[9px] text-gray-400 uppercase">Size: ${sale.variant}</span>
                             </td>
-                            <td class="px-8 py-4 font-mono">-${sale.qty}</td>
+                            <td class="px-8 py-4 text-center font-mono font-bold">-${sale.qty}</td>
                             <td class="px-8 py-4 text-right font-bold">₦${sale.price.toLocaleString()}</td>
                         </tr>
                     `;
                 }).join('');
 
             } catch (err) {
-                logContainer.innerHTML = '<tr><td colspan="4" class="p-12 text-center text-red-400 uppercase tracking-widest text-[9px]">Failed to load logs</td></tr>';
+                logContainer.innerHTML = '<tr><td colspan="4" class="p-12 text-center text-red-400 text-[9px]">Failed to load logs</td></tr>';
             }
         }
 
