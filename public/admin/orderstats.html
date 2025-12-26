@@ -14,6 +14,8 @@
                     colors: {
                         brandPinkDark: '#D48A96',
                         brandBlack: '#000000',
+                        brandMist: '#93C5FD',
+                        brandKidsBlue: '#60A5FA',
                     }
                 }
             }
@@ -21,32 +23,78 @@
     </script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700&display=swap');
-        body { font-family: 'Inter', sans-serif; background-color: #FBFBFB; }
+        body { font-family: 'Inter', sans-serif; background-color: #FBFBFB; overflow-x: hidden; }
+        
+        /* Sidebar Transitions */
+        .sidebar { transition: transform 0.3s ease-in-out; }
+        .mobile-overlay { background: rgba(0,0,0,0.4); opacity: 0; pointer-events: none; transition: all 0.3s; }
+        .sidebar-active .sidebar { transform: translateX(0); }
+        .sidebar-active .mobile-overlay { opacity: 1; pointer-events: auto; }
+
         .order-card { transition: all 0.2s ease; border-left: 4px solid transparent; }
         .order-card.status-pending { border-left-color: #D48A96; }
         .order-card.status-completed { border-left-color: #10B981; }
         .order-card.status-cancelled { border-left-color: #EF4444; }
+
+        .nav-link { color: #6B7280; transition: all 0.2s; border-left: 4px solid transparent; }
+        .nav-link:hover { color: #000; background: #F9FAFB; }
+        .nav-link.active { color: #000; background: #F3F4F6; border-left-color: #D48A96; font-weight: 700; }
     </style>
 </head>
 <body class="text-brandBlack">
 
-    <div class="flex flex-col lg:flex-row min-h-screen">
-        <aside class="w-full lg:w-64 bg-white border-r p-6">
-            <div class="mb-10 text-center">
+    <div class="lg:hidden bg-white border-b p-4 flex justify-between items-center sticky top-0 z-50">
+        <span class="font-bold tracking-widest text-xs uppercase">TMB Admin</span>
+        <button onclick="toggleSidebar()" class="text-brandBlack text-xl">
+            <i class="fa-solid fa-bars-staggered"></i>
+        </button>
+    </div>
+
+    <div class="flex">
+        <div id="overlay" onclick="toggleSidebar()" class="mobile-overlay fixed inset-0 z-40 lg:hidden"></div>
+        
+        <aside id="sidebar" class="sidebar fixed lg:static inset-y-0 left-0 z-50 w-64 bg-white border-r transform -translate-x-full lg:translate-x-0 h-screen flex flex-col flex-shrink-0">
+            <div class="p-8 border-b text-center">
                 <h1 class="font-bold tracking-[0.3em] text-sm italic">TMB SYSTEM</h1>
-                <p class="text-[8px] uppercase tracking-widest text-gray-400 mt-2">Order Management</p>
             </div>
-            <nav class="space-y-2">
-                <a href="tmbdashboard.html" class="flex items-center px-4 py-3 text-[10px] uppercase tracking-widest font-semibold hover:bg-gray-50 transition">
-                    <i class="fa-solid fa-house mr-3 w-5"></i> Dashboard
+
+            <nav class="flex-1 px-4 py-8 space-y-1 overflow-y-auto">
+                <p class="text-[9px] uppercase tracking-[0.2em] text-gray-400 px-4 mb-4 font-bold">Inventory</p>
+                <a href="womenscents.html" class="nav-link flex items-center px-4 py-3 text-[10px] tracking-widest uppercase font-semibold">
+                    <i class="fa-solid fa-venus mr-3 w-5 text-brandPinkDark"></i> Women Scents
                 </a>
-                <a href="#" class="flex items-center px-4 py-3 text-[10px] uppercase tracking-widest font-bold bg-gray-100 border-l-4 border-brandPinkDark">
-                    <i class="fa-solid fa-bag-shopping mr-3 w-5"></i> All Orders
+                <a href="menscents.html" class="nav-link flex items-center px-4 py-3 text-[10px] tracking-widest uppercase font-semibold">
+                    <i class="fa-solid fa-mars mr-3 w-5 text-gray-400"></i> Men Scents
                 </a>
+                <a href="bodymistspray.html" class="nav-link flex items-center px-4 py-3 text-[10px] tracking-widest uppercase font-semibold">
+                    <i class="fa-solid fa-spray-can mr-3 w-5 text-brandMist"></i> Mists & Sprays
+                </a>
+                <a href="kidscents.html" class="nav-link flex items-center px-4 py-3 text-[10px] tracking-widest uppercase font-semibold">
+                    <i class="fa-solid fa-child mr-3 w-5 text-brandKidsBlue"></i> Kids Scents
+                </a>
+                
+                <div class="pt-8">
+                    <p class="text-[9px] uppercase tracking-[0.2em] text-gray-400 px-4 mb-4 font-bold">Business</p>
+                    <a href="customer-list.html" class="nav-link flex items-center px-4 py-3 text-[10px] tracking-widest uppercase font-semibold">
+                        <i class="fa-solid fa-users mr-3 w-5 text-gray-400"></i> Membership
+                    </a>
+                    <a href="#" class="nav-link active flex items-center px-4 py-3 text-[10px] tracking-widest uppercase font-semibold">
+                        <i class="fa-solid fa-bag-shopping mr-3 w-5 text-brandPinkDark"></i> Orders
+                    </a>
+                    <a href="analytics.html" class="nav-link flex items-center px-4 py-3 text-[10px] tracking-widest uppercase font-semibold">
+                        <i class="fa-solid fa-chart-simple mr-3 w-5 text-gray-400"></i> Analytics
+                    </a>
+                </div>
             </nav>
+
+            <div class="p-4 border-t">
+                <button onclick="logout()" class="w-full flex items-center justify-center px-4 py-3 text-[10px] uppercase tracking-widest font-bold bg-brandBlack text-white hover:bg-red-900 transition-all">
+                    <i class="fa-solid fa-power-off mr-2"></i> System Exit
+                </button>
+            </div>
         </aside>
 
-        <main class="flex-1 p-6 lg:p-12">
+        <main class="flex-1 p-6 lg:p-12 h-screen overflow-y-auto">
             <header class="flex justify-between items-center mb-10">
                 <div>
                     <h2 class="text-2xl font-light tracking-tight">Order Terminal</h2>
@@ -86,6 +134,17 @@
         const API_URL = '/api';
         let ALL_ORDERS = [];
 
+        function toggleSidebar() {
+            document.body.classList.toggle('sidebar-active');
+        }
+
+        function logout() {
+            if(confirm("Exit System?")) {
+                localStorage.removeItem('tmb_admin_token');
+                window.location.href = 'tmbadmin-login.html';
+            }
+        }
+
         async function fetchOrders() {
             const token = localStorage.getItem('tmb_admin_token');
             if (!token) { window.location.href = 'tmbadmin-login.html'; return; }
@@ -102,7 +161,7 @@
                 renderOrders();
             } catch (err) {
                 console.error(err);
-                document.getElementById('orders-list').innerHTML = `<p class="text-center text-red-500 text-xs">Error loading orders. Check console.</p>`;
+                document.getElementById('orders-list').innerHTML = `<p class="text-center text-red-500 text-xs">Error loading orders.</p>`;
             }
         }
 
@@ -114,11 +173,10 @@
         function renderOrders() {
             const container = document.getElementById('orders-list');
             const filter = document.getElementById('statusFilter').value;
-            
             const filtered = ALL_ORDERS.filter(o => filter === 'all' || o.status === filter);
 
             if (filtered.length === 0) {
-                container.innerHTML = `<div class="bg-white border p-10 text-center text-[10px] uppercase tracking-widest text-gray-400">No orders found in this category.</div>`;
+                container.innerHTML = `<div class="bg-white border p-10 text-center text-[10px] uppercase tracking-widest text-gray-400">No orders found.</div>`;
                 return;
             }
 
@@ -128,45 +186,37 @@
                         <div class="flex-1">
                             <div class="flex items-center gap-3 mb-2">
                                 <span class="text-[9px] px-2 py-0.5 border font-bold uppercase tracking-widest ${order.userId ? 'bg-blue-50 text-blue-600' : 'bg-gray-100 text-gray-600'}">
-                                    ${order.userId ? 'Registered Member' : 'Guest Checkout'}
+                                    ${order.userId ? 'Member' : 'Guest'}
                                 </span>
                                 <span class="text-[10px] text-gray-400 font-mono">#${order._id.slice(-8).toUpperCase()}</span>
                             </div>
                             <h3 class="font-bold text-sm uppercase tracking-wider">${order.shippingDetails?.firstName} ${order.shippingDetails?.lastName}</h3>
                             <p class="text-[10px] text-gray-500 mt-1"><i class="fa-solid fa-envelope mr-1"></i> ${order.shippingDetails?.email}</p>
-                            <p class="text-[10px] text-gray-500"><i class="fa-solid fa-phone mr-1"></i> ${order.shippingDetails?.phone}</p>
-                            <p class="text-[10px] text-gray-500 mt-2 italic"><i class="fa-solid fa-location-dot mr-1"></i> ${order.shippingDetails?.address}, ${order.shippingDetails?.city}</p>
+                            <p class="text-[10px] text-gray-500"><i class="fa-solid fa-location-dot mr-1"></i> ${order.shippingDetails?.city}</p>
                         </div>
 
                         <div class="flex-[1.5] border-t md:border-t-0 md:border-l md:pl-6 pt-4 md:pt-0">
                             <p class="text-[9px] uppercase tracking-widest text-gray-400 font-bold mb-3">Order Items</p>
-                            <div class="space-y-3">
+                            <div class="space-y-2">
                                 ${order.items.map(item => `
                                     <div class="flex justify-between items-center text-[11px]">
                                         <span><strong class="uppercase">${item.name}</strong> (x${item.quantity})</span>
-                                        <span class="text-gray-400">Size: ${item.variantName || 'Standard'}</span>
+                                        <span class="text-gray-400">${item.variantName || 'Standard'}</span>
                                     </div>
                                 `).join('')}
                             </div>
                             <div class="mt-4 pt-3 border-t flex justify-between items-center">
-                                <span class="text-[10px] font-bold uppercase tracking-widest">Total Amount</span>
                                 <span class="text-lg font-light text-brandPinkDark">₦ ${parseFloat(order.totalPrice).toLocaleString()}</span>
                             </div>
                         </div>
 
                         <div class="flex flex-col justify-center gap-2 border-t md:border-t-0 md:border-l md:pl-6 pt-4 md:pt-0 min-w-[150px]">
                             ${order.status === 'pending' ? `
-                                <button onclick="updateStatus('${order._id}', 'completed')" class="bg-brandBlack text-white text-[9px] uppercase tracking-[0.2em] py-3 px-4 font-bold hover:bg-green-700 transition">
-                                    Confirm & Ship
-                                </button>
-                                <button onclick="updateStatus('${order._id}', 'cancelled')" class="border border-gray-200 text-gray-400 text-[9px] uppercase tracking-[0.2em] py-3 px-4 font-bold hover:bg-red-50 hover:text-red-500 transition">
-                                    Cancel Order
-                                </button>
+                                <button onclick="updateStatus('${order._id}', 'completed')" class="bg-brandBlack text-white text-[9px] uppercase tracking-[0.2em] py-3 px-4 font-bold hover:bg-green-700 transition">Confirm & Ship</button>
+                                <button onclick="updateStatus('${order._id}', 'cancelled')" class="border border-gray-200 text-gray-400 text-[9px] uppercase tracking-[0.2em] py-3 px-4 font-bold hover:bg-red-50 hover:text-red-500 transition">Cancel</button>
                             ` : `
                                 <div class="text-center">
-                                    <p class="text-[9px] uppercase tracking-widest font-bold ${order.status === 'completed' ? 'text-green-500' : 'text-red-500'}">
-                                        Status: ${order.status}
-                                    </p>
+                                    <p class="text-[9px] uppercase tracking-widest font-bold ${order.status === 'completed' ? 'text-green-500' : 'text-red-500'}">${order.status}</p>
                                     <p class="text-[8px] text-gray-400 mt-1">${new Date(order.createdAt).toLocaleDateString()}</p>
                                 </div>
                             `}
@@ -177,30 +227,17 @@
         }
 
         async function updateStatus(orderId, newStatus) {
-            const confirmMsg = newStatus === 'completed' ? "Mark this order as Shipped/Completed?" : "Are you sure you want to CANCEL this order?";
-            if (!confirm(confirmMsg)) return;
-
+            if (!confirm(`Mark order as ${newStatus}?`)) return;
             const token = localStorage.getItem('tmb_admin_token');
             try {
                 const response = await fetch(`${API_URL}/admin/orders/${orderId}/status`, {
                     method: 'PATCH',
-                    headers: { 
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    },
+                    headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
                     body: JSON.stringify({ status: newStatus })
                 });
-
-                if (response.ok) {
-                    alert(`Order ${newStatus} successfully.`);
-                    fetchOrders(); // Refresh list
-                } else {
-                    alert("Failed to update order status.");
-                }
-            } catch (err) {
-                console.error(err);
-                alert("Network error updating status.");
-            }
+                if (response.ok) fetchOrders();
+                else alert("Update failed.");
+            } catch (err) { alert("Network error."); }
         }
 
         window.onload = fetchOrders;
