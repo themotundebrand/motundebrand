@@ -147,136 +147,239 @@
         </main>
     </div>
 
-    <script>
-        const API_URL = '/api';
+   <script>
+    const API_URL = '/api'; 
+    let globalProducts = [];
+    let confirmResolve;
 
-        function toggleSidebar() {
-            document.getElementById('sidebar').classList.toggle('-translate-x-full');
-            document.getElementById('overlay').classList.toggle('active');
-        }
+    // --- SIDEBAR & MODALS ---
+    function toggleSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('overlay');
+        sidebar.classList.toggle('-translate-x-full');
+        overlay.classList.toggle('active');
+        document.body.style.overflow = overlay.classList.contains('active') ? 'hidden' : 'auto';
+    }
 
-        async function fetchKidsInventory() {
-            try {
-                const res = await fetch(`${API_URL}/products`);
-                const products = await res.json();
-                
-                // STRICT FILTER: Only products with category 'kids'
-                const kidsScents = products.filter(p => (p.category || '').toLowerCase() === 'kids');
-                
-                const listContainer = document.getElementById('stock-list');
-                listContainer.innerHTML = '';
+    function showAlert(message, isError = false) {
+        const modal = document.getElementById('customAlert');
+        const msgPara = document.getElementById('alertMessage');
+        const icon = document.getElementById('alertIcon');
+        msgPara.innerText = message;
+        icon.innerHTML = isError ? '<i class="fa-solid fa-circle-xmark text-red-500"></i>' : '<i class="fa-solid fa-circle-check text-teal-500"></i>';
+        modal.classList.remove('hidden');
+    }
 
-                if (kidsScents.length === 0) {
-                    listContainer.innerHTML = '<tr><td colspan="3" class="p-12 text-center text-xs text-gray-400 uppercase tracking-widest">No products found in Kids category</td></tr>';
-                } else {
-                    kidsScents.forEach(product => {
-                        const totalStock = (product.variants || []).reduce((sum, v) => sum + (parseInt(v.stock) || 0), 0);
-                        const variantsHtml = (product.variants || []).map(v => `
-                            <div class="flex justify-between items-center mb-1 border-b border-gray-100 pb-1 last:border-0 w-36">
-                                <span class="text-[10px] font-bold text-gray-500 uppercase">${v.size}</span>
-                                <span class="text-[11px] font-medium ${parseInt(v.stock) < 5 ? 'text-red-500 font-bold' : 'text-gray-700'}">
-                                    ${v.stock} pcs
-                                </span>
-                            </div>
-                        `).join('');
+    function closeAlert() { document.getElementById('customAlert').classList.add('hidden'); }
 
-                        listContainer.innerHTML += `
-                            <tr class="border-b hover:bg-gray-50 transition-colors">
-                                <td class="px-8 py-6">
-                                    <div class="flex items-center">
-                                        <img src="${product.imageUrl || 'https://via.placeholder.com/40'}" class="w-12 h-12 object-cover mr-6 border rounded-sm">
-                                        <div>
-                                            <p class="text-[11px] font-bold uppercase tracking-wider">${product.name}</p>
-                                            <p class="text-[9px] text-gray-400 uppercase tracking-widest mt-1">Total Junior Stock: ${totalStock}</p>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td class="px-8 py-6"><div class="inline-block">${variantsHtml}</div></td>
-                                <td class="px-8 py-6">
-                                    ${totalStock > 0 
-                                        ? `<span class="bg-brandKidsLight text-brandKidsDark text-[8px] font-bold px-3 py-1.5 uppercase tracking-widest border border-teal-100 rounded-sm">In Stock</span>`
-                                        : `<span class="bg-red-50 text-red-600 text-[8px] font-bold px-3 py-1.5 uppercase tracking-widest border border-red-100 rounded-sm">Out of Stock</span>`
-                                    }
-                                </td>
-                            </tr>`;
-                    });
-                }
-                
-                fetchSalesLog();
+    function showConfirm(message) {
+        document.getElementById('confirmMessage').innerText = message;
+        document.getElementById('customConfirm').classList.remove('hidden');
+        return new Promise((resolve) => { confirmResolve = resolve; });
+    }
 
-            } catch (err) {
-                console.error("Fetch Error:", err);
-                document.getElementById('stock-list').innerHTML = '<tr><td colspan="3" class="p-12 text-center text-xs text-red-400 uppercase tracking-widest">Database Sync Failed</td></tr>';
-            }
-        }
+    function closeConfirm(result) {
+        document.getElementById('customConfirm').classList.add('hidden');
+        if (confirmResolve) confirmResolve(result);
+    }
 
-        async function fetchSalesLog() {
-            const token = localStorage.getItem('tmb_admin_token');
-            const logContainer = document.getElementById('sales-log');
+    // --- VARIANT DYNAMIC ROWS ---
+    function addVariantRow(size = '', price = '', stock = '0') {
+        const container = document.getElementById('variantsContainer');
+        const rowId = 'row-' + Math.random().toString(36).substr(2, 9);
+        const html = `
+            <div class="flex flex-col md:flex-row gap-2 variant-row items-end md:items-center bg-teal-50/30 md:bg-transparent p-3 md:p-0 border border-teal-100 md:border-0 rounded-sm mb-2" id="${rowId}">
+                <div class="w-full md:flex-[2]">
+                    <label class="md:hidden text-[7px] uppercase font-bold text-teal-400 mb-1 block">Size</label>
+                    <input type="text" placeholder="Size" class="input-field v-size" value="${size}" required>
+                </div>
+                <div class="w-full md:flex-[2]">
+                    <label class="md:hidden text-[7px] uppercase font-bold text-teal-400 mb-1 block">Price</label>
+                    <input type="number" placeholder="Price" class="input-field v-price" value="${price}" required>
+                </div>
+                <div class="w-full md:flex-[1]">
+                    <label class="md:hidden text-[7px] uppercase font-bold text-teal-400 mb-1 block">Stock</label>
+                    <input type="number" placeholder="Qty" class="input-field v-stock" value="${stock}" required>
+                </div>
+                <button type="button" onclick="removeVariantRow('${rowId}')" class="text-red-400 p-2 hover:text-red-600 transition">
+                    <i class="fa-solid fa-trash-can text-xs"></i>
+                </button>
+            </div>
+        `;
+        container.insertAdjacentHTML('beforeend', html);
+    }
+
+    function removeVariantRow(id) {
+        const rows = document.querySelectorAll('.variant-row');
+        if(rows.length > 1) document.getElementById(id).remove();
+        else showAlert("At least one size variant is required.", true);
+    }
+
+    // --- CORE DATA LOADING ---
+    window.onload = () => { resetForm(); loadProducts(); };
+
+    async function loadProducts() {
+        try {
+            const response = await fetch(`${API_URL}/products`);
+            const products = await response.json();
             
-            try {
-                const res = await fetch(`${API_URL}/admin/orders`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                const orders = await res.json();
-                
-                let kidsSales = [];
-                orders.forEach(order => {
-                    // Only process successful stock deductions
-                    if (['completed', 'paid', 'shipped'].includes(order.status.toLowerCase())) {
-                        (order.items || []).forEach(item => {
-                            // STRICT FILTER: Check if the item itself is tagged as 'kids'
-                            // Note: This relies on your API including the category in order items.
-                            if ((item.category || '').toLowerCase() === 'kids') {
-                                kidsSales.push({
-                                    timestamp: order.createdAt,
-                                    name: item.name,
-                                    variant: item.variantName || item.size || 'N/A',
-                                    qty: item.quantity,
-                                    price: (item.price || 0) * (item.quantity || 0)
-                                });
-                            }
-                        });
-                    }
-                });
-
-                kidsSales.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-
-                if (kidsSales.length === 0) {
-                    logContainer.innerHTML = '<tr><td colspan="4" class="p-12 text-center text-gray-400 uppercase tracking-widest text-[9px]">No recent Kids category sales</td></tr>';
-                    return;
-                }
-
-                logContainer.innerHTML = kidsSales.map(sale => {
-                    const dt = new Date(sale.timestamp);
-                    return `
-                        <tr class="border-b hover:bg-gray-50 transition-colors">
-                            <td class="px-8 py-4">
-                                <span class="block font-bold text-gray-800">${dt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-                                <span class="text-[9px] text-gray-400 uppercase">${dt.toLocaleDateString('en-GB')}</span>
-                            </td>
-                            <td class="px-8 py-4">
-                                <span class="block uppercase font-bold text-brandKidsDark">${sale.name}</span>
-                                <span class="text-[9px] text-gray-400 uppercase">Variant: ${sale.variant}</span>
-                            </td>
-                            <td class="px-8 py-4">
-                                <span class="font-mono bg-red-50 text-red-600 px-2 py-0.5 rounded-sm font-bold">-${sale.qty}</span>
-                            </td>
-                            <td class="px-8 py-4 text-right font-bold">₦${sale.price.toLocaleString()}</td>
-                        </tr>`;
-                }).join('');
-
-            } catch (err) {
-                logContainer.innerHTML = '<tr><td colspan="4" class="p-12 text-center text-red-400 uppercase tracking-widest text-[9px]">Log Sync Failed</td></tr>';
+            // STRICT FILTER: Only Junior/Kids Collection
+            globalProducts = products.filter(p => (p.category || '').toLowerCase() === 'kids');
+            
+            const grid = document.getElementById('inventoryGrid');
+            
+            if (globalProducts.length === 0) {
+                grid.innerHTML = '<div class="col-span-full text-center py-20"><p class="text-[10px] uppercase text-gray-400 tracking-[0.2em]">No Little Scents in Collection</p></div>';
+                return;
             }
+
+            grid.innerHTML = globalProducts.map(product => {
+                const totalStock = (product.variants || []).reduce((acc, curr) => acc + Number(curr.stock || 0), 0);
+                const stockStatus = totalStock > 5 ? 'bg-teal-100 text-teal-700' : (totalStock > 0 ? 'bg-orange-100 text-orange-700' : 'bg-red-100 text-red-700');
+
+                return `
+                <div class="bg-white border border-gray-100 p-2 md:p-4 group hover:border-teal-200 transition-all duration-300">
+                    <div class="aspect-square bg-gray-50 mb-3 overflow-hidden relative">
+                        <img src="${product.imageUrl}" alt="${product.name}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
+                        <span class="absolute top-1 right-1 text-[7px] md:text-[8px] px-2 py-1 font-bold uppercase ${stockStatus} shadow-sm rounded-sm">
+                            ${totalStock > 0 ? 'Stock' : 'Out'} (${totalStock})
+                        </span>
+                    </div>
+                    <h4 class="text-[10px] md:text-xs font-bold uppercase tracking-widest mb-2 truncate text-gray-800">${product.name}</h4>
+                    
+                    <div class="space-y-1 mb-4">
+                        ${(product.variants || []).map(v => `
+                            <div class="flex justify-between text-[8px] md:text-[9px] border-b border-gray-50 pb-1">
+                                <span class="text-gray-400">${v.size}</span>
+                                <span class="font-bold">₦${Number(v.price).toLocaleString()} <span class="text-[7px] ml-1 text-teal-500">(${v.stock})</span></span>
+                            </div>
+                        `).join('')}
+                    </div>
+
+                    <div class="flex flex-col gap-1.5 pt-2 border-t border-gray-50">
+                        <button onclick="editProduct('${product._id}')" class="text-[7px] md:text-[8px] uppercase tracking-widest bg-teal-50 text-teal-700 py-2 font-black hover:bg-teal-500 hover:text-white transition">Edit</button>
+                        <button onclick="deleteProduct('${product._id}')" class="text-[7px] md:text-[8px] uppercase tracking-widest text-red-400 font-bold py-1 hover:text-red-600 transition">Remove</button>
+                    </div>
+                </div>
+                `;
+            }).join('');
+        } catch (err) { 
+            console.error(err); 
+            showAlert("Failed to load kids collection.", true);
+        }
+    }
+
+    // --- FORM LOGIC ---
+    function editProduct(id) {
+        const product = globalProducts.find(p => p._id === id);
+        if (!product) return;
+        
+        document.getElementById('editProductId').value = product._id;
+        document.getElementById('pName').value = product.name;
+        document.getElementById('pDesc').value = product.description || '';
+        document.getElementById('variantsContainer').innerHTML = '';
+        
+        product.variants.forEach(v => addVariantRow(v.size, v.price, v.stock));
+        
+        document.getElementById('formTitle').innerText = "Update: " + product.name;
+        document.getElementById('submitBtn').innerText = "Apply Changes";
+        document.getElementById('cancelEdit').classList.remove('hidden');
+        document.getElementById('imageUpload').required = false;
+        
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function resetForm() {
+        document.getElementById('addScentForm').reset();
+        document.getElementById('editProductId').value = '';
+        document.getElementById('variantsContainer').innerHTML = '';
+        addVariantRow();
+        document.getElementById('formTitle').innerText = "Add Junior Fragrance";
+        document.getElementById('submitBtn').innerText = "Add to Kids Collection";
+        document.getElementById('cancelEdit').classList.add('hidden');
+        document.getElementById('imageUpload').required = true;
+        document.getElementById('fileNameDisplay').innerText = "Upload Product Image";
+    }
+
+    document.getElementById('addScentForm').onsubmit = async (e) => {
+        e.preventDefault();
+        const editId = document.getElementById('editProductId').value;
+        const submitBtn = document.getElementById('submitBtn');
+        const file = document.getElementById('imageUpload').files[0];
+        const token = localStorage.getItem('tmb_admin_token');
+
+        // Capture variants with data types ensured
+        const variants = Array.from(document.querySelectorAll('.variant-row')).map(row => ({
+            size: row.querySelector('.v-size').value,
+            price: Number(row.querySelector('.v-price').value),
+            stock: Number(row.querySelector('.v-stock').value)
+        }));
+
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> UPDATING...';
+
+        let imageBase64 = null;
+        if (file) {
+            const reader = new FileReader();
+            imageBase64 = await new Promise(resolve => {
+                reader.onload = () => resolve(reader.result.split(',')[1]);
+                reader.readAsDataURL(file);
+            });
         }
 
-        function logout() {
-            localStorage.removeItem('tmb_admin_token');
-            window.location.href = 'tmbadmin-login.html';
-        }
+        const payload = {
+            name: document.getElementById('pName').value,
+            description: document.getElementById('pDesc').value,
+            category: 'kids', // HARDCODED CATEGORY
+            variants: variants,
+            ...(imageBase64 && { imageBase64, fileName: file.name, contentType: file.type })
+        };
 
-        window.onload = fetchKidsInventory;
-    </script>
+        const url = editId ? `${API_URL}/admin/products/${editId}` : `${API_URL}/admin/products`;
+        
+        try {
+            const response = await fetch(url, {
+                method: editId ? 'PUT' : 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify(payload)
+            });
+
+            if (response.ok) {
+                showAlert(editId ? "Junior Scent Updated." : "Junior Scent Added.");
+                setTimeout(() => location.reload(), 1500);
+            } else {
+                showAlert("Error saving to database.", true);
+            }
+        } catch (err) { 
+            showAlert("Connection Lost.", true); 
+        } finally { 
+            submitBtn.disabled = false; 
+            submitBtn.innerText = "Add to Kids Collection"; 
+        }
+    };
+
+    async function deleteProduct(id) {
+        const confirmed = await showConfirm("Remove this item from the Kids collection permanently?");
+        if(!confirmed) return;
+        const token = localStorage.getItem('tmb_admin_token');
+        try {
+            const res = await fetch(`${API_URL}/admin/products/${id}`, {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if(res.ok) { showAlert("Removed."); setTimeout(() => location.reload(), 1000); }
+            else showAlert("Delete failed.", true);
+        } catch (err) { showAlert("Error.", true); }
+    }
+
+    document.getElementById('imageUpload').onchange = function() {
+        document.getElementById('fileNameDisplay').innerText = this.files[0]?.name || "Upload Product Image";
+    };
+
+    function logout() {
+        localStorage.removeItem('tmb_admin_token');
+        window.location.href = 'tmbadmin-login.html';
+    }
+</script>
 </body>
 </html>

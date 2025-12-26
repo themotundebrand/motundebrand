@@ -150,140 +150,164 @@
         </main>
     </div>
 
-    <script>
-        const API_URL = '/api';
+  <script>
+    const API_URL = '/api';
 
-        function toggleSidebar() {
-            document.getElementById('sidebar').classList.toggle('-translate-x-full');
-            document.getElementById('overlay').classList.toggle('active');
-        }
+    function toggleSidebar() {
+        document.getElementById('sidebar').classList.toggle('-translate-x-full');
+        document.getElementById('overlay').classList.toggle('active');
+    }
 
-        async function fetchKidsInventory() {
-            try {
-                const res = await fetch(`${API_URL}/products`);
-                const products = await res.json();
-                const kidsScents = products.filter(p => (p.category || '').toLowerCase() === 'kids');
-                
-                const listContainer = document.getElementById('stock-list');
-                listContainer.innerHTML = '';
-
-                if (kidsScents.length === 0) {
-                    listContainer.innerHTML = '<tr><td colspan="3" class="p-12 text-center text-xs text-gray-400 uppercase tracking-widest">No Kids category products found</td></tr>';
-                } else {
-                    kidsScents.forEach(product => {
-                        const variantsHtml = (product.variants || []).map(v => `
-                            <div class="flex justify-between items-center mb-1 border-b border-gray-100 pb-1 last:border-0 w-36">
-                                <span class="text-[10px] font-bold text-gray-500 uppercase">${v.size}</span>
-                                <span class="text-[11px] font-medium ${parseInt(v.stock) < 5 ? 'text-red-500 font-bold' : 'text-gray-700'}">
-                                    ${v.stock} pcs
-                                </span>
-                            </div>
-                        `).join('');
-
-                        const totalStock = (product.variants || []).reduce((sum, v) => sum + (parseInt(v.stock) || 0), 0);
-
-                        const row = `
-                            <tr class="border-b hover:bg-gray-50 transition-colors">
-                                <td class="px-8 py-6">
-                                    <div class="flex items-center">
-                                        <img src="${product.imageUrl || 'https://via.placeholder.com/40'}" class="w-12 h-12 object-cover mr-6 border rounded-sm">
-                                        <div>
-                                            <p class="text-[11px] font-bold uppercase tracking-wider">${product.name}</p>
-                                            <p class="text-[9px] text-gray-400 uppercase tracking-widest mt-1">Stock Left: ${totalStock}</p>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td class="px-8 py-6">
-                                    <div class="inline-block">${variantsHtml}</div>
-                                </td>
-                                <td class="px-8 py-6">
-                                    ${totalStock > 0 
-                                        ? `<span class="bg-brandKidsLight text-brandKidsDark text-[8px] font-bold px-3 py-1.5 uppercase tracking-widest border border-teal-100 rounded-sm">Available</span>`
-                                        : `<span class="bg-red-50 text-red-600 text-[8px] font-bold px-3 py-1.5 uppercase tracking-widest border border-red-100 rounded-sm">Low/No Stock</span>`
-                                    }
-                                </td>
-                            </tr>
-                        `;
-                        listContainer.innerHTML += row;
-                    });
-                }
-                
-                fetchSalesLog();
-
-            } catch (err) {
-                console.error("Fetch Error:", err);
-                document.getElementById('stock-list').innerHTML = '<tr><td colspan="3" class="p-12 text-center text-xs text-red-400 uppercase tracking-widest">Database Sync Failed</td></tr>';
-            }
-        }
-
-        async function fetchSalesLog() {
-            const token = localStorage.getItem('tmb_admin_token');
-            const logContainer = document.getElementById('sales-log');
+    /**
+     * FETCH & DISPLAY KIDS INVENTORY
+     * Displays current stock levels for the Kids category
+     */
+    async function fetchKidsInventory() {
+        try {
+            const res = await fetch(`${API_URL}/products`);
+            const products = await res.json();
             
-            try {
-                const res = await fetch(`${API_URL}/admin/orders`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                const orders = await res.json();
-                
-                let kidsSales = [];
-                orders.forEach(order => {
-                    // Only display finalized deductions
-                    if (['completed', 'paid', 'shipped'].includes(order.status)) {
-                        (order.items || []).forEach(item => {
-                            kidsSales.push({
-                                timestamp: order.createdAt,
-                                name: item.name,
-                                variant: item.variantName || item.size || 'N/A',
-                                qty: item.quantity,
-                                price: (item.price || 0) * (item.quantity || 0)
-                            });
-                        });
-                    }
-                });
+            // Filter products by 'kids' category
+            const kidsScents = products.filter(p => (p.category || '').toLowerCase() === 'kids');
+            
+            const listContainer = document.getElementById('stock-list');
+            listContainer.innerHTML = '';
 
-                // Sort Newest to Oldest
-                kidsSales.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+            if (kidsScents.length === 0) {
+                listContainer.innerHTML = '<tr><td colspan="3" class="p-12 text-center text-xs text-gray-400 uppercase tracking-widest">No Kids category products found in database</td></tr>';
+            } else {
+                kidsScents.forEach(product => {
+                    // Create rows for each size variant
+                    const variantsHtml = (product.variants || []).map(v => `
+                        <div class="flex justify-between items-center mb-1 border-b border-gray-50 pb-1 last:border-0 w-40">
+                            <span class="text-[10px] font-bold text-gray-500 uppercase">${v.size}</span>
+                            <div class="flex items-center gap-2">
+                                <span class="text-[11px] font-mono ${parseInt(v.stock) < 5 ? 'text-red-500 font-bold' : 'text-gray-700'}">
+                                    ${v.stock}
+                                </span>
+                                <span class="text-[8px] text-gray-400 uppercase">PCS</span>
+                            </div>
+                        </div>
+                    `).join('');
 
-                if (kidsSales.length === 0) {
-                    logContainer.innerHTML = '<tr><td colspan="4" class="p-12 text-center text-gray-400 uppercase tracking-widest text-[9px]">No recent deductions found</td></tr>';
-                    return;
-                }
+                    const totalStock = (product.variants || []).reduce((sum, v) => sum + (parseInt(v.stock) || 0), 0);
 
-                logContainer.innerHTML = kidsSales.map(sale => {
-                    const dt = new Date(sale.timestamp);
-                    const time = dt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-                    const date = dt.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
-
-                    return `
+                    const row = `
                         <tr class="border-b hover:bg-gray-50 transition-colors">
-                            <td class="px-8 py-4">
-                                <span class="block font-bold text-gray-800">${time}</span>
-                                <span class="text-[9px] text-gray-400 uppercase">${date}</span>
+                            <td class="px-8 py-6">
+                                <div class="flex items-center">
+                                    <div class="relative">
+                                        <img src="${product.imageUrl || 'https://via.placeholder.com/40'}" class="w-12 h-12 object-cover mr-6 border rounded-sm">
+                                        ${totalStock > 0 && totalStock <= 5 ? '<div class="absolute -top-1 -right-4 w-2 h-2 bg-orange-400 rounded-full animate-pulse"></div>' : ''}
+                                    </div>
+                                    <div>
+                                        <p class="text-[11px] font-bold uppercase tracking-wider">${product.name}</p>
+                                        <p class="text-[9px] text-gray-400 uppercase tracking-widest mt-1">Total Stock: ${totalStock}</p>
+                                    </div>
+                                </div>
                             </td>
-                            <td class="px-8 py-4">
-                                <span class="block uppercase font-bold text-brandKidsDark">${sale.name}</span>
-                                <span class="text-[9px] text-gray-400 uppercase">Size: ${sale.variant}</span>
+                            <td class="px-8 py-6">
+                                <div class="inline-block">${variantsHtml}</div>
                             </td>
-                            <td class="px-8 py-4">
-                                <span class="font-mono bg-red-50 text-red-600 px-2 py-0.5 rounded-sm font-bold">-${sale.qty}</span>
+                            <td class="px-8 py-6">
+                                ${totalStock > 0 
+                                    ? `<span class="bg-brandKidsLight text-brandKidsDark text-[8px] font-bold px-3 py-1.5 uppercase tracking-widest border border-teal-100 rounded-sm">Available</span>`
+                                    : `<span class="bg-red-50 text-red-600 text-[8px] font-bold px-3 py-1.5 uppercase tracking-widest border border-red-100 rounded-sm">Sold Out</span>`
+                                }
                             </td>
-                            <td class="px-8 py-4 text-right font-bold">₦${sale.price.toLocaleString()}</td>
                         </tr>
                     `;
-                }).join('');
-
-            } catch (err) {
-                logContainer.innerHTML = '<tr><td colspan="4" class="p-12 text-center text-red-400 uppercase tracking-widest text-[9px]">Log Sync Failed</td></tr>';
+                    listContainer.innerHTML += row;
+                });
             }
-        }
+            
+            // Sync the deduction log
+            fetchSalesLog();
 
-        function logout() {
-            localStorage.removeItem('tmb_admin_token');
-            window.location.href = 'tmbadmin-login.html';
+        } catch (err) {
+            console.error("Fetch Error:", err);
+            document.getElementById('stock-list').innerHTML = '<tr><td colspan="3" class="p-12 text-center text-xs text-red-400 uppercase tracking-widest font-bold">Database Sync Failed</td></tr>';
         }
+    }
 
-        window.onload = fetchKidsInventory;
-    </script>
+    /**
+     * FETCH & DISPLAY MOVEMENT LOG (DEDUCTIONS)
+     * Lists recently sold items that reduced stock levels
+     */
+    async function fetchSalesLog() {
+        const token = localStorage.getItem('tmb_admin_token');
+        const logContainer = document.getElementById('sales-log');
+        
+        try {
+            const res = await fetch(`${API_URL}/admin/orders`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const orders = await res.json();
+            
+            let kidsSales = [];
+            orders.forEach(order => {
+                // Deduct only when payment is confirmed or order is shipped/complete
+                const validStatuses = ['completed', 'paid', 'shipped'];
+                if (validStatuses.includes(order.status.toLowerCase())) {
+                    (order.items || []).forEach(item => {
+                        // Log movement
+                        kidsSales.push({
+                            timestamp: order.createdAt,
+                            name: item.name,
+                            variant: item.variantName || item.size || 'N/A',
+                            qty: item.quantity,
+                            price: (item.price || 0) * (item.quantity || 0)
+                        });
+                    });
+                }
+            });
+
+            // Sort: Newest movements at the top
+            kidsSales.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+            if (kidsSales.length === 0) {
+                logContainer.innerHTML = '<tr><td colspan="4" class="p-12 text-center text-gray-400 uppercase tracking-widest text-[9px]">No recent stock movements found</td></tr>';
+                return;
+            }
+
+            logContainer.innerHTML = kidsSales.slice(0, 15).map(sale => {
+                const dt = new Date(sale.timestamp);
+                const timeStr = dt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                const dateStr = dt.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+
+                return `
+                    <tr class="border-b hover:bg-gray-50 transition-colors">
+                        <td class="px-8 py-4">
+                            <span class="block font-bold text-gray-800 text-[10px]">${timeStr}</span>
+                            <span class="text-[9px] text-gray-400 uppercase font-medium">${dateStr}</span>
+                        </td>
+                        <td class="px-8 py-4">
+                            <span class="block uppercase font-bold text-brandKidsDark text-[10px]">${sale.name}</span>
+                            <span class="text-[9px] text-gray-400 uppercase font-medium">Size: ${sale.variant}</span>
+                        </td>
+                        <td class="px-8 py-4">
+                            <span class="font-mono bg-red-50 text-red-600 px-2 py-1 rounded-sm font-bold text-[11px]">-${sale.qty}</span>
+                        </td>
+                        <td class="px-8 py-4 text-right font-bold text-[10px]">
+                            ₦${sale.price.toLocaleString()}
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+
+        } catch (err) {
+            console.error("Log Error:", err);
+            logContainer.innerHTML = '<tr><td colspan="4" class="p-12 text-center text-red-400 uppercase tracking-widest text-[9px]">Movement Log Sync Failed</td></tr>';
+        }
+    }
+
+    function logout() {
+        localStorage.removeItem('tmb_admin_token');
+        window.location.href = 'tmbadmin-login.html';
+    }
+
+    // Initial Load
+    window.onload = fetchKidsInventory;
+</script>
 </body>
 </html>

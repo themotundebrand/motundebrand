@@ -172,147 +172,173 @@
             </div>
         </main>
     </div>
+<script>
+    const API_URL = '/api';
 
-    <script>
-        const API_URL = '/api';
+    function toggleSidebar() {
+        document.getElementById('sidebar').classList.toggle('-translate-x-full');
+        document.getElementById('overlay').classList.toggle('active');
+    }
 
-        function toggleSidebar() {
-            document.getElementById('sidebar').classList.toggle('-translate-x-full');
-            document.getElementById('overlay').classList.toggle('active');
+    /**
+     * FETCH & DISPLAY MIST/SPRAY INVENTORY
+     * Separates items into Body Mist and Body Spray tables
+     */
+    async function fetchMistSprayInventory() {
+        try {
+            const res = await fetch(`${API_URL}/products`);
+            const products = await res.json();
+            
+            // Filter only the 'mist' category
+            const collection = products.filter(p => (p.category || '').toLowerCase() === 'mist');
+            
+            // Separate by sub-category for the two tables
+            const bodyMists = collection.filter(p => p.subCategory === 'Body Mist');
+            const bodySprays = collection.filter(p => p.subCategory === 'Body Spray');
+
+            renderTable('mist-list', bodyMists, "No Body Mists found in database");
+            renderTable('spray-list', bodySprays, "No Body Sprays found in database");
+            
+            // Load deduction history
+            fetchSalesLog();
+
+        } catch (err) {
+            console.error("Fetch Error:", err);
+            const errorHtml = '<tr><td colspan="3" class="p-12 text-center text-xs text-red-400 uppercase font-bold tracking-widest">CRITICAL: Database Sync Failed</td></tr>';
+            document.getElementById('mist-list').innerHTML = errorHtml;
+            document.getElementById('spray-list').innerHTML = errorHtml;
+        }
+    }
+
+    /**
+     * HELPER: RENDER PRODUCT TABLES
+     */
+    function renderTable(elementId, items, emptyMsg) {
+        const container = document.getElementById(elementId);
+        container.innerHTML = '';
+
+        if (items.length === 0) {
+            container.innerHTML = `<tr><td colspan="3" class="p-12 text-center text-xs text-gray-400 uppercase tracking-widest">${emptyMsg}</td></tr>`;
+            return;
         }
 
-        async function fetchMistSprayInventory() {
-            try {
-                const res = await fetch(`${API_URL}/products`);
-                const products = await res.json();
-                
-                const collection = products.filter(p => p.category === 'mist');
-                const bodyMists = collection.filter(p => p.subCategory === 'Body Mist');
-                const bodySprays = collection.filter(p => p.subCategory === 'Body Spray');
+        items.forEach(product => {
+            const totalStock = (product.variants || []).reduce((sum, v) => sum + (parseInt(v.stock) || 0), 0);
+            
+            const variantsHtml = (product.variants || []).map(v => `
+                <div class="flex justify-between items-center mb-1 border-b border-gray-50 pb-1 last:border-0 w-40">
+                    <span class="text-[10px] font-bold text-gray-400 uppercase">${v.size}</span>
+                    <div class="flex items-center gap-2">
+                        <span class="text-[11px] font-mono ${parseInt(v.stock) < 5 ? 'text-red-500 font-bold' : 'text-gray-700'}">
+                            ${v.stock}
+                        </span>
+                        <span class="text-[8px] text-gray-400 uppercase tracking-tighter">Units</span>
+                    </div>
+                </div>
+            `).join('');
 
-                renderTable('mist-list', bodyMists, "No Body Mists found");
-                renderTable('spray-list', bodySprays, "No Body Sprays found");
-                
-                fetchSalesLog();
+            const row = `
+                <tr class="border-b hover:bg-gray-50 transition-colors group">
+                    <td class="px-8 py-6">
+                        <div class="flex items-center">
+                            <img src="${product.imageUrl || 'https://via.placeholder.com/40'}" class="w-12 h-12 object-cover mr-6 border border-gray-100 bg-gray-50 rounded-sm grayscale group-hover:grayscale-0 transition-all">
+                            <div>
+                                <p class="text-[11px] font-bold uppercase tracking-wider mb-1 text-gray-800">${product.name}</p>
+                                <p class="text-[9px] text-gray-400 uppercase tracking-widest font-medium">Net Stock: ${totalStock}</p>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="px-8 py-6">
+                        <div class="inline-block">${variantsHtml}</div>
+                    </td>
+                    <td class="px-8 py-6">
+                        ${totalStock > 0 
+                            ? `<span class="text-[8px] font-bold px-3 py-1.5 uppercase tracking-widest text-brandMist bg-brandMistLight border border-blue-100 rounded-sm">Active</span>`
+                            : `<span class="text-[8px] font-bold px-3 py-1.5 uppercase tracking-widest text-red-600 bg-red-50 border border-red-100 rounded-sm">Sold Out</span>`
+                        }
+                    </td>
+                </tr>
+            `;
+            container.innerHTML += row;
+        });
+    }
 
-            } catch (err) {
-                console.error("Fetch Error:", err);
-                const errorHtml = '<tr><td colspan="3" class="p-12 text-center text-xs text-red-400 uppercase">System Link Failure</td></tr>';
-                document.getElementById('mist-list').innerHTML = errorHtml;
-                document.getElementById('spray-list').innerHTML = errorHtml;
-            }
-        }
+    /**
+     * FETCH & DISPLAY MOVEMENT LOG (DEDUCTIONS)
+     */
+    async function fetchSalesLog() {
+        const token = localStorage.getItem('tmb_admin_token');
+        const logContainer = document.getElementById('sales-log');
+        
+        try {
+            const res = await fetch(`${API_URL}/admin/orders`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const orders = await res.json();
+            
+            let mistSales = [];
+            orders.forEach(order => {
+                // Ensure we only count deductions from successful orders
+                const deductionStates = ['completed', 'paid', 'shipped'];
+                if (deductionStates.includes(order.status.toLowerCase())) {
+                    (order.items || []).forEach(item => {
+                        // Filter for items belonging to 'mist' category
+                        if ((item.category || '').toLowerCase() === 'mist') {
+                            mistSales.push({
+                                timestamp: order.createdAt,
+                                name: item.name,
+                                variant: item.variantName || item.size || 'N/A',
+                                qty: item.quantity,
+                                price: (item.price || 0) * (item.quantity || 0)
+                            });
+                        }
+                    });
+                }
+            });
 
-        function renderTable(elementId, items, emptyMsg) {
-            const container = document.getElementById(elementId);
-            container.innerHTML = '';
+            // Sort newest to oldest
+            mistSales.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
 
-            if (items.length === 0) {
-                container.innerHTML = `<tr><td colspan="3" class="p-12 text-center text-xs text-gray-400 uppercase tracking-widest">${emptyMsg}</td></tr>`;
+            if (mistSales.length === 0) {
+                logContainer.innerHTML = '<tr><td colspan="4" class="p-12 text-center text-gray-400 uppercase tracking-widest text-[9px]">No recent stock movements detected</td></tr>';
                 return;
             }
 
-            items.forEach(product => {
-                const totalStock = (product.variants || []).reduce((sum, v) => sum + (parseInt(v.stock) || 0), 0);
-                
-                const variantsHtml = (product.variants || []).map(v => `
-                    <div class="flex justify-between items-center mb-1 border-b border-gray-50 pb-1 last:border-0 w-36">
-                        <span class="text-[10px] font-bold text-gray-400 uppercase">${v.size}</span>
-                        <span class="text-[11px] ${parseInt(v.stock) < 5 ? 'text-red-500 font-bold' : 'text-gray-700'}">${v.stock} pcs</span>
-                    </div>
-                `).join('');
-
-                const row = `
+            logContainer.innerHTML = mistSales.slice(0, 20).map(sale => {
+                const dt = new Date(sale.timestamp);
+                return `
                     <tr class="border-b hover:bg-gray-50 transition-colors">
-                        <td class="px-8 py-6">
-                            <div class="flex items-center">
-                                <img src="${product.imageUrl || 'https://via.placeholder.com/40'}" class="w-12 h-12 object-cover mr-6 border border-gray-100 bg-gray-50 rounded-sm">
-                                <div>
-                                    <p class="text-[11px] font-bold uppercase tracking-wider mb-1">${product.name}</p>
-                                    <p class="text-[9px] text-gray-400 uppercase tracking-widest">Availability: ${totalStock} Units</p>
-                                </div>
-                            </div>
+                        <td class="px-8 py-4">
+                            <span class="block font-bold text-gray-800 text-[10px]">${dt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                            <span class="text-[9px] text-gray-400 uppercase tracking-tighter">${dt.toLocaleDateString('en-GB')}</span>
                         </td>
-                        <td class="px-8 py-6">
-                            <div class="inline-block">${variantsHtml}</div>
+                        <td class="px-8 py-4">
+                            <span class="block uppercase font-bold text-brandMist text-[10px]">${sale.name}</span>
+                            <span class="text-[9px] text-gray-400 uppercase">Size: ${sale.variant}</span>
                         </td>
-                        <td class="px-8 py-6">
-                            ${totalStock > 0 
-                                ? `<span class="text-[8px] font-bold px-3 py-1.5 uppercase tracking-widest text-brandMist bg-brandMistLight border border-blue-100 rounded-sm">In Stock</span>`
-                                : `<span class="text-[8px] font-bold px-3 py-1.5 uppercase tracking-widest text-red-600 bg-red-50 border border-red-100 rounded-sm">Out of Stock</span>`
-                            }
+                        <td class="px-8 py-4 font-mono font-bold text-[11px] text-red-600">
+                            -${sale.qty}
+                        </td>
+                        <td class="px-8 py-4 text-right font-bold text-[10px]">
+                            ₦${sale.price.toLocaleString()}
                         </td>
                     </tr>
                 `;
-                container.innerHTML += row;
-            });
+            }).join('');
+
+        } catch (err) {
+            console.error("Sales Log Error:", err);
+            logContainer.innerHTML = '<tr><td colspan="4" class="p-12 text-center text-red-400 uppercase tracking-widest text-[9px]">Movement Log Out of Sync</td></tr>';
         }
+    }
 
-        async function fetchSalesLog() {
-            const token = localStorage.getItem('tmb_admin_token');
-            const logContainer = document.getElementById('sales-log');
-            
-            try {
-                const res = await fetch(`${API_URL}/admin/orders`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                const orders = await res.json();
-                
-                let mistSales = [];
-                orders.forEach(order => {
-                    // Only track confirmed deductions
-                    if (['completed', 'paid', 'shipped'].includes(order.status)) {
-                        (order.items || []).forEach(item => {
-                            // Link to current category
-                            if (item.category === 'mist') {
-                                mistSales.push({
-                                    timestamp: order.createdAt,
-                                    name: item.name,
-                                    variant: item.variantName || item.size || 'Standard',
-                                    qty: item.quantity,
-                                    price: (item.price || 0) * (item.quantity || 0)
-                                });
-                            }
-                        });
-                    }
-                });
+    function logout() {
+        localStorage.removeItem('tmb_admin_token');
+        window.location.href = 'tmbadmin-login.html';
+    }
 
-                mistSales.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-
-                if (mistSales.length === 0) {
-                    logContainer.innerHTML = '<tr><td colspan="4" class="p-12 text-center text-gray-400 uppercase tracking-widest text-[9px]">No recent mist/spray sales</td></tr>';
-                    return;
-                }
-
-                logContainer.innerHTML = mistSales.map(sale => {
-                    const dt = new Date(sale.timestamp);
-                    return `
-                        <tr class="border-b hover:bg-gray-50 transition-colors">
-                            <td class="px-8 py-4">
-                                <span class="block font-bold text-gray-800">${dt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-                                <span class="text-[9px] text-gray-400 uppercase">${dt.toLocaleDateString('en-GB')}</span>
-                            </td>
-                            <td class="px-8 py-4">
-                                <span class="block uppercase font-bold text-brandMist">${sale.name}</span>
-                                <span class="text-[9px] text-gray-400 uppercase">Variant: ${sale.variant}</span>
-                            </td>
-                            <td class="px-8 py-4 text-red-500 font-mono font-bold">-${sale.qty}</td>
-                            <td class="px-8 py-4 text-right font-bold">₦${sale.price.toLocaleString()}</td>
-                        </tr>
-                    `;
-                }).join('');
-
-            } catch (err) {
-                logContainer.innerHTML = '<tr><td colspan="4" class="p-12 text-center text-red-400 uppercase text-[9px]">Log Sync Error</td></tr>';
-            }
-        }
-
-        function logout() {
-            localStorage.removeItem('tmb_admin_token');
-            window.location.href = 'tmbadmin-login.html';
-        }
-
-        window.onload = fetchMistSprayInventory;
-    </script>
+    // Trigger initial load
+    window.onload = fetchMistSprayInventory;
+</script>
 </body>
 </html>

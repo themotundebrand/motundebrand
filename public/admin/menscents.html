@@ -192,217 +192,266 @@
         </div>
     </div>
 
-    <script>
-        const API_URL = '/api'; 
-        let globalProducts = [];
-        let confirmResolve;
+   <script>
+    const API_URL = '/api'; 
+    let globalProducts = [];
+    let confirmResolve;
 
-        function toggleSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            const overlay = document.getElementById('overlay');
-            sidebar.classList.toggle('-translate-x-full');
-            overlay.classList.toggle('active');
-            document.body.style.overflow = overlay.classList.contains('active') ? 'hidden' : 'auto';
-        }
+    // --- UI HELPER FUNCTIONS ---
+    function toggleSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('overlay');
+        sidebar.classList.toggle('-translate-x-full');
+        overlay.classList.toggle('active');
+        document.body.style.overflow = overlay.classList.contains('active') ? 'hidden' : 'auto';
+    }
 
-        function showAlert(message, isError = false) {
-            const modal = document.getElementById('customAlert');
-            const msgPara = document.getElementById('alertMessage');
-            const icon = document.getElementById('alertIcon');
-            msgPara.innerText = message;
-            icon.innerHTML = isError ? '<i class="fa-solid fa-circle-xmark text-red-500"></i>' : '<i class="fa-solid fa-circle-check text-black"></i>';
-            modal.classList.remove('hidden');
-        }
+    function showAlert(message, isError = false) {
+        const modal = document.getElementById('customAlert');
+        const msgPara = document.getElementById('alertMessage');
+        const icon = document.getElementById('alertIcon');
+        msgPara.innerText = message;
+        icon.innerHTML = isError ? '<i class="fa-solid fa-circle-xmark text-red-500"></i>' : '<i class="fa-solid fa-circle-check text-black"></i>';
+        modal.classList.remove('hidden');
+    }
 
-        function closeAlert() { document.getElementById('customAlert').classList.add('hidden'); }
+    function closeAlert() { document.getElementById('customAlert').classList.add('hidden'); }
 
-        function showConfirm(message) {
-            document.getElementById('confirmMessage').innerText = message;
-            document.getElementById('customConfirm').classList.remove('hidden');
-            return new Promise((resolve) => { confirmResolve = resolve; });
-        }
+    function showConfirm(message) {
+        document.getElementById('confirmMessage').innerText = message;
+        document.getElementById('customConfirm').classList.remove('hidden');
+        return new Promise((resolve) => { confirmResolve = resolve; });
+    }
 
-        function closeConfirm(result) {
-            document.getElementById('customConfirm').classList.add('hidden');
-            if (confirmResolve) confirmResolve(result);
-        }
+    function closeConfirm(result) {
+        document.getElementById('customConfirm').classList.add('hidden');
+        if (confirmResolve) confirmResolve(result);
+    }
 
-        function logout() {
-            localStorage.removeItem('tmb_admin_token');
-            window.location.href = 'tmbadmin-login.html';
-        }
+    function logout() {
+        localStorage.removeItem('tmb_admin_token');
+        window.location.href = 'tmbadmin-login.html';
+    }
 
-        function addVariantRow(size = '', price = '', stock = '0') {
-            const container = document.getElementById('variantsContainer');
-            const rowId = 'row-' + Math.random().toString(36).substr(2, 9);
-            const html = `
-                <div class="flex flex-col md:flex-row gap-2 variant-row items-end md:items-center bg-white md:bg-transparent p-3 md:p-0 border md:border-0 rounded-sm" id="${rowId}">
-                    <div class="w-full md:flex-[2]">
-                        <label class="md:hidden text-[7px] uppercase font-bold text-gray-400 mb-1 block">Size</label>
-                        <input type="text" placeholder="Size" class="input-field v-size" value="${size}" required>
-                    </div>
-                    <div class="w-full md:flex-[2]">
-                        <label class="md:hidden text-[7px] uppercase font-bold text-gray-400 mb-1 block">Price</label>
-                        <input type="number" placeholder="Price" class="input-field v-price" value="${price}" required>
-                    </div>
-                    <div class="w-full md:flex-[1]">
-                        <label class="md:hidden text-[7px] uppercase font-bold text-gray-400 mb-1 block">Stock</label>
-                        <input type="number" placeholder="Qty" class="input-field v-stock" value="${stock}" required>
-                    </div>
-                    <button type="button" onclick="removeVariantRow('${rowId}')" class="text-red-500 p-2">
-                        <i class="fa-solid fa-trash-can text-xs"></i>
-                    </button>
+    // --- VARIANT MANAGEMENT ---
+    function addVariantRow(size = '', price = '', stock = '0') {
+        const container = document.getElementById('variantsContainer');
+        const rowId = 'row-' + Math.random().toString(36).substr(2, 9);
+        const html = `
+            <div class="flex flex-col md:flex-row gap-2 variant-row items-end md:items-center bg-white md:bg-transparent p-3 md:p-0 border md:border-0 rounded-sm mb-2" id="${rowId}">
+                <div class="w-full md:flex-[2]">
+                    <label class="md:hidden text-[7px] uppercase font-bold text-gray-400 mb-1 block">Size</label>
+                    <input type="text" placeholder="Size (e.g. 100ml)" class="input-field v-size" value="${size}" required>
                 </div>
-            `;
-            container.insertAdjacentHTML('beforeend', html);
-        }
+                <div class="w-full md:flex-[2]">
+                    <label class="md:hidden text-[7px] uppercase font-bold text-gray-400 mb-1 block">Price</label>
+                    <input type="number" placeholder="Price" class="input-field v-price" value="${price}" required>
+                </div>
+                <div class="w-full md:flex-[1]">
+                    <label class="md:hidden text-[7px] uppercase font-bold text-gray-400 mb-1 block">Stock</label>
+                    <input type="number" placeholder="Qty" class="input-field v-stock" value="${stock}" required>
+                </div>
+                <button type="button" onclick="removeVariantRow('${rowId}')" class="text-red-500 p-2 hover:bg-red-50 transition rounded">
+                    <i class="fa-solid fa-trash-can text-xs"></i>
+                </button>
+            </div>
+        `;
+        container.insertAdjacentHTML('beforeend', html);
+    }
 
-        function removeVariantRow(id) {
-            const rows = document.querySelectorAll('.variant-row');
-            if(rows.length > 1) document.getElementById(id).remove();
-            else showAlert("At least one variant required.", true);
-        }
+    function removeVariantRow(id) {
+        const rows = document.querySelectorAll('.variant-row');
+        if(rows.length > 1) document.getElementById(id).remove();
+        else showAlert("At least one size variant is required.", true);
+    }
 
-        window.onload = () => { addVariantRow(); loadProducts(); };
+    // --- CORE INVENTORY LOGIC ---
+    window.onload = () => { 
+        // Initial setup: Add one empty row if adding new, then load
+        document.getElementById('variantsContainer').innerHTML = '';
+        addVariantRow(); 
+        loadProducts(); 
+    };
 
-        async function loadProducts() {
-            try {
-                const response = await fetch(`${API_URL}/products`);
-                const products = await response.json();
-                globalProducts = products.filter(p => p.category === 'men');
-                const grid = document.getElementById('inventoryGrid');
-                
-                if (globalProducts.length === 0) {
-                    grid.innerHTML = '<p class="text-[10px] uppercase text-gray-400 col-span-full text-center py-10">No items in collection.</p>';
-                    return;
-                }
-
-                grid.innerHTML = globalProducts.map(product => {
-                    const totalStock = (product.variants || []).reduce((acc, curr) => acc + Number(curr.stock || 0), 0);
-                    const stockStatus = totalStock > 10 ? 'bg-green-100 text-green-700' : (totalStock > 0 ? 'bg-orange-100 text-orange-700' : 'bg-red-100 text-red-700');
-                    const stockText = totalStock > 10 ? 'In Stock' : (totalStock > 0 ? 'Low' : 'Out');
-
-                    return `
-                    <div class="bg-white border p-2 md:p-4 group">
-                        <div class="aspect-[4/5] bg-gray-50 mb-3 overflow-hidden relative">
-                            <img src="${product.imageUrl}" alt="${product.name}" class="w-full h-full object-cover">
-                            <span class="absolute top-1 right-1 text-[7px] md:text-[8px] px-1 md:py-1 font-bold uppercase ${stockStatus}">
-                                ${stockText} (${totalStock})
-                            </span>
-                        </div>
-                        <h4 class="text-[10px] md:text-xs font-bold uppercase tracking-wider mb-2 truncate">${product.name}</h4>
-                        
-                        <div class="space-y-1 mb-3">
-                            ${(product.variants || []).slice(0, 3).map(v => `
-                                <div class="flex justify-between text-[8px] md:text-[10px] border-b border-gray-50 pb-1">
-                                    <span class="text-gray-400">${v.size}</span>
-                                    <span class="font-bold">₦${Number(v.price).toLocaleString()}</span>
-                                </div>
-                            `).join('')}
-                            ${product.variants.length > 3 ? `<p class="text-[7px] text-gray-400">+ more sizes</p>` : ''}
-                        </div>
-
-                        <div class="flex flex-col gap-2 pt-2 border-t">
-                            <button onclick="editProduct('${product._id}')" class="text-[7px] md:text-[8px] uppercase tracking-widest bg-gray-100 py-2 font-bold hover:bg-brandPinkLight transition">Edit</button>
-                            <button onclick="deleteProduct('${product._id}')" class="text-[7px] md:text-[8px] uppercase tracking-widest text-red-500 font-bold">Delete</button>
-                        </div>
-                    </div>
-                `}).join('');
-            } catch (err) { console.error(err); }
-        }
-
-        function editProduct(id) {
-            const product = globalProducts.find(p => p._id === id);
-            if (!product) return;
-            document.getElementById('editProductId').value = product._id;
-            document.getElementById('pName').value = product.name;
-            document.getElementById('pDesc').value = product.description || '';
-            document.getElementById('variantsContainer').innerHTML = '';
-            product.variants.forEach(v => addVariantRow(v.size, v.price, v.stock));
-            document.getElementById('formTitle').innerText = "Edit: " + product.name;
-            document.getElementById('submitBtn').innerText = "Save Changes";
-            document.getElementById('cancelEdit').classList.remove('hidden');
-            document.getElementById('imageUpload').required = false;
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-
-        function resetForm() {
-            document.getElementById('addScentForm').reset();
-            document.getElementById('editProductId').value = '';
-            document.getElementById('variantsContainer').innerHTML = '';
-            addVariantRow();
-            document.getElementById('formTitle').innerText = "Add New Fragrance";
-            document.getElementById('submitBtn').innerText = "Update Men's Collection";
-            document.getElementById('cancelEdit').classList.add('hidden');
-            document.getElementById('imageUpload').required = true;
-            document.getElementById('fileNameDisplay').innerText = "Click to upload image";
-        }
-
-        document.getElementById('addScentForm').onsubmit = async (e) => {
-            e.preventDefault();
-            const editId = document.getElementById('editProductId').value;
-            const submitBtn = document.getElementById('submitBtn');
-            const file = document.getElementById('imageUpload').files[0];
-            const token = localStorage.getItem('tmb_admin_token');
-
-            const variants = Array.from(document.querySelectorAll('.variant-row')).map(row => ({
-                size: row.querySelector('.v-size').value,
-                price: row.querySelector('.v-price').value,
-                stock: row.querySelector('.v-stock').value
-            }));
-
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin mr-2"></i> PROCESSING...';
-
-            let imageBase64 = null;
-            if (file) {
-                const reader = new FileReader();
-                imageBase64 = await new Promise(resolve => {
-                    reader.onload = () => resolve(reader.result.split(',')[1]);
-                    reader.readAsDataURL(file);
-                });
+    async function loadProducts() {
+        try {
+            const response = await fetch(`${API_URL}/products`);
+            const products = await response.json();
+            
+            // Filter specifically for Men category
+            globalProducts = products.filter(p => p.category === 'men');
+            const grid = document.getElementById('inventoryGrid');
+            
+            if (globalProducts.length === 0) {
+                grid.innerHTML = '<p class="text-[10px] uppercase text-gray-400 col-span-full text-center py-10 tracking-widest">No fragrances found in Men\'s collection.</p>';
+                return;
             }
 
-            const payload = {
-                name: document.getElementById('pName').value,
-                description: document.getElementById('pDesc').value,
-                category: 'men',
-                variants: variants,
-                ...(imageBase64 && { imageBase64, fileName: file.name, contentType: file.type })
-            };
+            grid.innerHTML = globalProducts.map(product => {
+                // Calculate Total Remainder across all sizes
+                const totalStock = (product.variants || []).reduce((acc, curr) => acc + Number(curr.stock || 0), 0);
+                
+                // Stock Status Styling
+                const stockStatus = totalStock > 10 ? 'bg-green-100 text-green-700' : (totalStock > 0 ? 'bg-orange-100 text-orange-700' : 'bg-red-100 text-red-700');
+                const stockText = totalStock > 10 ? 'In Stock' : (totalStock > 0 ? 'Low Stock' : 'Out of Stock');
 
-            const url = editId ? `${API_URL}/admin/products/${editId}` : `${API_URL}/admin/products`;
-            try {
-                const response = await fetch(url, {
-                    method: editId ? 'PUT' : 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-                    body: JSON.stringify(payload)
-                });
-                if (response.ok) {
-                    showAlert(editId ? "Updated." : "Added.");
-                    setTimeout(() => location.reload(), 1500);
-                } else showAlert("Error saving product.", true);
-            } catch (err) { showAlert("Network Error.", true); }
-            finally { submitBtn.disabled = false; submitBtn.innerText = "Update Collection"; }
-        };
+                return `
+                <div class="bg-white border p-2 md:p-4 group hover:shadow-md transition-shadow">
+                    <div class="aspect-[4/5] bg-gray-50 mb-3 overflow-hidden relative">
+                        <img src="${product.imageUrl}" alt="${product.name}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                        <span class="absolute top-1 right-1 text-[7px] md:text-[8px] px-2 py-1 font-bold uppercase ${stockStatus} shadow-sm">
+                            ${stockText} (${totalStock})
+                        </span>
+                    </div>
+                    <h4 class="text-[10px] md:text-xs font-bold uppercase tracking-wider mb-2 truncate">${product.name}</h4>
+                    
+                    <div class="space-y-1 mb-3">
+                        ${(product.variants || []).map(v => `
+                            <div class="flex justify-between text-[8px] md:text-[10px] border-b border-gray-50 pb-1">
+                                <span class="text-gray-400 uppercase">${v.size}</span>
+                                <div class="text-right">
+                                    <span class="font-bold mr-2">₦${Number(v.price).toLocaleString()}</span>
+                                    <span class="${v.stock <= 3 ? 'text-red-500' : 'text-gray-400'} font-mono text-[7px] md:text-[9px]">${v.stock} PCS</span>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
 
-        async function deleteProduct(id) {
-            const confirmed = await showConfirm("Remove this fragrance?");
-            if(!confirmed) return;
-            const token = localStorage.getItem('tmb_admin_token');
-            try {
-                const res = await fetch(`${API_URL}/admin/products/${id}`, {
-                    method: 'DELETE',
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                if(res.ok) { showAlert("Removed."); setTimeout(() => location.reload(), 1000); }
-                else showAlert("Failed to delete.", true);
-            } catch (err) { showAlert("Error.", true); }
+                    <div class="flex flex-col gap-2 pt-2 border-t">
+                        <button onclick="editProduct('${product._id}')" class="text-[7px] md:text-[8px] uppercase tracking-widest bg-gray-100 py-2 font-bold hover:bg-brandPinkLight transition">
+                            <i class="fa-solid fa-pen-to-square mr-1"></i> Edit Details
+                        </button>
+                        <button onclick="deleteProduct('${product._id}')" class="text-[7px] md:text-[8px] uppercase tracking-widest text-red-500 font-bold hover:bg-red-50 py-1 transition">
+                            Delete Scent
+                        </button>
+                    </div>
+                </div>
+                `;
+            }).join('');
+        } catch (err) { 
+            console.error(err); 
+            showAlert("Failed to sync inventory grid.", true);
+        }
+    }
+
+    // --- FORM ACTIONS ---
+    function editProduct(id) {
+        const product = globalProducts.find(p => p._id === id);
+        if (!product) return;
+
+        document.getElementById('editProductId').value = product._id;
+        document.getElementById('pName').value = product.name;
+        document.getElementById('pDesc').value = product.description || '';
+        
+        // Clear and rebuild variant rows
+        document.getElementById('variantsContainer').innerHTML = '';
+        product.variants.forEach(v => addVariantRow(v.size, v.price, v.stock));
+
+        document.getElementById('formTitle').innerText = "Edit Fragrance: " + product.name;
+        document.getElementById('submitBtn').innerText = "Save Changes & Update Stock";
+        document.getElementById('cancelEdit').classList.remove('hidden');
+        document.getElementById('imageUpload').required = false;
+        
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function resetForm() {
+        document.getElementById('addScentForm').reset();
+        document.getElementById('editProductId').value = '';
+        document.getElementById('variantsContainer').innerHTML = '';
+        addVariantRow();
+        document.getElementById('formTitle').innerText = "Add New Fragrance";
+        document.getElementById('submitBtn').innerText = "Update Men's Collection";
+        document.getElementById('cancelEdit').classList.add('hidden');
+        document.getElementById('imageUpload').required = true;
+        document.getElementById('fileNameDisplay').innerText = "Click to upload image";
+    }
+
+    document.getElementById('addScentForm').onsubmit = async (e) => {
+        e.preventDefault();
+        const editId = document.getElementById('editProductId').value;
+        const submitBtn = document.getElementById('submitBtn');
+        const file = document.getElementById('imageUpload').files[0];
+        const token = localStorage.getItem('tmb_admin_token');
+
+        // Capture all variant data for live deduction mapping
+        const variants = Array.from(document.querySelectorAll('.variant-row')).map(row => ({
+            size: row.querySelector('.v-size').value,
+            price: Number(row.querySelector('.v-price').value),
+            stock: Number(row.querySelector('.v-stock').value)
+        }));
+
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin mr-2"></i> PROCESSING...';
+
+        let imageBase64 = null;
+        if (file) {
+            const reader = new FileReader();
+            imageBase64 = await new Promise(resolve => {
+                reader.onload = () => resolve(reader.result.split(',')[1]);
+                reader.readAsDataURL(file);
+            });
         }
 
-        document.getElementById('imageUpload').onchange = function() {
-            document.getElementById('fileNameDisplay').innerText = this.files[0]?.name || "Click to upload image";
+        const payload = {
+            name: document.getElementById('pName').value,
+            description: document.getElementById('pDesc').value,
+            category: 'men',
+            variants: variants,
+            ...(imageBase64 && { imageBase64, fileName: file.name, contentType: file.type })
         };
-    </script>
+
+        const url = editId ? `${API_URL}/admin/products/${editId}` : `${API_URL}/admin/products`;
+        
+        try {
+            const response = await fetch(url, {
+                method: editId ? 'PUT' : 'POST',
+                headers: { 
+                    'Content-Type': 'application/json', 
+                    'Authorization': `Bearer ${token}` 
+                },
+                body: JSON.stringify(payload)
+            });
+
+            if (response.ok) {
+                showAlert(editId ? "Inventory Updated Successfully." : "New Scent Added to Men's Collection.");
+                setTimeout(() => location.reload(), 1500);
+            } else {
+                const errorData = await response.json();
+                showAlert(errorData.message || "Error saving product.", true);
+            }
+        } catch (err) { 
+            showAlert("Network Error: Could not reach server.", true); 
+        } finally { 
+            submitBtn.disabled = false; 
+            submitBtn.innerText = "Update Collection"; 
+        }
+    };
+
+    async function deleteProduct(id) {
+        const confirmed = await showConfirm("Are you sure? This will remove the fragrance and all its stock records from the Men's collection.");
+        if(!confirmed) return;
+
+        const token = localStorage.getItem('tmb_admin_token');
+        try {
+            const res = await fetch(`${API_URL}/admin/products/${id}`, {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if(res.ok) { 
+                showAlert("Product Removed."); 
+                setTimeout(() => location.reload(), 1000); 
+            } else {
+                showAlert("System failed to delete the item.", true);
+            }
+        } catch (err) { 
+            showAlert("Network Error.", true); 
+        }
+    }
+
+    document.getElementById('imageUpload').onchange = function() {
+        document.getElementById('fileNameDisplay').innerText = this.files[0]?.name || "Click to upload image";
+    };
+</script>
 </body>
 </html>

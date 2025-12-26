@@ -148,138 +148,164 @@
     </div>
 
     <script>
-        const API_URL = '/api';
+    const API_URL = '/api';
 
-        function toggleSidebar() {
-            document.getElementById('sidebar').classList.toggle('-translate-x-full');
-            document.getElementById('overlay').classList.toggle('active');
-        }
+    function toggleSidebar() {
+        document.getElementById('sidebar').classList.toggle('-translate-x-full');
+        document.getElementById('overlay').classList.toggle('active');
+    }
 
-        async function fetchMenInventory() {
-            try {
-                const res = await fetch(`${API_URL}/products`);
-                const products = await res.json();
-                const menScents = products.filter(p => (p.category || '').toLowerCase() === 'men');
-                
-                const listContainer = document.getElementById('stock-list');
-                listContainer.innerHTML = '';
-
-                if (menScents.length === 0) {
-                    listContainer.innerHTML = '<tr><td colspan="3" class="p-12 text-center text-xs text-gray-400 uppercase tracking-widest">No Men category products found</td></tr>';
-                } else {
-                    menScents.forEach(product => {
-                        const variantsHtml = (product.variants || []).map(v => `
-                            <div class="flex justify-between items-center mb-1 border-b border-gray-100 pb-1 last:border-0 w-40">
-                                <span class="text-[10px] font-bold text-gray-400 uppercase tracking-tighter">${v.size}</span>
-                                <span class="text-[11px] font-medium ${parseInt(v.stock) < 5 ? 'text-red-500 font-bold' : 'text-gray-900'}">
-                                    ${v.stock} units
-                                </span>
-                            </div>
-                        `).join('');
-
-                        const totalStock = (product.variants || []).reduce((sum, v) => sum + (parseInt(v.stock) || 0), 0);
-
-                        const row = `
-                            <tr class="border-b hover:bg-gray-50 transition-colors">
-                                <td class="px-8 py-6">
-                                    <div class="flex items-center">
-                                        <img src="${product.imageUrl || 'https://via.placeholder.com/40'}" class="w-12 h-12 object-cover mr-6 border rounded-sm grayscale">
-                                        <div>
-                                            <p class="text-[11px] font-bold uppercase tracking-wider">${product.name}</p>
-                                            <p class="text-[9px] text-gray-400 uppercase tracking-widest mt-1">Remaining Inventory: ${totalStock}</p>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td class="px-8 py-6">
-                                    <div class="inline-block">${variantsHtml}</div>
-                                </td>
-                                <td class="px-8 py-6">
-                                    ${totalStock > 0 
-                                        ? `<span class="bg-gray-900 text-white text-[8px] font-bold px-3 py-1.5 uppercase tracking-widest rounded-sm">Active</span>`
-                                        : `<span class="bg-red-50 text-red-600 text-[8px] font-bold px-3 py-1.5 uppercase tracking-widest border border-red-100 rounded-sm">Sold Out</span>`
-                                    }
-                                </td>
-                            </tr>
-                        `;
-                        listContainer.innerHTML += row;
-                    });
-                }
-                
-                fetchSalesLog();
-
-            } catch (err) {
-                console.error("Fetch Error:", err);
-                document.getElementById('stock-list').innerHTML = '<tr><td colspan="3" class="p-12 text-center text-xs text-red-400 uppercase tracking-widest">Database Sync Failed</td></tr>';
-            }
-        }
-
-        async function fetchSalesLog() {
-            const token = localStorage.getItem('tmb_admin_token');
-            const logContainer = document.getElementById('sales-log');
+    /**
+     * FETCH & DISPLAY CURRENT INVENTORY
+     * Shows what is currently on the shelves
+     */
+    async function fetchMenInventory() {
+        try {
+            const res = await fetch(`${API_URL}/products`);
+            const products = await res.json();
             
-            try {
-                const res = await fetch(`${API_URL}/admin/orders`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                const orders = await res.json();
-                
-                let menSales = [];
-                orders.forEach(order => {
-                    // Only count successful deductions
-                    if (['completed', 'paid', 'shipped'].includes(order.status)) {
-                        (order.items || []).forEach(item => {
-                            // Note: In a production environment, you'd filter by item.category === 'men'
-                            // if the order items store that info.
-                            menSales.push({
-                                date: order.createdAt,
-                                name: item.name,
-                                variant: item.variantName || item.size || 'N/A',
-                                qty: item.quantity,
-                                price: (item.price || 0) * (item.quantity || 0)
-                            });
-                        });
-                    }
-                });
+            // Filter to show only the Men category
+            const menScents = products.filter(p => (p.category || '').toLowerCase() === 'men');
+            
+            const listContainer = document.getElementById('stock-list');
+            listContainer.innerHTML = '';
 
-                menSales.sort((a, b) => new Date(b.date) - new Date(a.date));
+            if (menScents.length === 0) {
+                listContainer.innerHTML = '<tr><td colspan="3" class="p-12 text-center text-xs text-gray-400 uppercase tracking-widest">No Men category products found in database</td></tr>';
+            } else {
+                menScents.forEach(product => {
+                    // Generate rows for each size (variant)
+                    const variantsHtml = (product.variants || []).map(v => `
+                        <div class="flex justify-between items-center mb-1 border-b border-gray-50 pb-1 last:border-0 w-48">
+                            <span class="text-[10px] font-bold text-gray-400 uppercase tracking-tighter">${v.size}</span>
+                            <div class="flex items-center gap-2">
+                                <span class="text-[11px] font-mono ${parseInt(v.stock) <= 5 ? 'text-red-600 font-bold' : 'text-gray-900'}">
+                                    ${v.stock}
+                                </span>
+                                <span class="text-[8px] text-gray-400 uppercase">PCS</span>
+                            </div>
+                        </div>
+                    `).join('');
 
-                if (menSales.length === 0) {
-                    logContainer.innerHTML = '<tr><td colspan="4" class="p-12 text-center text-gray-400 uppercase tracking-widest text-[9px]">No recent stock movements</td></tr>';
-                    return;
-                }
+                    // Calculate Total items across all sizes for this product
+                    const totalStock = (product.variants || []).reduce((sum, v) => sum + (parseInt(v.stock) || 0), 0);
 
-                logContainer.innerHTML = menSales.map(sale => {
-                    const d = new Date(sale.date);
-                    const timeStr = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                    const dateStr = d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
-
-                    return `
-                        <tr class="border-b hover:bg-gray-50">
-                            <td class="px-8 py-4">
-                                <span class="block font-bold">${timeStr}</span>
-                                <span class="text-[9px] text-gray-400 uppercase tracking-tighter">${dateStr}</span>
+                    const row = `
+                        <tr class="border-b hover:bg-gray-50 transition-colors">
+                            <td class="px-8 py-6">
+                                <div class="flex items-center">
+                                    <div class="relative">
+                                        <img src="${product.imageUrl || 'https://via.placeholder.com/40'}" class="w-12 h-12 object-cover mr-6 border rounded-sm grayscale group-hover:grayscale-0 transition-all">
+                                        ${totalStock <= 10 && totalStock > 0 ? '<div class="absolute -top-1 -left-1 w-3 h-3 bg-orange-500 rounded-full border-2 border-white"></div>' : ''}
+                                    </div>
+                                    <div>
+                                        <p class="text-[11px] font-bold uppercase tracking-wider">${product.name}</p>
+                                        <p class="text-[9px] text-gray-400 uppercase tracking-widest mt-1">Net Inventory: ${totalStock}</p>
+                                    </div>
+                                </div>
                             </td>
-                            <td class="px-8 py-4">
-                                <span class="block uppercase font-bold text-gray-900">${sale.name}</span>
-                                <span class="text-[9px] text-gray-400 uppercase">Variant: ${sale.variant}</span>
+                            <td class="px-8 py-6">
+                                <div class="inline-block">${variantsHtml}</div>
                             </td>
-                            <td class="px-8 py-4 font-mono text-red-600 font-bold">-${sale.qty}</td>
-                            <td class="px-8 py-4 text-right font-bold">₦${sale.price.toLocaleString()}</td>
+                            <td class="px-8 py-6">
+                                ${totalStock > 0 
+                                    ? `<span class="bg-black text-white text-[8px] font-bold px-3 py-1.5 uppercase tracking-widest rounded-sm">In Stock</span>`
+                                    : `<span class="bg-red-50 text-red-600 text-[8px] font-bold px-3 py-1.5 uppercase tracking-widest border border-red-100 rounded-sm">Sold Out</span>`
+                                }
+                            </td>
                         </tr>
                     `;
-                }).join('');
-
-            } catch (err) {
-                logContainer.innerHTML = '<tr><td colspan="4" class="p-12 text-center text-red-400 uppercase tracking-widest text-[9px]">Failed to sync sales history</td></tr>';
+                    listContainer.innerHTML += row;
+                });
             }
-        }
+            
+            // After loading inventory, load the movement log
+            fetchSalesLog();
 
-        function logout() {
-            localStorage.removeItem('tmb_admin_token');
-            window.location.href = 'tmbadmin-login.html';
+        } catch (err) {
+            console.error("Fetch Error:", err);
+            document.getElementById('stock-list').innerHTML = '<tr><td colspan="3" class="p-12 text-center text-xs text-red-400 uppercase tracking-widest font-bold">CRITICAL: Database Sync Failed</td></tr>';
         }
+    }
 
-        window.onload = fetchMenInventory;
-    </script>
+    /**
+     * FETCH & DISPLAY MOVEMENT LOG (DEDUCTIONS)
+     * Shows recent sales that decreased stock
+     */
+    async function fetchSalesLog() {
+        const token = localStorage.getItem('tmb_admin_token');
+        const logContainer = document.getElementById('sales-log');
+        
+        try {
+            const res = await fetch(`${API_URL}/admin/orders`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const orders = await res.json();
+            
+            let menSales = [];
+            orders.forEach(order => {
+                // We only track movements for orders that are confirmed/paid/shipped
+                if (['completed', 'paid', 'shipped'].includes(order.status.toLowerCase())) {
+                    (order.items || []).forEach(item => {
+                        // In a production setup, your order item would ideally include category. 
+                        // For now, we log items associated with successful orders.
+                        menSales.push({
+                            date: order.createdAt,
+                            name: item.name,
+                            variant: item.variantName || item.size || 'Standard',
+                            qty: item.quantity,
+                            price: (item.price || 0) * (item.quantity || 0)
+                        });
+                    });
+                }
+            });
+
+            // Sort so most recent sales appear at the top
+            menSales.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+            if (menSales.length === 0) {
+                logContainer.innerHTML = '<tr><td colspan="4" class="p-12 text-center text-gray-400 uppercase tracking-widest text-[9px]">No recent stock movements detected</td></tr>';
+                return;
+            }
+
+            logContainer.innerHTML = menSales.slice(0, 20).map(sale => { // Show last 20 movements
+                const d = new Date(sale.date);
+                const timeStr = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                const dateStr = d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+
+                return `
+                    <tr class="border-b hover:bg-gray-50 transition-colors">
+                        <td class="px-8 py-4">
+                            <span class="block font-bold text-[10px]">${timeStr}</span>
+                            <span class="text-[9px] text-gray-400 uppercase tracking-tighter">${dateStr}</span>
+                        </td>
+                        <td class="px-8 py-4">
+                            <span class="block uppercase font-bold text-gray-900 text-[10px]">${sale.name}</span>
+                            <span class="text-[9px] text-gray-400 uppercase font-medium">Size: ${sale.variant}</span>
+                        </td>
+                        <td class="px-8 py-4 font-mono text-red-600 font-bold text-[11px]">
+                            -${sale.qty}
+                        </td>
+                        <td class="px-8 py-4 text-right font-bold text-[10px]">
+                            ₦${sale.price.toLocaleString()}
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+
+        } catch (err) {
+            console.error("Sales Log Error:", err);
+            logContainer.innerHTML = '<tr><td colspan="4" class="p-12 text-center text-red-400 uppercase tracking-widest text-[9px]">Failed to sync sales history</td></tr>';
+        }
+    }
+
+    function logout() {
+        localStorage.removeItem('tmb_admin_token');
+        window.location.href = 'tmbadmin-login.html';
+    }
+
+    // Initialize page
+    window.onload = fetchMenInventory;
+</script>
 </body>
 </html>
