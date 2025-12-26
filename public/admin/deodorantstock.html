@@ -58,16 +58,22 @@
                 </a>
 
                 <p class="text-[9px] uppercase tracking-[0.2em] text-gray-400 px-4 mt-8 mb-4 font-bold">Inventory</p>
-                <a href="womenscents.html" class="nav-link flex items-center px-4 py-3 text-[10px] tracking-widest uppercase font-semibold transition-all">
+               <a href="womenscents.html" class="nav-link flex items-center px-4 py-3 text-[10px] tracking-widest uppercase font-semibold">
                     <i class="fa-solid fa-venus mr-3 w-5 text-gray-400"></i> Women Scents
                 </a>
-                <a href="menscents.html" class="nav-link flex items-center px-4 py-3 text-[10px] tracking-widest uppercase font-semibold transition-all">
+                <a href="menscents.html" class="nav-link flex items-center px-4 py-3 text-[10px] tracking-widest uppercase font-semibold">
                     <i class="fa-solid fa-mars mr-3 w-5 text-gray-400"></i> Men Scents
                 </a>
-                <a href="bodymistspray.html" class="nav-link flex items-center px-4 py-3 text-[10px] tracking-widest uppercase font-semibold transition-all">
+                <a href="bodymistspray.html" class="nav-link flex items-center px-4 py-3 text-[10px] tracking-widest uppercase font-semibold">
                     <i class="fa-solid fa-spray-can mr-3 w-5 text-gray-400"></i> Mists & Sprays
                 </a>
-                <a href="deodorantstock.html" class="nav-link active-link flex items-center px-4 py-3 text-[10px] tracking-widest uppercase font-semibold transition-all">
+                <a href="kidscents.html" class="nav-link flex items-center px-4 py-3 text-[10px] tracking-widest uppercase font-semibold">
+                    <i class="fa-solid fa-child mr-3 w-5 text-gray-400"></i> Kid Scents
+                </a>
+                <a href="comboscents.html" class="nav-link flex items-center px-4 py-3 text-[10px] tracking-widest uppercase font-semibold">
+                    <i class="fa-solid fa-boxes-stacked mr-3 w-5 text-gray-400"></i> Combo Deals
+                </a>
+                <a href="deodorant.html" class="nav-link active-link flex items-center px-4 py-3 text-[10px] tracking-widest uppercase font-semibold transition-all">
                     <i class="fa-solid fa-shield-halved mr-3 w-5"></i> Deodorants & Antiperspirants
                 </a>
 
@@ -90,118 +96,86 @@
         </aside>
 
 
-        <main class="flex-1 min-h-screen p-6 lg:p-12">
-            <div class="max-w-6xl mx-auto">
-                <div class="flex justify-between items-center mb-12">
-                    <div>
-                        <h2 class="text-2xl font-light tracking-tight mb-1">Deodorants & Antiperspirants</h2>
-                        <p class="text-[9px] uppercase tracking-[0.3em] text-brandDeo font-bold">Live Inventory Breakdown</p>
-                    </div>
-                    <button onclick="openAddModal()" class="bg-brandBlack text-white px-6 py-3 text-[10px] uppercase tracking-widest font-bold hover:bg-brandDeo transition">
-                        Add New Item
-                    </button>
-                </div>
+       <main class="flex-1 min-h-screen p-6 lg:p-12">
+    <div class="max-w-6xl mx-auto">
+        <div class="flex justify-between items-center mb-12">
+            <div>
+                <h2 class="text-2xl font-light tracking-tight mb-1">Deodorants & Antiperspirants</h2>
+                <p class="text-[9px] uppercase tracking-[0.3em] text-brandDeo font-bold">Unified Inventory Breakdown</p>
+            </div>
+            <button onclick="openAddModal()" class="bg-brandBlack text-white px-6 py-3 text-[10px] uppercase tracking-widest font-bold hover:bg-brandDeo transition">
+                Add New Item
+            </button>
+        </div>
 
-                <div class="mb-12">
-                    <div class="flex items-center mb-6">
-                        <h3 class="mr-4 text-[10px] uppercase tracking-[0.4em] font-bold text-brandDeo">Section I: Deodorants</h3>
-                        <div class="h-[1px] bg-gray-200 flex-1"></div>
-                    </div>
-                    <div class="bg-white border shadow-sm overflow-hidden rounded-sm">
-                        <table class="w-full text-left border-collapse">
-                            <thead>
-                                <tr class="bg-gray-50 border-b text-[9px] uppercase tracking-widest font-bold text-gray-400">
-                                    <th class="px-8 py-4">Product</th>
-                                    <th class="px-8 py-4">Sizes & Stock</th>
-                                    <th class="px-8 py-4">Status</th>
-                                </tr>
-                            </thead>
-                            <tbody id="deo-list">
-                                <tr><td colspan="3" class="p-12 text-center text-xs text-gray-400 uppercase">Scanning Deodorants...</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+        <div class="mb-12">
+            <div class="flex items-center mb-6">
+                <h3 class="mr-4 text-[10px] uppercase tracking-[0.4em] font-bold text-brandDeo">Current Stock Status</h3>
+                <div class="h-[1px] bg-gray-200 flex-1"></div>
+            </div>
+            <div class="bg-white border shadow-sm overflow-hidden rounded-sm">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-gray-50 border-b text-[9px] uppercase tracking-widest font-bold text-gray-400">
+                            <th class="px-8 py-4">Product Details</th>
+                            <th class="px-8 py-4">Type</th>
+                            <th class="px-8 py-4">Sizes & Stock</th>
+                            <th class="px-8 py-4">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="unified-deo-list">
+                        <tr><td colspan="4" class="p-12 text-center text-xs text-gray-400 uppercase">Scanning Database...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
 
-                <div class="mb-12">
-                    <div class="flex items-center mb-6">
-                        <h3 class="mr-4 text-[10px] uppercase tracking-[0.4em] font-bold text-gray-400">Section II: Antiperspirants</h3>
-                        <div class="h-[1px] bg-gray-200 flex-1"></div>
-                    </div>
-                    <div class="bg-white border shadow-sm overflow-hidden rounded-sm">
-                        <table class="w-full text-left border-collapse">
-                            <thead>
-                                <tr class="bg-gray-50 border-b text-[9px] uppercase tracking-widest font-bold text-gray-400">
-                                    <th class="px-8 py-4">Product</th>
-                                    <th class="px-8 py-4">Sizes & Stock</th>
-                                    <th class="px-8 py-4">Status</th>
-                                </tr>
-                            </thead>
-                            <tbody id="anti-list">
-                                <tr><td colspan="3" class="p-12 text-center text-xs text-gray-400 uppercase">Scanning Antiperspirants...</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <div>
-                    <div class="flex items-center mb-6">
-                        <h3 class="mr-4 text-[10px] uppercase tracking-[0.4em] font-bold text-red-400">Inventory Deduction Log</h3>
-                        <div class="h-[1px] bg-red-100 flex-1"></div>
-                    </div>
-                    <div class="bg-white border border-red-50 shadow-sm overflow-hidden rounded-sm">
-                        <div class="max-h-80 overflow-y-auto custom-scrollbar">
-                            <table class="w-full text-left border-collapse">
-                                <thead class="sticky top-0 z-10">
-                                    <tr class="bg-red-50 border-b text-[9px] uppercase tracking-widest font-bold text-red-400">
-                                        <th class="px-8 py-4">Timestamp</th>
-                                        <th class="px-8 py-4">Product Unit</th>
-                                        <th class="px-8 py-4">Qty Out</th>
-                                        <th class="px-8 py-4 text-right">Revenue</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="sales-log" class="text-[11px]">
-                                    <tr><td colspan="4" class="p-12 text-center text-gray-400 uppercase tracking-widest">Awaiting sales data...</td></tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
+        <div>
+            <div class="flex items-center mb-6">
+                <h3 class="mr-4 text-[10px] uppercase tracking-[0.4em] font-bold text-red-400">Inventory Deduction Log</h3>
+                <div class="h-[1px] bg-red-100 flex-1"></div>
+            </div>
+            <div class="bg-white border border-red-50 shadow-sm overflow-hidden rounded-sm">
+                <div class="max-h-80 overflow-y-auto custom-scrollbar">
+                    <table class="w-full text-left border-collapse">
+                        <thead class="sticky top-0 z-10">
+                            <tr class="bg-red-50 border-b text-[9px] uppercase tracking-widest font-bold text-red-400">
+                                <th class="px-8 py-4">Timestamp</th>
+                                <th class="px-8 py-4">Product Unit</th>
+                                <th class="px-8 py-4">Qty Out</th>
+                                <th class="px-8 py-4 text-right">Revenue</th>
+                            </tr>
+                        </thead>
+                        <tbody id="sales-log" class="text-[11px]">
+                            <tr><td colspan="4" class="p-12 text-center text-gray-400 uppercase tracking-widest">Awaiting sales data...</td></tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
-        </main>
+        </div>
     </div>
+</main>
 
 <script>
-    const API_URL = '/api';
-
-    function toggleSidebar() {
-        document.getElementById('sidebar').classList.toggle('-translate-x-full');
-        document.getElementById('overlay').classList.toggle('active');
-    }
-
+    // UPDATE THESE FUNCTIONS IN YOUR SCRIPT TAG
     async function fetchInventory() {
         try {
             const res = await fetch(`${API_URL}/products`);
             const products = await res.json();
             
-            // Filter products by category 'deodorant'
+            // Filter all products belonging to the 'deodorant' category
             const collection = products.filter(p => (p.category || '').toLowerCase() === 'deodorant');
             
-            // Split into Deodorants vs Antiperspirants
-            // Note: If subCategory is empty, it defaults to the Deodorant table
-            const deos = collection.filter(p => (p.subCategory || '').toLowerCase() !== 'antiperspirant');
-            const antis = collection.filter(p => (p.subCategory || '').toLowerCase() === 'antiperspirant');
-
-            renderTable('deo-list', deos, "No Deodorants found");
-            renderTable('anti-list', antis, "No Antiperspirants found");
+            // Render everything into the single unified table
+            renderTable('unified-deo-list', collection, "No inventory items found in this category");
             
+            // Log still needs the full collection to track sales
             fetchSalesLog(collection);
 
         } catch (err) {
             console.error("Fetch Error:", err);
-            const errorHtml = '<tr><td colspan="3" class="p-12 text-center text-xs text-red-400 uppercase font-bold tracking-widest">CRITICAL: Database Sync Failed</td></tr>';
-            document.getElementById('deo-list').innerHTML = errorHtml;
-            document.getElementById('anti-list').innerHTML = errorHtml;
+            const errorHtml = '<tr><td colspan="4" class="p-12 text-center text-xs text-red-400 uppercase font-bold tracking-widest">CRITICAL: Database Sync Failed</td></tr>';
+            document.getElementById('unified-deo-list').innerHTML = errorHtml;
         }
     }
 
@@ -210,7 +184,7 @@
         container.innerHTML = '';
 
         if (items.length === 0) {
-            container.innerHTML = `<tr><td colspan="3" class="p-12 text-center text-xs text-gray-400 uppercase tracking-widest">${emptyMsg}</td></tr>`;
+            container.innerHTML = `<tr><td colspan="4" class="p-12 text-center text-xs text-gray-400 uppercase tracking-widest">${emptyMsg}</td></tr>`;
             return;
         }
 
@@ -241,6 +215,11 @@
                         </div>
                     </td>
                     <td class="px-8 py-6">
+                        <span class="text-[9px] font-bold px-2 py-1 uppercase tracking-tighter border border-gray-200 text-gray-500 bg-gray-50 rounded-sm">
+                            ${product.subCategory || 'Deodorant'}
+                        </span>
+                    </td>
+                    <td class="px-8 py-6">
                         <div class="inline-block">${variantsHtml}</div>
                     </td>
                     <td class="px-8 py-6">
@@ -254,75 +233,6 @@
             container.innerHTML += row;
         });
     }
-
-    async function fetchSalesLog(deoProducts) {
-        const token = localStorage.getItem('tmb_admin_token');
-        const logContainer = document.getElementById('sales-log');
-        const deoNames = new Set(deoProducts.map(p => p.name));
-
-        try {
-            const res = await fetch(`${API_URL}/admin/orders`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            const orders = await res.json();
-            
-            let filteredSales = [];
-            orders.forEach(order => {
-                const deductionStates = ['completed', 'paid', 'shipped', 'delivered'];
-                if (deductionStates.includes(order.status.toLowerCase())) {
-                    (order.items || []).forEach(item => {
-                        if (deoNames.has(item.name)) {
-                            filteredSales.push({
-                                timestamp: order.createdAt,
-                                name: item.name,
-                                variant: item.variantName || item.size || 'N/A',
-                                qty: item.quantity,
-                                price: (item.price || 0) * (item.quantity || 0)
-                            });
-                        }
-                    });
-                }
-            });
-
-            filteredSales.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-
-            if (filteredSales.length === 0) {
-                logContainer.innerHTML = '<tr><td colspan="4" class="p-12 text-center text-gray-400 uppercase tracking-widest text-[9px]">No recent Deodorant movements</td></tr>';
-                return;
-            }
-
-            logContainer.innerHTML = filteredSales.slice(0, 20).map(sale => {
-                const dt = new Date(sale.timestamp);
-                return `
-                    <tr class="border-b hover:bg-gray-50 transition-colors">
-                        <td class="px-8 py-4">
-                            <span class="block font-bold text-gray-800 text-[10px]">${dt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-                            <span class="text-[9px] text-gray-400 uppercase tracking-tighter">${dt.toLocaleDateString('en-GB')}</span>
-                        </td>
-                        <td class="px-8 py-4">
-                            <span class="block uppercase font-bold text-brandDeo text-[10px]">${sale.name}</span>
-                            <span class="text-[9px] text-gray-400 uppercase">Size: ${sale.variant}</span>
-                        </td>
-                        <td class="px-8 py-4">
-                             <span class="font-mono bg-red-50 text-red-600 px-2 py-1 rounded-sm font-bold text-[11px]">-${sale.qty}</span>
-                        </td>
-                        <td class="px-8 py-4 text-right font-bold text-[10px]">
-                            ₦${sale.price.toLocaleString()}
-                        </td>
-                    </tr>
-                `;
-            }).join('');
-        } catch (err) {
-            logContainer.innerHTML = '<tr><td colspan="4" class="p-12 text-center text-red-400 uppercase tracking-widest text-[9px]">Log Sync Error</td></tr>';
-        }
-    }
-
-    function logout() {
-        localStorage.removeItem('tmb_admin_token');
-        window.location.href = 'tmbadmin-login.html';
-    }
-
-    window.onload = fetchInventory;
 </script>
 </body>
 </html>
