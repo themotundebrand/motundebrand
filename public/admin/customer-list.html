@@ -79,7 +79,7 @@
 
             <nav class="flex-1 px-4 py-8 space-y-1 overflow-y-auto">
                 <p class="text-[9px] uppercase tracking-[0.2em] text-gray-400 px-4 mb-4 font-bold">Navigation</p>
-                <a href="tmbadmindashboard.html" class="nav-link flex items-center px-4 py-3 text-[10px] tracking-widest uppercase font-semibold">
+                <a href="tmbdashboard.html" class="nav-link flex items-center px-4 py-3 text-[10px] tracking-widest uppercase font-semibold">
                     <i class="fa-solid fa-house mr-3 w-5 text-gray-400"></i> Dashboard
                 </a>
                 
@@ -184,7 +184,7 @@
             }
         }
 
-        function renderUsers(users) {
+       function renderUsers(users) {
             const container = document.getElementById('user-list-body');
             if(users.length === 0) {
                 container.innerHTML = `<tr><td colspan="5" class="p-10 text-center text-[10px] uppercase">No registered members found.</td></tr>`;
@@ -206,10 +206,19 @@
                         </div>
                     </td>
                     <td class="p-6" data-label="Location">
-                        <span class="text-[10px] uppercase tracking-wider text-gray-600">${user.city || '-'}, ${user.state || '-'}</span>
+                        <div class="flex flex-col max-w-[200px]">
+                            <span class="text-[9px] uppercase tracking-wider text-gray-900 font-bold leading-tight mb-1">
+                                ${user.address || 'No Address Provided'}
+                            </span>
+                            <span class="text-[8px] uppercase tracking-widest text-gray-400">
+                                ${user.city || '-'}, ${user.state || '-'}
+                            </span>
+                        </div>
                     </td>
                     <td class="p-6" data-label="Registration">
-                        <span class="text-[10px] text-gray-400 uppercase font-medium">${new Date(user.createdAt).toLocaleDateString('en-GB')}</span>
+                        <span class="text-[10px] text-gray-400 uppercase font-medium">
+                            ${user.createdAt ? new Date(user.createdAt).toLocaleDateString('en-GB') : 'N/A'}
+                        </span>
                     </td>
                     <td class="p-6 text-right" data-label="Actions">
                         <button onclick="viewHistory('${user.email}')" class="text-[8px] uppercase tracking-widest border border-brandBlack px-3 py-2 hover:bg-brandBlack hover:text-white transition font-bold">

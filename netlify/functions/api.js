@@ -243,12 +243,28 @@ router.get('/products/:id/stock', async (req, res) => {
     try {
         const db = await getDb();
         const product = await db.collection("products").findOne(
-            { _id: new ObjectId(req.params.id) },
-            { projection: { variants: 1 } }
+            { _id: new ObjectId(req.params.id) }
         );
+        
         if (!product) return res.status(404).json({ error: "Product not found" });
-        res.json({ variants: product.variants || [] });
-    } catch (e) { res.status(500).json({ error: "Stock fetch failed" }); }
+
+        // Generate a FRESH signed URL
+        let freshImageUrl = "";
+        if (s3 && product.imageKey) {
+            freshImageUrl = s3.getSignedUrl('getObject', { 
+                Bucket: BUCKET_NAME, 
+                Key: product.imageKey, 
+                Expires: 86400 
+            });
+        }
+
+        res.json({ 
+            variants: product.variants || [],
+            imageUrl: freshImageUrl // The frontend uses this to fix the broken image
+        });
+    } catch (e) { 
+        res.status(500).json({ error: "Stock fetch failed" }); 
+    }
 });
 
 router.post('/orders', async (req, res) => {
@@ -412,27 +428,50 @@ router.get('/orders/:id', async (req, res) => {
     }
 });
 
-// --- PUBLIC COLLECTION FETCH ---
+// --- PUBLIC COLLECTION FETCH (UPDATED) ---
 router.get('/products', async (req, res) => {
     try {
         const db = await getDb();
+        // Fetch all products
         const items = await db.collection("products").find({}).sort({ createdAt: -1 }).toArray();
         
         const processed = items.map(item => {
+            // 1. Handle Signed URLs for Images
             if (s3 && item.imageKey) {
-                item.imageUrl = s3.getSignedUrl('getObject', { Bucket: BUCKET_NAME, Key: item.imageKey, Expires: 86400 });
+                item.imageUrl = s3.getSignedUrl('getObject', { 
+                    Bucket: BUCKET_NAME, 
+                    Key: item.imageKey, 
+                    Expires: 86400 
+                });
             }
-            // Fallback for missing variants
+
+            // 2. Fallback for missing variants
             if (!item.variants || item.variants.length === 0) {
-                item.variants = [{ size: "Standard", price: item.price || 0, stock: item.stock || 0 }];
+                // If a product has no variants, we treat it as having 0 stock
+                item.variants = [{ size: "Standard", price: item.price || 0, stock: 0 }];
+            } else {
+                // Ensure all variant stock values are treated as Numbers to avoid frontend math errors
+                item.variants = item.variants.map(v => ({
+                    ...v,
+                    price: Number(v.price),
+                    stock: Number(v.stock)
+                }));
             }
+
+            // 3. Optional: Add a quick helper flag for the frontend
+            // Calculate total stock across all variants
+            const totalStock = item.variants.reduce((sum, v) => sum + v.stock, 0);
+            item.isOutOfStock = totalStock <= 0;
+
             return item;
         });
 
         res.json(processed);
-    } catch (e) { res.status(500).json({ error: "Load failed" }); }
+    } catch (e) { 
+        console.error("Load failed:", e);
+        res.status(500).json({ error: "Load failed" }); 
+    }
 });
-
 // --- USER REGISTRATION (UPDATED FOR OTP) ---
 router.post('/register', async (req, res) => {
     try {

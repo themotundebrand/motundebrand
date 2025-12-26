@@ -363,6 +363,21 @@ checkLoginStatus();
     }
     updateCartBadge();
 
+    // --- NEW: Image Refresh Helper (Solves Expired Links) ---
+    async function refreshBrokenImage(productId, imgElement) {
+        console.warn(`Image expired for ${productId}. Fetching new link...`);
+        try {
+            const response = await fetch(`/api/products/${productId}/stock`);
+            const data = await response.json();
+            if (data.imageUrl) {
+                imgElement.src = data.imageUrl;
+            }
+        } catch (err) {
+            console.error("Failed to refresh image:", err);
+            imgElement.src = 'https://i.imgur.com/CVKXV7R.png'; 
+        }
+    }
+
    // --- 4. Quantity Controller (With Stock Awareness) ---
 function updateQty(productId, change) {
     const qtyElement = document.getElementById(`qty-${productId}`);
@@ -471,31 +486,57 @@ function updateQty(productId, change) {
     function openCart() { window.location.href = 'cart.html'; }
 
     // --- 7. Modal Logic ---
-    function openModal(productId) {
-        const p = currentProducts.find(prod => prod._id === productId);
-        if (!p) return;
+   function openModal(productId) {
+    const p = currentProducts.find(prod => prod._id === productId);
+    if (!p) return;
 
-        document.getElementById('modal-img').src = p.imageUrl;
-        document.getElementById('modal-name').innerText = p.name;
-        document.getElementById('modal-cat').innerText = (p.category || "General") + " Collection";
-        
-        const variants = p.variants || [{size: 'Default', price: p.price || 0}];
-        document.getElementById('modal-price').innerText = `₦${Number(variants[0].price).toLocaleString()}`;
-        
-        let selectedModalSize = variants[0].size;
-        let selectedModalPrice = variants[0].price;
+    // 1. Filter out variants that have no stock
+    const availableVariants = (p.variants || []).filter(v => v.stock > 0);
+    const isTotallyOutOfStock = availableVariants.length === 0;
 
-        const sizeContainer = document.getElementById('modal-sizes');
-        sizeContainer.innerHTML = variants.map((v, i) => `
-            <button onclick="updateModalSelection('${v.price}', '${v.size}', this)" class="size-btn px-4 py-2 border ${i===0?'border-brandPink bg-brandPink/5':'border-gray-200'} text-[10px] uppercase transition-all">
+    // Set basic info
+    document.getElementById('modal-img').src = p.imageUrl;
+    document.getElementById('modal-name').innerText = p.name;
+    document.getElementById('modal-cat').innerText = (p.category || "General") + " Collection";
+    
+    // UI Elements for manipulation
+    const sizeContainer = document.getElementById('modal-sizes');
+    const addBtn = document.getElementById('modal-add-btn');
+    const priceDisplay = document.getElementById('modal-price');
+
+    if (isTotallyOutOfStock) {
+        // Handle Totally Out of Stock State
+        priceDisplay.innerText = "OUT OF STOCK";
+        sizeContainer.innerHTML = `<p class="text-red-500 text-[10px] tracking-widest font-bold uppercase">This item is currently unavailable</p>`;
+        addBtn.disabled = true;
+        addBtn.innerText = "SOLD OUT";
+        addBtn.classList.replace('bg-brandBlack', 'bg-gray-200');
+        addBtn.classList.replace('text-brandPink', 'text-gray-500');
+    } else {
+        // Handle Available State
+        addBtn.disabled = false;
+        addBtn.innerText = "ADD TO BAG";
+        addBtn.classList.add('bg-brandBlack', 'text-brandPink');
+
+        // Initialize selection with the first available variant
+        let selectedModalSize = availableVariants[0].size;
+        let selectedModalPrice = availableVariants[0].price;
+        priceDisplay.innerText = `₦${Number(selectedModalPrice).toLocaleString()}`;
+
+        // Render only sizes that are in stock
+        sizeContainer.innerHTML = availableVariants.map((v, i) => `
+            <button onclick="updateModalSelection('${v.price}', '${v.size}', this)" 
+                class="size-btn px-4 py-2 border ${i === 0 ? 'border-brandPink bg-brandPink/5' : 'border-gray-200'} text-[10px] uppercase transition-all">
                 ${v.size}
             </button>
         `).join('');
 
+        // Selection update logic
         window.updateModalSelection = (price, size, btn) => {
             selectedModalSize = size;
             selectedModalPrice = price;
-            document.getElementById('modal-price').innerText = `₦${Number(price).toLocaleString()}`;
+            priceDisplay.innerText = `₦${Number(price).toLocaleString()}`;
+            
             document.querySelectorAll('.size-btn').forEach(b => {
                 b.classList.remove('border-brandPink', 'bg-brandPink/5');
                 b.classList.add('border-gray-200');
@@ -504,8 +545,8 @@ function updateQty(productId, change) {
             btn.classList.add('bg-brandPink/5');
         };
 
-        document.getElementById('modal-add-btn').onclick = () => {
-            // Note: Modal uses quantity of 1 by default; you can add a qty selector here too if needed
+        // Add to Bag logic
+        addBtn.onclick = () => {
             const item = {
                 id: p._id,
                 name: p.name,
@@ -514,21 +555,24 @@ function updateQty(productId, change) {
                 image: p.imageUrl,
                 quantity: 1
             };
+            
             const idx = cart.findIndex(i => i.id === p._id && i.size === selectedModalSize);
-            if(idx > -1) cart[idx].quantity += 1;
+            if (idx > -1) cart[idx].quantity += 1;
             else cart.push(item);
             
             localStorage.setItem('tmb_cart', JSON.stringify(cart));
             updateCartBadge();
             closeModal();
-            showNotification("Added to bag");
+            showNotification(`${p.name} (${selectedModalSize}) added to bag`);
         };
-
-        const modal = document.getElementById('product-modal');
-        modal.classList.remove('invisible', 'opacity-0', 'pointer-events-none');
-        modal.querySelector('.modal-content').classList.remove('scale-95');
-        document.body.style.overflow = 'hidden';
     }
+
+    // Show Modal
+    const modal = document.getElementById('product-modal');
+    modal.classList.remove('invisible', 'opacity-0', 'pointer-events-none');
+    modal.querySelector('.modal-content').classList.remove('scale-95');
+    document.body.style.overflow = 'hidden';
+}
 
     function closeModal() {
         const modal = document.getElementById('product-modal');
@@ -538,94 +582,79 @@ function updateQty(productId, change) {
     }
 
     // --- 8. Rendering & Data Fetching ---
-   async function loadProducts() {
-    try {
-        const response = await fetch('/api/products');
-        
-        // Check if the response is actually JSON
-        if (!response.ok) {
-            throw new Error(`Server error: ${response.status}`);
-        }
+// --- 8. Rendering & Data Fetching ---
+    async function loadProducts() {
+        try {
+            const response = await fetch('/api/products');
+            if (!response.ok) throw new Error(`Server error: ${response.status}`);
+            const data = await response.json();
+            currentProducts = Array.isArray(data) ? data : [];
 
-        const data = await response.json();
-        
-        // Ensure data is an array before assigning
-        currentProducts = Array.isArray(data) ? data : [];
+            const renderCard = (p) => {
+                const availableVariants = (p.variants || []).filter(v => v.stock > 0);
+                const isOutOfStock = availableVariants.length === 0;
+                const displayPrice = isOutOfStock ? (p.variants?.[0]?.price || 0) : availableVariants[0].price;
 
-        if (currentProducts.length === 0) {
-            console.warn("No products found in database.");
-        }
-
-        const renderCard = (p) => {
-            const variants = p.variants || [{size: 'Default', price: p.price || 0, stock: 0}];
-            return `
-            <div class="product-card bg-white p-3 group">
-                <div onclick="openModal('${p._id}')" class="aspect-[4/5] overflow-hidden mb-4 bg-gray-50 cursor-pointer">
-                    <img src="${p.imageUrl}" class="w-full h-full object-cover transition duration-700 group-hover:scale-110">
-                </div>
-                <div class="text-center">
-                    <h3 class="uppercase font-bold text-[8px] tracking-widest mb-1 truncate">${p.name}</h3>
-                    <p id="price-${p._id}" class="text-brandPinkDark font-medium text-[10px] mb-2">₦${Number(variants[0].price).toLocaleString()}</p>
-                    
-                    <select data-id="${p._id}" onchange="handleSizeChange(this, '${p._id}')" class="size-select w-full border border-gray-100 text-[8px] uppercase py-1.5 px-2 mb-2 focus:outline-none">
-                        ${variants.map(v => `<option value="${v.size}" data-price="${v.price}" data-stock="${v.stock}">${v.size}</option>`).join('')}
-                    </select>
-
-                    <div class="flex items-center justify-between border border-gray-100 mb-3">
-                        <button onclick="updateQty('${p._id}', -1)" class="px-3 py-1 text-lg font-light hover:bg-gray-50">-</button>
-                        <span id="qty-${p._id}" class="text-[10px] font-bold">1</span>
-                        <button onclick="updateQty('${p._id}', 1)" class="px-3 py-1 text-lg font-light hover:bg-gray-50">+</button>
+                return `
+                <div class="product-card bg-white p-3 group relative">
+                    ${isOutOfStock ? `<div class="absolute inset-0 z-10 bg-white/60 flex items-center justify-center"><span class="bg-black text-white text-[9px] px-4 py-2 uppercase">Sold Out</span></div>` : ''}
+                    <div onclick="openModal('${p._id}')" class="aspect-[4/5] overflow-hidden mb-4 bg-gray-50 cursor-pointer">
+                        <img id="img-${p._id}" src="${p.imageUrl}" 
+                             onerror="refreshBrokenImage('${p._id}', this)"
+                             class="w-full h-full object-cover transition duration-700 group-hover:scale-110 ${isOutOfStock ? 'grayscale' : ''}">
                     </div>
+                    <div class="text-center">
+                        <h3 class="uppercase font-bold text-[8px] tracking-widest mb-1 truncate">${p.name}</h3>
+                        <p id="price-${p._id}" class="text-brandPinkDark font-medium text-[10px] mb-2">₦${Number(displayPrice).toLocaleString()}</p>
+                        <select data-id="${p._id}" onchange="handleSizeChange(this, '${p._id}')" ${isOutOfStock ? 'disabled' : ''} class="w-full border border-gray-100 text-[8px] uppercase py-1.5 px-2 mb-2">
+                            ${availableVariants.map(v => `<option value="${v.size}" data-price="${v.price}" data-stock="${v.stock}">${v.size}</option>`).join('')}
+                            ${isOutOfStock ? '<option>No Sizes</option>' : ''}
+                        </select>
+                        <div class="flex items-center justify-between border border-gray-100 mb-3 ${isOutOfStock ? 'opacity-30' : ''}">
+                            <button onclick="updateQty('${p._id}', -1)" class="px-3 py-1">-</button>
+                            <span id="qty-${p._id}" class="text-[10px] font-bold">1</span>
+                            <button onclick="updateQty('${p._id}', 1)" class="px-3 py-1">+</button>
+                        </div>
+                        <button onclick="handleAddToCart('${p._id}')" id="btn-${p._id}" ${isOutOfStock ? 'disabled' : ''} class="w-full ${isOutOfStock ? 'bg-gray-200 text-gray-500' : 'bg-brandBlack text-brandPink'} text-[8px] py-2.5 uppercase tracking-widest">
+                            ${isOutOfStock ? 'Out of Stock' : 'Add to Bag'}
+                        </button>
+                    </div>
+                </div>`;
+            };
 
-                    <button onclick="handleAddToCart('${p._id}')" id="btn-${p._id}" class="w-full bg-brandBlack text-brandPink text-[8px] py-2.5 uppercase tracking-widest hover:bg-brandPink hover:text-brandBlack transition-all">
-                        Add to Bag
-                    </button>
-                </div>
-            </div>`;
-        };
+            const populateGrid = (cat, elementId) => {
+                const gridEl = document.getElementById(elementId);
+                if (!gridEl) return;
+                const filtered = currentProducts.filter(p => p.category?.toLowerCase() === cat).slice(0, 5);
+                gridEl.innerHTML = filtered.length > 0 ? filtered.map(renderCard).join('') : `<p class="text-[10px] py-10 uppercase text-gray-400">Vault Opening Soon...</p>`;
+            };
 
-        const populateGrid = (cat, elementId) => {
-            const gridEl = document.getElementById(elementId);
-            if (!gridEl) return;
-            const filtered = currentProducts.filter(p => p.category?.toLowerCase() === cat).slice(0, 5);
-            gridEl.innerHTML = filtered.length > 0 ? filtered.map(renderCard).join('') : `<p class="text-[10px] uppercase text-gray-400 py-10">Vault Opening Soon...</p>`;
-        };
-
-        populateGrid('women', 'women-grid');
-        populateGrid('men', 'men-grid');
-        populateGrid('kids', 'kids-grid');
-        
-        // Mist grid
-        const mistGrid = document.getElementById('mist-grid');
-        if (mistGrid) {
-            const mists = currentProducts.filter(p => p.category?.toLowerCase() === 'mist').slice(0, 6);
-            mistGrid.innerHTML = mists.length > 0 ? mists.map(renderCard).join('') : `<p class="text-[10px] uppercase text-gray-400 py-10">Vault Opening Soon...</p>`;
-        }
-
-    } catch (err) { 
-        console.error("Error loading products:", err);
-        showNotification("Unable to load collection. Please refresh.");
+            populateGrid('women', 'women-grid');
+            populateGrid('men', 'men-grid');
+            populateGrid('kids', 'kids-grid');
+            const mistGrid = document.getElementById('mist-grid');
+            if (mistGrid) {
+                const mists = currentProducts.filter(p => p.category?.toLowerCase() === 'mist').slice(0, 6);
+                mistGrid.innerHTML = mists.length > 0 ? mists.map(renderCard).join('') : `<p class="text-[10px] py-10 uppercase text-gray-400">Vault Opening Soon...</p>`;
+            }
+        } catch (err) { console.error(err); }
     }
-}
-
-   function handleSizeChange(select, productId) {
-    // Update Price Display
+    
+ function handleSizeChange(select, productId) {
     const selectedOption = select.options[select.selectedIndex];
+    if (!selectedOption) return;
+
     const price = selectedOption.getAttribute('data-price');
-    const stock = parseInt(selectedOption.getAttribute('data-stock'));
     
-    document.getElementById(`price-${productId}`).innerText = `₦${Number(price).toLocaleString()}`;
-    
-    // Validate current quantity against new size's stock
-    const qtyElement = document.getElementById(`qty-${productId}`);
-    let currentQty = parseInt(qtyElement.innerText);
-    
-    if (currentQty > stock) {
-        qtyElement.innerText = stock > 0 ? stock : 1;
-        if (stock === 0) {
-            showNotification("This size is currently out of stock");
-        }
+    // Update the price display dynamically
+    const priceDisplay = document.getElementById(`price-${productId}`);
+    if (priceDisplay) {
+        priceDisplay.innerText = `₦${Number(price).toLocaleString()}`;
     }
+
+    // Reset quantity to 1 when changing sizes to avoid exceeding stock of new size
+    const qtyElement = document.getElementById(`qty-${productId}`);
+    if (qtyElement) qtyElement.innerText = "1";
 }
 
     // --- 9. Slider Logic ---
