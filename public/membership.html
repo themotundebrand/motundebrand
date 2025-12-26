@@ -122,121 +122,139 @@
         </div>
     </main>
 
-    <script>
-        // Check Auth on Load
-        document.addEventListener('DOMContentLoaded', () => {
-            const token = localStorage.getItem('motunde_token');
-            const user = JSON.parse(localStorage.getItem('motunde_user'));
+   <script>
+    // Check Auth on Load
+    document.addEventListener('DOMContentLoaded', () => {
+        const token = localStorage.getItem('motunde_token');
+        const user = JSON.parse(localStorage.getItem('motunde_user'));
 
-            if (!token || !user) {
-                window.location.href = 'account.html';
+        if (!token || !user) {
+            window.location.href = 'account.html';
+            return;
+        }
+
+        // --- UPDATED: Fill Details (Handling Address Object) ---
+        document.getElementById('welcome-name').innerText = `Welcome, ${user.name}`;
+        document.getElementById('user-name').value = user.name || '';
+        document.getElementById('user-email').value = user.email || '';
+        document.getElementById('user-phone').value = user.phone || '';
+        document.getElementById('user-whatsapp').value = user.whatsapp || user.phone || '';
+
+        // Check if address is an object (from MongoDB) or a simple string
+        if (user.address && typeof user.address === 'object') {
+            document.getElementById('user-address').value = user.address.street || '';
+            document.getElementById('user-city').value = user.address.city || '';
+            document.getElementById('user-state').value = user.address.state || '';
+        } else {
+            document.getElementById('user-address').value = user.address || '';
+        }
+
+        fetchOrderHistory();
+    });
+
+    function showNotification(msg) {
+        const toast = document.getElementById('notification-toast');
+        document.getElementById('toast-message').innerText = msg;
+        toast.classList.remove('opacity-0', 'translate-y-10', 'pointer-events-none');
+        setTimeout(() => toast.classList.add('opacity-0', 'translate-y-10', 'pointer-events-none'), 3000);
+    }
+
+    // --- UPDATED: Update Profile (Saving as Object) ---
+    async function updateProfile() {
+        const updatedData = {
+            name: document.getElementById('user-name').value,
+            phone: document.getElementById('user-phone').value,
+            whatsapp: document.getElementById('user-whatsapp').value,
+            address: {
+                street: document.getElementById('user-address').value,
+                city: document.getElementById('user-city').value,
+                state: document.getElementById('user-state').value,
+                country: "Nigeria"
+            }
+        };
+
+        try {
+            const response = await fetch('/api/user/update', {
+                method: 'PUT',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('motunde_token')}`
+                },
+                body: JSON.stringify(updatedData)
+            });
+
+            if (response.ok) {
+                // Update local storage so the UI stays updated without a refresh
+                const currentUser = JSON.parse(localStorage.getItem('motunde_user'));
+                localStorage.setItem('motunde_user', JSON.stringify({ ...currentUser, ...updatedData }));
+                showNotification("Profile Updated Successfully");
+            } else {
+                showNotification("Update Failed");
+            }
+        } catch (err) {
+            console.error(err);
+            showNotification("Update Failed");
+        }
+    }
+
+    async function changePassword() {
+        const newPass = document.getElementById('new-password').value;
+        if (!newPass) return showNotification("Enter a new password");
+
+        try {
+            const response = await fetch('/api/user/change-password', {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('motunde_token')}`
+                },
+                body: JSON.stringify({ password: newPass })
+            });
+            if (response.ok) {
+                showNotification("Password Changed");
+                document.getElementById('new-password').value = '';
+            }
+        } catch (err) {
+            showNotification("Error changing password");
+        }
+    }
+
+    async function fetchOrderHistory() {
+        const container = document.getElementById('order-history-container');
+        try {
+            const response = await fetch('/api/orders/my-orders', {
+                headers: { 'Authorization': `Bearer ${localStorage.getItem('motunde_token')}` }
+            });
+            const orders = await response.json();
+
+            if (!orders || !orders.length) {
+                container.innerHTML = `<p class="text-[9px] text-gray-400 uppercase tracking-widest text-center py-10">No orders found.</p>`;
                 return;
             }
 
-            // Fill Details
-            document.getElementById('welcome-name').innerText = `Welcome, ${user.name}`;
-            document.getElementById('user-name').value = user.name || '';
-            document.getElementById('user-email').value = user.email || '';
-            document.getElementById('user-phone').value = user.phone || '';
-            document.getElementById('user-whatsapp').value = user.whatsapp || user.phone || '';
-            document.getElementById('user-address').value = user.address || '';
-            document.getElementById('user-city').value = user.city || '';
-            document.getElementById('user-state').value = user.state || '';
-
-            fetchOrderHistory();
-        });
-
-        function showNotification(msg) {
-            const toast = document.getElementById('notification-toast');
-            document.getElementById('toast-message').innerText = msg;
-            toast.classList.remove('opacity-0', 'translate-y-10', 'pointer-events-none');
-            setTimeout(() => toast.classList.add('opacity-0', 'translate-y-10', 'pointer-events-none'), 3000);
-        }
-
-        async function updateProfile() {
-            const updatedData = {
-                name: document.getElementById('user-name').value,
-                phone: document.getElementById('user-phone').value,
-                whatsapp: document.getElementById('user-whatsapp').value,
-                address: document.getElementById('user-address').value,
-                city: document.getElementById('user-city').value,
-                state: document.getElementById('user-state').value
-            };
-
-            try {
-                const response = await fetch('/api/user/update', {
-                    method: 'PUT',
-                    headers: { 
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${localStorage.getItem('motunde_token')}`
-                    },
-                    body: JSON.stringify(updatedData)
-                });
-
-                if (response.ok) {
-                    localStorage.setItem('motunde_user', JSON.stringify({ ...JSON.parse(localStorage.getItem('motunde_user')), ...updatedData }));
-                    showNotification("Profile Updated Successfully");
-                }
-            } catch (err) {
-                showNotification("Update Failed");
-            }
-        }
-
-        async function changePassword() {
-            const newPass = document.getElementById('new-password').value;
-            if (!newPass) return showNotification("Enter a new password");
-
-            try {
-                const response = await fetch('/api/user/change-password', {
-                    method: 'POST',
-                    headers: { 
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${localStorage.getItem('motunde_token')}`
-                    },
-                    body: JSON.stringify({ password: newPass })
-                });
-                if (response.ok) {
-                    showNotification("Password Changed");
-                    document.getElementById('new-password').value = '';
-                }
-            } catch (err) {
-                showNotification("Error changing password");
-            }
-        }
-
-        async function fetchOrderHistory() {
-            const container = document.getElementById('order-history-container');
-            try {
-                const response = await fetch('/api/orders/my-orders', {
-                    headers: { 'Authorization': `Bearer ${localStorage.getItem('motunde_token')}` }
-                });
-                const orders = await response.json();
-
-                if (!orders.length) {
-                    container.innerHTML = `<p class="text-[9px] text-gray-400 uppercase tracking-widest text-center">No orders found.</p>`;
-                    return;
-                }
-
-                container.innerHTML = orders.map(order => `
-                    <div class="bg-white p-4 border border-gray-100 shadow-sm">
-                        <div class="flex justify-between mb-2">
-                            <span class="text-[9px] font-black uppercase tracking-tighter">ID: ${order._id.slice(-6)}</span>
-                            <span class="text-[8px] px-2 py-0.5 bg-brandPink text-brandBlack font-bold uppercase">${order.status || 'Pending'}</span>
-                        </div>
-                        <p class="text-[10px] font-bold">₦${order.total.toLocaleString()}</p>
-                        <p class="text-[8px] text-gray-400 uppercase tracking-widest mt-1">${new Date(order.createdAt).toLocaleDateString()}</p>
+            // Note: Use order.totalPrice to match your backend schema
+            container.innerHTML = orders.map(order => `
+                <div class="bg-white p-4 border border-gray-100 shadow-sm mb-3">
+                    <div class="flex justify-between mb-2">
+                        <span class="text-[9px] font-black uppercase tracking-tighter">ID: #${order._id.slice(-6)}</span>
+                        <span class="text-[8px] px-2 py-0.5 ${order.status === 'completed' ? 'bg-green-100' : 'bg-brandPink'} text-brandBlack font-bold uppercase">
+                            ${order.status || 'Pending'}
+                        </span>
                     </div>
-                `).join('');
-            } catch (err) {
-                container.innerHTML = `<p class="text-[9px] text-red-400 uppercase tracking-widest text-center">Failed to load history.</p>`;
-            }
+                    <p class="text-[10px] font-bold">₦${(order.totalPrice || 0).toLocaleString()}</p>
+                    <p class="text-[8px] text-gray-400 uppercase tracking-widest mt-1">${new Date(order.createdAt).toLocaleDateString()}</p>
+                </div>
+            `).join('');
+        } catch (err) {
+            container.innerHTML = `<p class="text-[9px] text-red-400 uppercase tracking-widest text-center py-10">Failed to load history.</p>`;
         }
+    }
 
-        function handleLogout() {
-            localStorage.removeItem('motunde_token');
-            localStorage.removeItem('motunde_user');
-            window.location.href = 'account.html';
-        }
-    </script>
+    function handleLogout() {
+        localStorage.removeItem('motunde_token');
+        localStorage.removeItem('motunde_user');
+        window.location.href = 'account.html';
+    }
+</script>
 </body>
 </html>

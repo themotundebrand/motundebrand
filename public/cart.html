@@ -330,16 +330,25 @@ function autoFillUserDetails() {
         if (user.email) document.getElementById('cust-email').value = user.email;
         if (user.phone) document.getElementById('cust-phone').value = user.phone;
         
-        // Auto-fill WhatsApp (Uses specific whatsapp field or falls back to phone)
+        // Auto-fill WhatsApp (Uses specific field or falls back to phone)
         const whatsappField = document.getElementById('cust-whatsapp');
         if (whatsappField) {
             whatsappField.value = user.whatsapp || user.phone || "";
         }
         
-        // Shipping Address Details
-        if (user.address) document.getElementById('cust-street').value = user.address;
-        if (user.city) document.getElementById('cust-city').value = user.city;
-        if (user.state) document.getElementById('cust-state').value = user.state;
+        // --- UPDATED: Shipping Address Details for Object Structure ---
+        if (user.address && typeof user.address === 'object') {
+            if (document.getElementById('cust-street')) 
+                document.getElementById('cust-street').value = user.address.street || "";
+            if (document.getElementById('cust-city')) 
+                document.getElementById('cust-city').value = user.address.city || "";
+            if (document.getElementById('cust-state')) 
+                document.getElementById('cust-state').value = user.address.state || "";
+        } else if (user.address) {
+            // Fallback for old simple string addresses
+            if (document.getElementById('cust-street')) 
+                document.getElementById('cust-street').value = user.address;
+        }
 
         showNotification("Welcome back! Details auto-filled.");
     }
@@ -514,25 +523,29 @@ window.addEventListener('DOMContentLoaded', autoFillUserDetails);
 
     // 3. Collect Data & Token
     const token = localStorage.getItem('motunde_token');
+    const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
     
     const orderData = {
-        items: cart,
-        paymentMethod: method,
-        customer: name,
-        email: email,
-        phone: phone,
-        whatsapp: whatsapp, // Fetches the WhatsApp contact
-        address: {
-            street: document.getElementById('cust-street').value,
+        items: cart.map(item => ({
+            productId: item.id,
+            name: item.name,
+            size: item.size,
+            quantity: item.quantity,
+            price: item.price
+        })),
+        customerDetails: {
+            name: name,
+            email: email.toLowerCase(),
+            phone: phone,
+            whatsapp: whatsapp,
+            address: document.getElementById('cust-street').value,
             city: document.getElementById('cust-city').value,
-            state: document.getElementById('cust-state').value,
-            country: "Nigeria"
+            state: document.getElementById('cust-state').value
         },
-        summary: {
-            subtotal: cart.reduce((sum, item) => sum + (item.price * item.quantity), 0),
-            shipping: FLAT_SHIPPING_FEE,
-            total: cart.reduce((sum, item) => sum + (item.price * item.quantity), 0) + FLAT_SHIPPING_FEE
-        }
+        totalPrice: subtotal + FLAT_SHIPPING_FEE,
+        paymentMethod: method,
+        // The backend uses these top-level fields for fast lookups
+        email: email.toLowerCase() 
     };
 
     // 4. API Call
@@ -541,7 +554,7 @@ window.addEventListener('DOMContentLoaded', autoFillUserDetails);
             method: 'POST',
             headers: { 
                 'Content-Type': 'application/json',
-                'Authorization': token ? `Bearer ${token}` : '' // Send token if logged in
+                'Authorization': token ? `Bearer ${token}` : '' 
             },
             body: JSON.stringify(orderData)
         });
@@ -553,7 +566,7 @@ window.addEventListener('DOMContentLoaded', autoFillUserDetails);
             renderCart();
         } else {
             const errorData = await response.json();
-            showAlert("Order Failed", errorData.message || "There was an issue processing your order.");
+            showAlert("Order Failed", errorData.error || "There was an issue processing your order.");
         }
     } catch (error) {
         console.error("Checkout Error:", error);

@@ -501,25 +501,29 @@ router.post('/login', async (req, res) => {
     }
 });
 
-// --- GET USER PROFILE (Optional: for account page) ---
-router.get('/profile', async (req, res) => {
+// --- GET LOGGED-IN USER'S ORDERS ---
+router.get('/orders/my-orders', async (req, res) => {
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1];
-    if (!token) return res.status(401).json({ error: "Not logged in" });
+
+    if (!token) return res.status(401).json({ error: "Unauthorized" });
 
     try {
         const decoded = jwt.verify(token, JWT_SECRET);
         const db = await getDb();
-        const user = await db.collection("users").findOne({ _id: new ObjectId(decoded.id) });
-        if (!user) return res.status(404).json({ error: "User not found" });
         
-        delete user.password;
-        res.json(user);
+        // Find orders where the email matches the logged-in user's email
+        // (This is why we added the top-level email field in the previous step!)
+        const orders = await db.collection("orders")
+            .find({ userId: new ObjectId(decoded.id) })
+            .sort({ createdAt: -1 })
+            .toArray();
+
+        res.json(orders);
     } catch (e) {
-        res.status(401).json({ error: "Session expired" });
+        res.status(401).json({ error: "Invalid Session" });
     }
 });
-
 // --- 1. UPDATE USER PROFILE (Name, Phone, WhatsApp, Address) ---
 router.put('/update', async (req, res) => {
     const authHeader = req.headers['authorization'];
