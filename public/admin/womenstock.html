@@ -213,11 +213,23 @@
             }
         }
 
-        async function fetchSalesLog() {
+       async function fetchSalesLog() {
             const token = localStorage.getItem('tmb_admin_token');
             const logContainer = document.getElementById('sales-log');
             
             try {
+                // 1. Fetch all products first to identify which ones are "Women" scents
+                const productRes = await fetch(`${API_URL}/products`);
+                const allProducts = await productRes.json();
+                
+                // Create a Set of Product IDs or Names that belong to the Women category
+                const womenProductNames = new Set(
+                    allProducts
+                        .filter(p => (p.category || '').toLowerCase() === 'women')
+                        .map(p => p.name)
+                );
+
+                // 2. Fetch Orders
                 const res = await fetch(`${API_URL}/admin/orders`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
@@ -225,34 +237,35 @@
                 
                 let categorySales = [];
                 orders.forEach(order => {
-                    // Only count completed/paid orders
-                    if (['completed', 'paid'].includes(order.status.toLowerCase())) {
+                    // Only count successful transactions
+                    if (['completed', 'paid', 'delivered'].includes(order.status.toLowerCase())) {
                         order.items.forEach(item => {
-                            // Only include if item is from the Women collection
-                            // (Matches by checking product name in global context or backend category)
-                            categorySales.push({
-                                date: order.createdAt,
-                                name: item.name,
-                                variant: item.variantName || item.size || 'N/A',
-                                qty: item.quantity,
-                                price: item.price * item.quantity
-                            });
+                            // STRICT FILTER: Only push to array if the item name exists in our Women Scents set
+                            if (womenProductNames.has(item.name)) {
+                                categorySales.push({
+                                    date: order.createdAt,
+                                    name: item.name,
+                                    variant: item.variantName || item.size || 'N/A',
+                                    qty: item.quantity,
+                                    price: item.price * item.quantity
+                                });
+                            }
                         });
                     }
                 });
 
-                // Newest first
+                // Sort: Newest sales at the top
                 categorySales.sort((a, b) => new Date(b.date) - new Date(a.date));
 
                 if (categorySales.length === 0) {
-                    logContainer.innerHTML = '<tr><td colspan="4" class="p-12 text-center text-gray-400 uppercase tracking-widest text-[9px]">No recent sales recorded</td></tr>';
+                    logContainer.innerHTML = '<tr><td colspan="4" class="p-12 text-center text-gray-400 uppercase tracking-widest text-[9px]">No recent women collection sales</td></tr>';
                     return;
                 }
 
                 logContainer.innerHTML = categorySales.map(sale => {
                     const d = new Date(sale.date);
                     return `
-                        <tr class="border-b hover:bg-gray-50">
+                        <tr class="border-b hover:bg-gray-50 transition-colors">
                             <td class="px-8 py-4">
                                 <span class="block font-bold">${d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                                 <span class="text-[9px] text-gray-400 uppercase">${d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })}</span>
@@ -261,14 +274,17 @@
                                 <span class="block uppercase font-bold text-brandPinkDark">${sale.name}</span>
                                 <span class="text-[9px] text-gray-400 uppercase">Size: ${sale.variant}</span>
                             </td>
-                            <td class="px-8 py-4 text-center font-mono font-bold">-${sale.qty}</td>
-                            <td class="px-8 py-4 text-right font-bold">₦${sale.price.toLocaleString()}</td>
+                            <td class="px-8 py-4 text-center">
+                                <span class="bg-pink-50 text-brandPinkDark px-2 py-1 rounded-full font-mono font-bold text-[10px]">-${sale.qty}</span>
+                            </td>
+                            <td class="px-8 py-4 text-right font-bold text-gray-700">₦${sale.price.toLocaleString()}</td>
                         </tr>
                     `;
                 }).join('');
 
             } catch (err) {
-                logContainer.innerHTML = '<tr><td colspan="4" class="p-12 text-center text-red-400 text-[9px]">Failed to load logs</td></tr>';
+                console.error("Sales Log Error:", err);
+                logContainer.innerHTML = '<tr><td colspan="4" class="p-12 text-center text-red-400 text-[9px]">Failed to load filtered logs</td></tr>';
             }
         }
 
