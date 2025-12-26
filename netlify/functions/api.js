@@ -297,41 +297,67 @@ router.post('/orders', async (req, res) => {
         }
 
         // 2. Validation
-        if (!items || items.length === 0) {
-            console.error("Order Blocked: Empty Cart");
-            return res.status(400).json({ error: "Empty cart" });
-        }
-        if (!customerDetails?.email) {
-            console.error("Order Blocked: Missing Email");
-            return res.status(400).json({ error: "Email is required." });
-        }
+        if (!items || items.length === 0) return res.status(400).json({ error: "Empty cart" });
+        if (!customerDetails?.email) return res.status(400).json({ error: "Email is required." });
 
-        // 3. Atomic stock decrement
+        // 3. Updated Atomic Stock Decrement (Handles String-to-Number issue)
         console.log("Processing Stock for items:", items.map(i => i.name));
+        
         const updateResults = await Promise.all(items.map(async (item) => {
             try {
                 const qty = Math.abs(parseInt(item.quantity));
-                // Validate ProductId format to prevent 500 error
                 if (!item.productId || item.productId.length !== 24) {
                     throw new Error(`Invalid Product ID: ${item.productId}`);
                 }
 
+                const productObjectId = new ObjectId(item.productId);
+
+                // STEP A: Fetch the product to check current stock type
+                const product = await db.collection("products").findOne({ _id: productObjectId });
+                if (!product) throw new Error("Product not found");
+
+                // STEP B: Update with type conversion if necessary
+                // This query looks for the specific size variant
                 const result = await db.collection("products").updateOne(
                     { 
-                        _id: new ObjectId(item.productId), 
-                        "variants.size": item.size,
-                        "variants.stock": { $gte: qty } 
+                        _id: productObjectId, 
+                        "variants.size": item.size 
                     },
-                    { $inc: { "variants.$.stock": -qty } }
+                    [
+                        {
+                            $set: {
+                                "variants": {
+                                    $map: {
+                                        input: "$variants",
+                                        as: "v",
+                                        in: {
+                                            $cond: [
+                                                { $eq: ["$$v.size", item.size] },
+                                                {
+                                                    $mergeObjects: [
+                                                        "$$v",
+                                                        { 
+                                                            // Force stock to be a number and subtract
+                                                            stock: { $subtract: [{ $toInt: "$$v.stock" }, qty] } 
+                                                        }
+                                                    ]
+                                                },
+                                                "$$v"
+                                            ]
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    ]
                 );
                 
                 return { 
                     name: item.name, 
-                    size: item.size, 
                     success: result.modifiedCount > 0 
                 };
             } catch (itemErr) {
-                console.error(`Stock Update Logic Error for ${item.name}:`, itemErr.message);
+                console.error(`Stock Update Error for ${item.name}:`, itemErr.message);
                 return { name: item.name, success: false, error: itemErr.message };
             }
         }));
@@ -340,7 +366,7 @@ router.post('/orders', async (req, res) => {
         if (failed.length > 0) {
             console.error("Stock Validation Failed for:", failed);
             return res.status(400).json({ 
-                error: "Stock error. Some items may have sold out.", 
+                error: "Stock error. Some items may have sold out or have invalid stock data.", 
                 details: failed 
             });
         }
@@ -380,28 +406,20 @@ router.post('/orders', async (req, res) => {
 
         const emailPromises = [];
 
-        // --- CUSTOMER EMAIL ---
+        // Customer Email
         emailPromises.push(transporter.sendMail({
             from: `"The Motunde Brand" <${process.env.EMAIL_USER}>`,
             to: customerDetails.email,
             subject: `Order Confirmation | #${shortId}`,
-            html: `
-                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; border: 1px solid #f0f0f0; padding: 40px; color: #000;">
+            html: `<div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; border: 1px solid #f0f0f0; padding: 40px; color: #000;">
                     <center><h1 style="letter-spacing: 5px; font-size: 20px;">THE MOTUNDE BRAND</h1></center>
-                    <p style="font-size: 14px;">Hello ${customerDetails.name},</p>
-                    <p style="font-size: 14px; color: #555;">We have received your order. Our team is currently verifying your payment. Here is your summary:</p>
-                    <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
-                        ${orderItemsHtml}
-                    </table>
-                    <div style="text-align: right; font-weight: bold; font-size: 16px;">
-                        TOTAL: ₦${totalPrice.toLocaleString()}
-                    </div>
-                    <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
-                    <p style="font-size: 12px; color: #888; text-align: center;">Order ID: ${orderId}</p>
-                </div>`
+                    <p>Hello ${customerDetails.name}, summary of your order:</p>
+                    <table style="width: 100%; border-collapse: collapse;">${orderItemsHtml}</table>
+                    <p><strong>TOTAL: ₦${totalPrice.toLocaleString()}</strong></p>
+                   </div>`
         }));
 
-        // --- ADMIN EMAIL ---
+        // Admin Email
         const adminAttachments = [];
         if (receiptBase64 && receiptBase64.includes("base64,")) {
             adminAttachments.push({
@@ -414,26 +432,18 @@ router.post('/orders', async (req, res) => {
         emailPromises.push(transporter.sendMail({
             from: `"TMB Orders" <${process.env.EMAIL_USER}>`,
             to: process.env.EMAIL_USER,
-            subject: `🚨 NEW ORDER #${shortId} - ${userStatusLabel}`,
+            subject: `🚨 NEW ORDER #${shortId}`,
             attachments: adminAttachments,
-            html: `
-                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; border: 2px solid #000; padding: 20px;">
-                    <h2 style="background: #000; color: #fff; padding: 15px; text-align: center; margin: 0;">NEW ORDER</h2>
-                    <p><strong>Customer:</strong> ${customerDetails.name}</p>
-                    <p><strong>Phone:</strong> ${customerDetails.whatsapp}</p>
-                    <table style="width: 100%; margin-top: 20px;">
-                        ${orderItemsHtml}
-                    </table>
-                    <h3 style="text-align: right;">Total: ₦${totalPrice.toLocaleString()}</h3>
-                    <p><strong>Method:</strong> ${paymentMethod}</p>
-                    <a href="https://wa.me/${customerDetails.whatsapp.replace(/\D/g,'')}" style="display: block; background: #25D366; color: white; text-align: center; padding: 15px; text-decoration: none; margin-top: 20px; font-weight: bold;">CHAT ON WHATSAPP</a>
-                </div>`
+            html: `<div style="border: 2px solid #000; padding: 20px;">
+                    <h2>NEW ORDER</h2>
+                    <p>Customer: ${customerDetails.name}</p>
+                    <p>Method: ${paymentMethod}</p>
+                    <table>${orderItemsHtml}</table>
+                   </div>`
         }));
 
-        // CRITICAL FOR NETLIFY: Wait for emails before sending response
         console.log("Sending emails...");
         await Promise.all(emailPromises);
-        console.log("Emails sent. Finalizing response.");
 
         res.status(201).json({ orderId, status: userStatusLabel });
 
