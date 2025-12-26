@@ -25,7 +25,6 @@
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700&display=swap');
         body { font-family: 'Inter', sans-serif; background-color: #FBFBFB; overflow-x: hidden; }
         
-        /* Sidebar Transitions */
         .sidebar { transition: transform 0.3s ease-in-out; }
         .mobile-overlay { background: rgba(0,0,0,0.4); opacity: 0; pointer-events: none; transition: all 0.3s; }
         .sidebar-active .sidebar { transform: translateX(0); }
@@ -58,9 +57,8 @@
                 <h1 class="font-bold tracking-[0.3em] text-sm italic">TMB SYSTEM</h1>
             </div>
 
-
             <nav class="flex-1 px-4 py-8 space-y-1 overflow-y-auto">
-                  <p class="text-[9px] uppercase tracking-[0.2em] text-gray-400 px-4 mb-4 font-bold">Main</p>
+                <p class="text-[9px] uppercase tracking-[0.2em] text-gray-400 px-4 mb-4 font-bold">Main</p>
                 <a href="tmbdashboard.html" class="nav-link flex items-center px-4 py-3 text-[10px] tracking-widest uppercase font-semibold transition-all">
                     <i class="fa-solid fa-gauge-high mr-3 w-5 text-gray-400"></i> Dashboard
                 </a>
@@ -176,127 +174,140 @@
             document.getElementById('stat-pending').innerText = ALL_ORDERS.filter(o => o.status === 'pending').length;
         }
 
-function renderOrders() {
-    const container = document.getElementById('orders-list');
-    const filter = document.getElementById('statusFilter').value;
-    const filtered = ALL_ORDERS.filter(o => filter === 'all' || o.status === filter);
+        function renderOrders() {
+            const container = document.getElementById('orders-list');
+            const filter = document.getElementById('statusFilter').value;
+            const filtered = ALL_ORDERS.filter(o => filter === 'all' || o.status === filter);
 
-    if (filtered.length === 0) {
-        container.innerHTML = `<div class="bg-white border p-10 text-center text-[10px] uppercase tracking-widest text-gray-400">No orders found.</div>`;
-        return;
-    }
+            if (filtered.length === 0) {
+                container.innerHTML = `<div class="bg-white border p-10 text-center text-[10px] uppercase tracking-widest text-gray-400">No orders found.</div>`;
+                return;
+            }
 
-    container.innerHTML = filtered.map(order => {
-        // --- CORRECTED DATA MAPPING ---
-        // Your backend stores data in 'customerDetails'
-        const customer = order.customerDetails || {};
-        
-        // Handle names: Priority to customerDetails.name, fallback to "Valued Customer"
-        const displayName = customer.name || "Customer";
-        
-        // Contact details
-        const email = customer.email || "No email";
-        const phone = customer.phone || customer.whatsapp || "No phone";
-        
-        // Address Handling: If it's a registered member, address is an object.
-        // If it's a guest, address might be a string.
-        let fullAddress = "No address provided";
-        if (typeof customer.address === 'object' && customer.address !== null) {
-            const addr = customer.address;
-            fullAddress = `${addr.street || ''}, ${addr.city || ''}, ${addr.state || ''}`.replace(/^,|,$/g, '').trim();
-        } else if (customer.address) {
-            fullAddress = customer.address;
-        }
-        
-        const city = customer.city || (typeof customer.address === 'object' ? customer.address.city : "N/A");
-        // ------------------------------
+            container.innerHTML = filtered.map(order => {
+                const customer = order.customerDetails || {};
+                const displayName = customer.name || "Customer";
+                const email = customer.email || "No email";
+                const phone = customer.phone || customer.whatsapp || "";
+                
+                let fullAddress = "No address provided";
+                if (typeof customer.address === 'object' && customer.address !== null) {
+                    const addr = customer.address;
+                    fullAddress = `${addr.street || ''}, ${addr.city || ''}, ${addr.state || ''}`.replace(/^,|,$/g, '').trim();
+                } else if (customer.address) {
+                    fullAddress = customer.address;
+                }
 
-        return `
-            <div class="order-card bg-white border shadow-sm p-6 status-${order.status}">
-                <div class="flex flex-col md:flex-row justify-between gap-6">
-                    <div class="flex-1">
-                        <div class="flex items-center gap-3 mb-2">
-                            <span class="text-[9px] px-2 py-0.5 border font-bold uppercase tracking-widest ${order.userId && order.userId !== "GUEST" ? 'bg-blue-50 text-blue-600' : 'bg-gray-100 text-gray-600'}">
-                                ${order.userId && order.userId !== "GUEST" ? 'Member' : 'Guest'}
-                            </span>
-                            <span class="text-[10px] text-gray-400 font-mono">#${order._id.slice(-8).toUpperCase()}</span>
-                        </div>
-                        <h3 class="font-bold text-sm uppercase tracking-wider">${displayName}</h3>
-                        <p class="text-[10px] text-gray-500 mt-2"><i class="fa-solid fa-envelope mr-2 w-3"></i> ${email}</p>
-                        <p class="text-[10px] text-gray-500 mt-1"><i class="fa-solid fa-phone mr-2 w-3"></i> ${phone}</p>
-                        <p class="text-[10px] text-gray-500 mt-1"><i class="fa-solid fa-location-dot mr-2 w-3"></i> ${fullAddress}</p>
-                    </div>
+                const orderIDShort = order._id.slice(-8).toUpperCase();
+                
+                // WhatsApp Link Generation
+                const waNumber = phone.replace(/\D/g, '');
+                const waMessage = encodeURIComponent(`Hello ${displayName}, this is The Motunde Brand. We have successfully received your payment for order #${orderIDShort}. We are reaching out to coordinate your shipping/delivery. How would you like us to proceed?`);
+                const waLink = waNumber ? `https://wa.me/${waNumber}?text=${waMessage}` : "#";
 
-                    <div class="flex-[1.5] border-t md:border-t-0 md:border-l md:pl-6 pt-4 md:pt-0">
-                        <p class="text-[9px] uppercase tracking-widest text-gray-400 font-bold mb-3">Order Items</p>
-                        <div class="space-y-2">
-                            ${order.items.map(item => `
-                                <div class="flex justify-between items-center text-[11px]">
-                                    <span><strong class="uppercase">${item.name}</strong> (x${item.quantity})</span>
-                                    <span class="text-gray-400">${item.size || 'Standard'}</span>
+                return `
+                    <div class="order-card bg-white border shadow-sm p-6 status-${order.status}">
+                        <div class="flex flex-col md:flex-row justify-between gap-6">
+                            <div class="flex-1">
+                                <div class="flex items-center gap-3 mb-2">
+                                    <span class="text-[9px] px-2 py-0.5 border font-bold uppercase tracking-widest ${order.userId && order.userId !== "GUEST" ? 'bg-blue-50 text-blue-600' : 'bg-gray-100 text-gray-600'}">
+                                        ${order.userId && order.userId !== "GUEST" ? 'Member' : 'Guest'}
+                                    </span>
+                                    <span class="text-[10px] text-gray-400 font-mono">#${orderIDShort}</span>
                                 </div>
-                            `).join('')}
-                        </div>
-                        <div class="mt-4 pt-3 border-t flex justify-between items-center">
-                            <span class="text-lg font-light text-brandPinkDark">₦ ${parseFloat(order.totalPrice).toLocaleString()}</span>
+                                <h3 class="font-bold text-sm uppercase tracking-wider">${displayName}</h3>
+                                <p class="text-[10px] text-gray-500 mt-2"><i class="fa-solid fa-envelope mr-2 w-3"></i> ${email}</p>
+                                
+                                <div class="flex items-center gap-3 mt-1">
+                                    <p class="text-[10px] text-gray-500"><i class="fa-solid fa-phone mr-2 w-3"></i> ${phone || 'No Phone'}</p>
+                                    ${phone ? `
+                                        <a href="${waLink}" target="_blank" class="text-green-500 hover:text-green-600 text-[9px] font-bold flex items-center gap-1 uppercase tracking-tighter">
+                                            <i class="fa-brands fa-whatsapp"></i> WhatsApp Chat
+                                        </a>
+                                    ` : ''}
+                                </div>
+                                
+                                <p class="text-[10px] text-gray-500 mt-1"><i class="fa-solid fa-location-dot mr-2 w-3"></i> ${fullAddress}</p>
+                            </div>
+
+                            <div class="flex-[1.5] border-t md:border-t-0 md:border-l md:pl-6 pt-4 md:pt-0">
+                                <p class="text-[9px] uppercase tracking-widest text-gray-400 font-bold mb-4">Items Selection</p>
+                                <div class="space-y-4">
+                                    ${order.items.map(item => `
+                                        <div class="flex items-center justify-between gap-4">
+                                            <div class="flex items-center gap-3">
+                                                <div class="w-12 h-12 bg-gray-50 border overflow-hidden rounded">
+                                                    <img src="${item.image || 'https://i.imgur.com/CVKXV7R.png'}" 
+                                                         alt="${item.name}" 
+                                                         class="w-full h-full object-cover"
+                                                         onerror="this.src='https://i.imgur.com/CVKXV7R.png'">
+                                                </div>
+                                                <div>
+                                                    <p class="text-[11px] font-bold uppercase">${item.name}</p>
+                                                    <p class="text-[9px] text-gray-400 italic">${item.size || 'Standard'}</p>
+                                                </div>
+                                            </div>
+                                            <span class="text-[11px] font-medium text-gray-500">Qty: ${item.quantity}</span>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                                <div class="mt-4 pt-3 border-t flex justify-between items-center">
+                                    <span class="text-lg font-light text-brandPinkDark">₦ ${parseFloat(order.totalPrice).toLocaleString()}</span>
+                                </div>
+                            </div>
+
+                            <div class="flex flex-col justify-center gap-2 border-t md:border-t-0 md:border-l md:pl-6 pt-4 md:pt-0 min-w-[160px]">
+                                ${order.status === 'pending' ? `
+                                    <button onclick="updateStatus('${order._id}', 'completed')" class="bg-brandBlack text-white text-[9px] uppercase tracking-[0.2em] py-3 px-4 font-bold hover:bg-green-700 transition">Confirm Payment</button>
+                                    <button onclick="updateStatus('${order._id}', 'cancelled')" class="border border-gray-200 text-gray-400 text-[9px] uppercase tracking-[0.2em] py-3 px-4 font-bold hover:bg-red-50 hover:text-red-500 transition">Cancel</button>
+                                ` : `
+                                    <div class="text-center">
+                                        <p class="text-[9px] uppercase tracking-widest font-bold ${order.status === 'completed' ? 'text-green-500' : 'text-red-500'}">
+                                            <i class="fa-solid ${order.status === 'completed' ? 'fa-check-double' : 'fa-xmark'} mr-1"></i>
+                                            ${order.status}
+                                        </p>
+                                        ${order.status === 'completed' ? `
+                                            <span class="text-[7px] uppercase bg-green-50 text-green-600 px-1 py-0.5 rounded mt-1 inline-block font-bold">Stock Deducted</span>
+                                        ` : ''}
+                                        <p class="text-[8px] text-gray-400 mt-2">${new Date(order.createdAt).toLocaleDateString()}</p>
+                                    </div>
+                                `}
+                            </div>
                         </div>
                     </div>
-
-                  <div class="flex flex-col justify-center gap-2 border-t md:border-t-0 md:border-l md:pl-6 pt-4 md:pt-0 min-w-[150px]">
-    ${order.status === 'pending' ? `
-        <button onclick="updateStatus('${order._id}', 'completed')" class="bg-brandBlack text-white text-[9px] uppercase tracking-[0.2em] py-3 px-4 font-bold hover:bg-green-700 transition">Confirm & Ship</button>
-        <button onclick="updateStatus('${order._id}', 'cancelled')" class="border border-gray-200 text-gray-400 text-[9px] uppercase tracking-[0.2em] py-3 px-4 font-bold hover:bg-red-50 hover:text-red-500 transition">Cancel</button>
-    ` : `
-        <div class="text-center">
-            <p class="text-[9px] uppercase tracking-widest font-bold ${order.status === 'completed' ? 'text-green-500' : 'text-red-500'}">
-                <i class="fa-solid ${order.status === 'completed' ? 'fa-check-double' : 'fa-xmark'} mr-1"></i>
-                ${order.status}
-            </p>
-            ${order.status === 'completed' ? `
-                <span class="text-[7px] uppercase bg-green-50 text-green-600 px-1 py-0.5 rounded mt-1 inline-block font-bold">Stock Deducted</span>
-            ` : ''}
-            <p class="text-[8px] text-gray-400 mt-2">${new Date(order.createdAt).toLocaleDateString()}</p>
-        </div>
-    `}
-</div>
-                </div>
-            </div>
-        `}).join('');
-}
-
-      async function updateStatus(orderId, newStatus) {
-    // 1. Set context-specific warning
-    const actionText = newStatus === 'completed' 
-        ? "Confirming will verify payment and PERMANENTLY deduct items from stock. Proceed?" 
-        : `Mark order as ${newStatus}?`;
-
-    if (!confirm(actionText)) return;
-
-    const token = localStorage.getItem('tmb_admin_token');
-    
-    try {
-        const response = await fetch(`${API_URL}/admin/orders/${orderId}/status`, {
-            method: 'PATCH',
-            headers: { 
-                'Authorization': `Bearer ${token}`, 
-                'Content-Type': 'application/json' 
-            },
-            body: JSON.stringify({ status: newStatus })
-        });
-        
-        if (response.ok) {
-            // Refresh the list to show "Stock Deducted" badge
-            fetchOrders();
-        } else {
-            // Capture specific backend errors (e.g., "Product not found" or "Database error")
-            const errorData = await response.json();
-            alert(`Update failed: ${errorData.error || 'Unknown error'}`);
+                `}).join('');
         }
-    } catch (err) { 
-        console.error("Status Update Error:", err);
-        alert("Network error. Please check your connection to the TMB System."); 
-    }
-}
+
+        async function updateStatus(orderId, newStatus) {
+            const actionText = newStatus === 'completed' 
+                ? "Confirming will verify payment and PERMANENTLY deduct items from stock. Proceed?" 
+                : `Mark order as ${newStatus}?`;
+
+            if (!confirm(actionText)) return;
+
+            const token = localStorage.getItem('tmb_admin_token');
+            
+            try {
+                const response = await fetch(`${API_URL}/admin/orders/${orderId}/status`, {
+                    method: 'PATCH',
+                    headers: { 
+                        'Authorization': `Bearer ${token}`, 
+                        'Content-Type': 'application/json' 
+                    },
+                    body: JSON.stringify({ status: newStatus })
+                });
+                
+                if (response.ok) {
+                    fetchOrders();
+                } else {
+                    const errorData = await response.json();
+                    alert(`Update failed: ${errorData.error || 'Unknown error'}`);
+                }
+            } catch (err) { 
+                console.error("Status Update Error:", err);
+                alert("Network error. Please check your connection."); 
+            }
+        }
 
         window.onload = fetchOrders;
     </script>

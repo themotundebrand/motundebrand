@@ -24,13 +24,18 @@
     </script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700&display=swap');
-        body { font-family: 'Inter', sans-serif; background-color: #FBFBFB; }
-        .sidebar { transition: all 0.3s ease; }
-        .nav-link:hover { background-color: #FBFBFB; color: #000; border-left: 4px solid #D48A96; }
-        .mobile-overlay { background: rgba(0,0,0,0.5); display: none; }
-        .mobile-overlay.active { display: block; }
+        body { font-family: 'Inter', sans-serif; background-color: #FBFBFB; overflow-x: hidden; }
+        
+        .sidebar { transition: transform 0.3s ease-in-out; }
+        .mobile-overlay { background: rgba(0,0,0,0.4); opacity: 0; pointer-events: none; transition: all 0.3s; }
+        .sidebar-active .sidebar { transform: translateX(0); }
+        .sidebar-active .mobile-overlay { opacity: 1; pointer-events: auto; }
 
-        /* Mobile-friendly table adjustment */
+        .nav-link { color: #6B7280; transition: all 0.2s; border-left: 4px solid transparent; }
+        .nav-link:hover { color: #000; background: #F9FAFB; }
+        .nav-link.active { color: #000; background: #F3F4F6; border-left-color: #D48A96; font-weight: 700; }
+
+        /* Responsive Table */
         @media (max-width: 1024px) {
             .responsive-table thead { display: none; }
             .responsive-table tr { 
@@ -78,11 +83,11 @@
             </div>
 
             <nav class="flex-1 px-4 py-8 space-y-1 overflow-y-auto">
-                <p class="text-[9px] uppercase tracking-[0.2em] text-gray-400 px-4 mb-4 font-bold">Navigation</p>
+                <p class="text-[9px] uppercase tracking-[0.2em] text-gray-400 px-4 mb-4 font-bold">Main</p>
                 <a href="tmbdashboard.html" class="nav-link flex items-center px-4 py-3 text-[10px] tracking-widest uppercase font-semibold">
-                    <i class="fa-solid fa-house mr-3 w-5 text-gray-400"></i> Dashboard
+                    <i class="fa-solid fa-gauge-high mr-3 w-5 text-gray-400"></i> Dashboard
                 </a>
-                
+
                 <p class="text-[9px] uppercase tracking-[0.2em] text-gray-400 px-4 mb-4 mt-8 font-bold">Inventory</p>
                 <a href="womenscents.html" class="nav-link flex items-center px-4 py-3 text-[10px] tracking-widest uppercase font-semibold">
                     <i class="fa-solid fa-venus mr-3 w-5 text-brandPinkDark"></i> Women Scents
@@ -90,20 +95,14 @@
                 <a href="menscents.html" class="nav-link flex items-center px-4 py-3 text-[10px] tracking-widest uppercase font-semibold">
                     <i class="fa-solid fa-mars mr-3 w-5 text-gray-400"></i> Men Scents
                 </a>
-                <a href="bodymistspray.html" class="nav-link flex items-center px-4 py-3 text-[10px] tracking-widest uppercase font-semibold">
-                    <i class="fa-solid fa-spray-can mr-3 w-5 text-brandMist"></i> Mists & Sprays
-                </a>
                 
-                 <div class="pt-8">
+                <div class="pt-8">
                     <p class="text-[9px] uppercase tracking-[0.2em] text-gray-400 px-4 mb-4 font-bold">Business</p>
-                     <a href="customer-list.html" class="nav-link flex items-center px-4 py-3 text-[10px] tracking-widest uppercase font-semibold">
-                        <i class="fa-solid fa-bag-shopping mr-3 w-5 text-gray-400"></i> Membership
+                    <a href="#" class="nav-link active flex items-center px-4 py-3 text-[10px] tracking-widest uppercase font-semibold">
+                        <i class="fa-solid fa-users mr-3 w-5 text-brandPinkDark"></i> Membership
                     </a>
                     <a href="orderstats.html" class="nav-link flex items-center px-4 py-3 text-[10px] tracking-widest uppercase font-semibold">
                         <i class="fa-solid fa-bag-shopping mr-3 w-5 text-gray-400"></i> Orders
-                    </a>
-                    <a href="analytics.html" class="nav-link flex items-center px-4 py-3 text-[10px] tracking-widest uppercase font-semibold">
-                        <i class="fa-solid fa-chart-simple mr-3 w-5 text-gray-400"></i> Analytics
                     </a>
                 </div>
             </nav>
@@ -138,13 +137,15 @@
                                 <th class="p-6 text-[9px] uppercase tracking-widest font-bold text-gray-500">Member Profile</th>
                                 <th class="p-6 text-[9px] uppercase tracking-widest font-bold text-gray-500">Contact Details</th>
                                 <th class="p-6 text-[9px] uppercase tracking-widest font-bold text-gray-500">Location</th>
-                                <th class="p-6 text-[9px] uppercase tracking-widest font-bold text-gray-500">Registration</th>
+                                <th class="p-6 text-[9px] uppercase tracking-widest font-bold text-gray-500">Joined</th>
                                 <th class="p-6 text-[9px] uppercase tracking-widest font-bold text-gray-500 text-right">Actions</th>
                             </tr>
                         </thead>
-                        <tbody id="user-list-body" class="divide-y divide-gray-100">
+                        <tbody id="user-list-body" class="divide-y divide-gray-100 text-sm">
                             <tr>
-                                <td colspan="5" class="p-10 text-center text-[10px] uppercase tracking-widest text-gray-400">Synchronizing database...</td>
+                                <td colspan="5" class="p-10 text-center text-[10px] uppercase tracking-widest text-gray-400">
+                                    <i class="fa-solid fa-circle-notch animate-spin mr-2"></i> Synchronizing database...
+                                </td>
                             </tr>
                         </tbody>
                     </table>
@@ -158,13 +159,14 @@
         const token = localStorage.getItem('tmb_admin_token');
 
         function toggleSidebar() {
-            document.getElementById('sidebar').classList.toggle('-translate-x-full');
-            document.getElementById('overlay').classList.toggle('active');
+            document.body.classList.toggle('sidebar-active');
         }
 
         function logout() {
-            localStorage.removeItem('tmb_admin_token');
-            window.location.href = 'tmbadmin-login.html';
+            if(confirm("Sign out of TMB System?")) {
+                localStorage.removeItem('tmb_admin_token');
+                window.location.href = 'tmbadmin-login.html';
+            }
         }
 
         async function fetchUsers() {
@@ -191,42 +193,68 @@
                 return;
             }
 
-            container.innerHTML = users.map(user => `
+            container.innerHTML = users.map(user => {
+                // Formatting Address
+                let displayAddress = "No Address Provided";
+                let subLocale = "-";
+                
+                if (user.address && typeof user.address === 'object') {
+                    displayAddress = user.address.street || "No street";
+                    subLocale = `${user.address.city || ''}, ${user.address.state || ''}`.trim().replace(/^,/, '');
+                } else if (user.address) {
+                    displayAddress = user.address;
+                    subLocale = `${user.city || ''}, ${user.state || ''}`.trim().replace(/^,/, '');
+                }
+
+                // WhatsApp Link for concierge service
+                const phoneClean = (user.whatsapp || user.phone || "").replace(/\D/g, '');
+                const waLink = phoneClean ? `https://wa.me/${phoneClean}?text=${encodeURIComponent("Hello " + (user.name || 'Customer') + ", this is The Motunde Brand concierge. We are checking in to see if you're enjoying your recent fragrance selection!")}` : "#";
+
+                return `
                 <tr class="hover:bg-gray-50 transition">
                     <td class="p-6" data-label="Member Profile">
-                        <div class="flex flex-col">
-                            <span class="text-xs font-bold uppercase tracking-wide">${user.name || 'User'}</span>
-                            <span class="text-[10px] text-gray-400 lowercase tracking-normal">${user.email}</span>
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-[10px] font-bold text-gray-400 border">
+                                ${(user.name || 'U').charAt(0).toUpperCase()}
+                            </div>
+                            <div class="flex flex-col">
+                                <span class="text-xs font-bold uppercase tracking-wide">${user.name || 'Anonymous User'}</span>
+                                <span class="text-[10px] text-gray-400 lowercase tracking-normal">${user.email}</span>
+                            </div>
                         </div>
                     </td>
                     <td class="p-6" data-label="Contact">
-                        <div class="flex flex-col text-[10px] uppercase">
-                            <span><i class="fa-solid fa-phone mr-2 text-gray-300"></i>${user.phone || 'N/A'}</span>
-                            <span class="text-brandPinkDark"><i class="fa-brands fa-whatsapp mr-2"></i>${user.whatsapp || 'N/A'}</span>
+                        <div class="flex flex-col text-[10px] uppercase gap-1">
+                            <span class="flex items-center"><i class="fa-solid fa-phone mr-2 text-gray-300 w-3"></i>${user.phone || 'N/A'}</span>
+                            ${phoneClean ? `
+                                <a href="${waLink}" target="_blank" class="text-brandPinkDark flex items-center hover:underline">
+                                    <i class="fa-brands fa-whatsapp mr-2 w-3"></i>${user.whatsapp || user.phone}
+                                </a>
+                            ` : '<span class="text-gray-400 italic">No WhatsApp</span>'}
                         </div>
                     </td>
                     <td class="p-6" data-label="Location">
                         <div class="flex flex-col max-w-[200px]">
-                            <span class="text-[9px] uppercase tracking-wider text-gray-900 font-bold leading-tight mb-1">
-                                ${user.address || 'No Address Provided'}
+                            <span class="text-[9px] uppercase tracking-wider text-gray-900 font-bold leading-tight mb-1 truncate">
+                                ${displayAddress}
                             </span>
                             <span class="text-[8px] uppercase tracking-widest text-gray-400">
-                                ${user.city || '-'}, ${user.state || '-'}
+                                ${subLocale || '-'}
                             </span>
                         </div>
                     </td>
-                    <td class="p-6" data-label="Registration">
+                    <td class="p-6" data-label="Joined">
                         <span class="text-[10px] text-gray-400 uppercase font-medium">
-                            ${user.createdAt ? new Date(user.createdAt).toLocaleDateString('en-GB') : 'N/A'}
+                            ${user.createdAt ? new Date(user.createdAt).toLocaleDateString('en-GB') : 'Prior to Logs'}
                         </span>
                     </td>
-                    <td class="p-6 text-right" data-label="Actions">
+                    <td class="p-6 text-right space-x-2" data-label="Actions">
                         <button onclick="viewHistory('${user.email}')" class="text-[8px] uppercase tracking-widest border border-brandBlack px-3 py-2 hover:bg-brandBlack hover:text-white transition font-bold">
-                            View Orders
+                            View History
                         </button>
                     </td>
                 </tr>
-            `).join('');
+            `}).join('');
         }
 
         function filterUsers() {
@@ -235,19 +263,23 @@
             let tr = table.getElementsByTagName('tr');
 
             for (let i = 1; i < tr.length; i++) {
-                let text = tr[i].innerText.toUpperCase();
-                if (tr[i].parentNode.id === "user-list-body") {
-                    tr[i].style.display = text.indexOf(input) > -1 ? "" : "none";
+                let row = tr[i];
+                if (row.parentNode.id === "user-list-body") {
+                    let text = row.innerText.toUpperCase();
+                    row.style.display = text.indexOf(input) > -1 ? "" : "none";
                 }
             }
         }
 
         function viewHistory(email) {
-            // Redirect to orders page with email as a filter
-            window.location.href = `orders.html?search=${encodeURIComponent(email)}`;
+            // Redirect to orders page and auto-filter by this customer's email
+            window.location.href = `orderstats.html?search=${encodeURIComponent(email)}`;
         }
 
-        window.onload = fetchUsers;
+        window.onload = () => {
+            if(!token) window.location.href = 'tmbadmin-login.html';
+            fetchUsers();
+        };
     </script>
 </body>
 </html>
