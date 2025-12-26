@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kids Scents | TMB Management</title>
+    <title>Kids Scents | TMB Inventory</title>
     <link rel="icon" type="image/png" href="https://i.imgur.com/CVKXV7R.png">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -14,7 +14,7 @@
                     colors: {
                         brandWhite: '#FFFFFF',
                         brandBlack: '#000000',
-                        brandKidsDark: '#5BA4B5', // Soft Blue for Kids
+                        brandKidsDark: '#5BA4B5', 
                         brandKidsLight: '#E0F2F1',
                     }
                 }
@@ -26,12 +26,12 @@
         body { font-family: 'Inter', sans-serif; background-color: #FBFBFB; }
         .sidebar { transition: all 0.3s ease; }
         .nav-link:hover { background-color: #E0F2F1; color: #000; }
-        .active-link { background-color: #5BA4B5; color: #fff; }
-        .input-field { border: 1px solid #e5e7eb; padding: 10px; font-size: 12px; width: 100%; transition: border-color 0.2s; }
-        .input-field:focus { outline: none; border-color: #5BA4B5; }
+        .active-link { background-color: #5BA4B5; color: #fff !important; }
         .mobile-overlay { background: rgba(0,0,0,0.5); display: none; }
         .mobile-overlay.active { display: block; }
-        .truncate-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #5BA4B5; }
     </style>
 </head>
 <body class="text-brandBlack">
@@ -51,7 +51,7 @@
                 <a href="tmbdashboard.html"><h1 class="font-bold tracking-[0.3em] text-sm text-center hover:text-brandKidsDark transition">TMB SYSTEM</h1></a>
             </div>
 
-            <nav class="flex-1 px-4 py-8 space-y-1">
+            <nav class="flex-1 px-4 py-8 space-y-1 overflow-y-auto">
                 <p class="text-[9px] uppercase tracking-[0.2em] text-gray-400 px-4 mb-4 font-bold">Main</p>
                 <a href="tmbdashboard.html" class="nav-link flex items-center px-4 py-3 text-[10px] tracking-widest uppercase font-semibold transition-all">
                     <i class="fa-solid fa-gauge-high mr-3 w-5 text-gray-400"></i> Dashboard
@@ -68,15 +68,15 @@
                     <i class="fa-solid fa-spray-can mr-3 w-5 text-gray-400"></i> Mists & Sprays
                 </a>
                 <a href="kidscents.html" class="nav-link active-link flex items-center px-4 py-3 text-[10px] tracking-widest uppercase font-semibold transition-all">
-                    <i class="fa-solid fa-child mr-3 w-5 text-white"></i> Kids Scents
+                    <i class="fa-solid fa-child mr-3 w-5"></i> Kids Scents
                 </a>
-                
-                  <div class="pt-8">
+
+                <div class="pt-8">
                     <p class="text-[9px] uppercase tracking-[0.2em] text-gray-400 px-4 mb-4 font-bold">Business</p>
-                     <a href="customer-list.html" class="nav-link flex items-center px-4 py-3 text-[10px] tracking-widest uppercase font-semibold">
-                        <i class="fa-solid fa-bag-shopping mr-3 w-5 text-gray-400"></i>Membership
+                    <a href="customer-list.html" class="nav-link flex items-center px-4 py-3 text-[10px] tracking-widest uppercase font-semibold">
+                        <i class="fa-solid fa-users mr-3 w-5 text-gray-400"></i> Membership
                     </a>
-                     <a href="orderstats.html" class="nav-link flex items-center px-4 py-3 text-[10px] tracking-widest uppercase font-semibold">
+                    <a href="orderstats.html" class="nav-link flex items-center px-4 py-3 text-[10px] tracking-widest uppercase font-semibold">
                         <i class="fa-solid fa-bag-shopping mr-3 w-5 text-gray-400"></i> Orders
                     </a>
                     <a href="analytics.html" class="nav-link flex items-center px-4 py-3 text-[10px] tracking-widest uppercase font-semibold">
@@ -92,117 +92,183 @@
             </div>
         </aside>
 
-        <main class="flex-1 min-h-screen p-4 lg:p-12">
-            <div class="max-w-full lg:max-w-[1400px]">
-                <div class="mb-8 lg:mb-12 text-center lg:text-left">
-                    <h2 class="text-xl lg:text-2xl font-light tracking-tight mb-1">Kids Scents Collection</h2>
-                    <p class="text-[8px] lg:text-[9px] uppercase tracking-[0.3em] text-brandKidsDark font-bold">Junior Fragrance Stock Control</p>
-                </div>
-
-                <div id="formContainer" class="bg-white border p-5 lg:p-8 mb-10">
-                    <div class="flex justify-between items-center mb-6 border-b pb-4">
-                        <h3 id="formTitle" class="text-[10px] uppercase tracking-[0.2em] font-bold">Add New Kid's Scent</h3>
-                        <button id="cancelEdit" onclick="resetForm()" class="hidden text-[10px] uppercase text-red-500 font-bold">Cancel Edit</button>
+        <main class="flex-1 min-h-screen p-6 lg:p-12">
+            <div class="max-w-6xl mx-auto">
+                <div class="flex justify-between items-center mb-12">
+                    <div>
+                        <h2 class="text-2xl font-light tracking-tight mb-1">Kids Collection</h2>
+                        <p class="text-[9px] uppercase tracking-[0.3em] text-brandKidsDark font-bold">Filtered: Kids Fragrances Only</p>
                     </div>
-                    
-                    <form id="addScentForm" class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <input type="hidden" id="editProductId">
-                        <div class="space-y-4">
-                            <div>
-                                <label class="text-[9px] uppercase font-bold text-gray-400 block mb-2">Fragrance Name</label>
-                                <input type="text" id="pName" placeholder="e.g. Bubblegum Blast" class="input-field" required>
-                            </div>
-
-                            <div class="border p-4 bg-gray-50 rounded-sm">
-                                <label class="text-[9px] uppercase font-bold text-brandKidsDark block mb-4">Variants (Size, Price & Stock)</label>
-                                <div id="variantsContainer" class="space-y-3 mb-4"></div>
-                                <button type="button" onclick="addVariantRow()" class="text-[9px] uppercase font-bold bg-white border border-brandKidsDark text-brandKidsDark px-3 py-2 hover:bg-brandKidsDark hover:text-white transition w-full">
-                                    <i class="fa-solid fa-plus mr-1"></i> Add Variant
-                                </button>
-                            </div>
-
-                            <div>
-                                <label class="text-[9px] uppercase font-bold text-gray-400 block mb-2">Description</label>
-                                <textarea id="pDesc" rows="3" placeholder="Notes for kids (sweet, fresh, fruity)..." class="input-field"></textarea>
-                            </div>
-                        </div>
-
-                        <div class="space-y-4">
-                            <label class="text-[9px] uppercase font-bold text-gray-400 block mb-2">Product Image</label>
-                            <div class="border-2 border-dashed border-gray-200 h-48 lg:h-64 flex flex-col items-center justify-center relative hover:border-brandKidsDark transition-colors">
-                                <input type="file" class="absolute inset-0 opacity-0 cursor-pointer" id="imageUpload" accept="image/*">
-                                <i class="fa-solid fa-child-reaching text-2xl text-gray-300 mb-2"></i>
-                                <p id="fileNameDisplay" class="text-[10px] text-gray-400 uppercase tracking-widest text-center px-4">Click to upload image</p>
-                            </div>
-                            <button type="submit" id="submitBtn" class="w-full bg-brandBlack text-white text-[10px] uppercase tracking-[0.2em] py-4 font-bold hover:bg-brandKidsDark transition-colors">
-                                Update Kids Collection
-                            </button>
-                        </div>
-                    </form>
                 </div>
 
-                <h3 class="text-[10px] uppercase tracking-[0.2em] font-bold mb-6">Current Junior Inventory</h3>
-                <div id="inventoryGrid" class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 lg:gap-6">
-                    <p class="text-[10px] uppercase tracking-widest text-gray-400 col-span-full text-center py-12">Loading collection...</p>
+                <div class="mb-12">
+                    <h3 class="text-[10px] uppercase tracking-widest font-bold text-gray-400 mb-4 flex items-center">
+                        <i class="fa-solid fa-cubes mr-2 text-brandKidsDark"></i> Current Kids Stock
+                    </h3>
+                    <div class="bg-white border shadow-sm overflow-hidden rounded-sm">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-gray-50 border-b text-[9px] uppercase tracking-widest font-bold text-gray-400">
+                                    <th class="px-8 py-4">Product Details</th>
+                                    <th class="px-8 py-4">Sizes & Quantities</th>
+                                    <th class="px-8 py-4">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="stock-list">
+                                <tr><td colspan="3" class="p-12 text-center text-xs uppercase tracking-widest text-gray-400 italic">Isolating kids inventory...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div>
+                    <h3 class="text-[10px] uppercase tracking-widest font-bold text-gray-400 mb-4 flex items-center">
+                        <i class="fa-solid fa-receipt mr-2 text-brandKidsDark"></i> Recent Kids Sales Movements
+                    </h3>
+                    <div class="bg-white border shadow-sm overflow-hidden rounded-sm">
+                        <div class="max-h-96 overflow-y-auto custom-scrollbar">
+                            <table class="w-full text-left border-collapse">
+                                <thead>
+                                    <tr class="bg-gray-50 border-b text-[9px] uppercase tracking-widest font-bold text-gray-400 sticky top-0 z-10">
+                                        <th class="px-8 py-4">Exact Time & Date</th>
+                                        <th class="px-8 py-4">Scent Name</th>
+                                        <th class="px-8 py-4">Deducted</th>
+                                        <th class="px-8 py-4 text-right">Value</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="sales-log" class="text-[11px]">
+                                    <tr><td colspan="4" class="p-12 text-center text-gray-400 uppercase tracking-widest italic">Filtering sales history...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
             </div>
         </main>
     </div>
 
-    <div id="customAlert" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-4">
-        <div class="fixed inset-0 bg-black/50 backdrop-blur-sm"></div>
-        <div class="bg-white w-full max-w-sm relative z-10 p-8 border border-gray-100 shadow-2xl text-center">
-            <div id="alertIcon" class="mb-4 text-brandKidsDark text-3xl">
-                <i class="fa-solid fa-circle-check"></i>
-            </div>
-            <h3 id="alertTitle" class="text-[10px] uppercase tracking-[0.2em] font-bold mb-2">System Notification</h3>
-            <p id="alertMessage" class="text-xs text-gray-500 mb-6 leading-relaxed"></p>
-            <button onclick="closeAlert()" class="w-full bg-brandBlack text-white text-[9px] uppercase tracking-widest py-3 font-bold hover:bg-brandKidsDark transition-colors">
-                Acknowledge
-            </button>
-        </div>
-    </div>
-
-    <div id="customConfirm" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-4">
-        <div class="fixed inset-0 bg-black/50 backdrop-blur-sm"></div>
-        <div class="bg-white w-full max-w-sm relative z-10 p-8 border border-gray-100 shadow-2xl text-center">
-            <div class="mb-4 text-red-400 text-3xl">
-                <i class="fa-solid fa-circle-exclamation"></i>
-            </div>
-            <h3 class="text-[10px] uppercase tracking-[0.2em] font-bold mb-2">Confirm Action</h3>
-            <p id="confirmMessage" class="text-xs text-gray-500 mb-6 leading-relaxed"></p>
-            <div class="flex gap-3">
-                <button onclick="closeConfirm(false)" class="flex-1 border border-gray-200 text-gray-400 text-[9px] uppercase tracking-widest py-3 font-bold hover:bg-gray-50 transition-colors">Cancel</button>
-                <button onclick="closeConfirm(true)" class="flex-1 bg-red-500 text-white text-[9px] uppercase tracking-widest py-3 font-bold hover:bg-red-600 transition-colors">Delete</button>
-            </div>
-        </div>
-    </div>
-
     <script>
-        const API_URL = '/api'; 
-        let globalProducts = [];
-        let confirmResolve;
+        const API_URL = '/api';
 
-        function showAlert(message, isError = false) {
-            const modal = document.getElementById('customAlert');
-            const msgPara = document.getElementById('alertMessage');
-            const icon = document.getElementById('alertIcon');
-            msgPara.innerText = message;
-            icon.innerHTML = isError ? '<i class="fa-solid fa-circle-xmark text-red-500"></i>' : '<i class="fa-solid fa-circle-check"></i>';
-            modal.classList.remove('hidden');
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('-translate-x-full');
+            document.getElementById('overlay').classList.toggle('active');
         }
 
-        function closeAlert() { document.getElementById('customAlert').classList.add('hidden'); }
+        async function fetchKidsInventory() {
+            try {
+                const res = await fetch(`${API_URL}/products`);
+                const products = await res.json();
+                
+                // STRICT FILTER: Only products with category 'kids'
+                const kidsScents = products.filter(p => (p.category || '').toLowerCase() === 'kids');
+                
+                const listContainer = document.getElementById('stock-list');
+                listContainer.innerHTML = '';
 
-        function showConfirm(message) {
-            document.getElementById('confirmMessage').innerText = message;
-            document.getElementById('customConfirm').classList.remove('hidden');
-            return new Promise((resolve) => { confirmResolve = resolve; });
+                if (kidsScents.length === 0) {
+                    listContainer.innerHTML = '<tr><td colspan="3" class="p-12 text-center text-xs text-gray-400 uppercase tracking-widest">No products found in Kids category</td></tr>';
+                } else {
+                    kidsScents.forEach(product => {
+                        const totalStock = (product.variants || []).reduce((sum, v) => sum + (parseInt(v.stock) || 0), 0);
+                        const variantsHtml = (product.variants || []).map(v => `
+                            <div class="flex justify-between items-center mb-1 border-b border-gray-100 pb-1 last:border-0 w-36">
+                                <span class="text-[10px] font-bold text-gray-500 uppercase">${v.size}</span>
+                                <span class="text-[11px] font-medium ${parseInt(v.stock) < 5 ? 'text-red-500 font-bold' : 'text-gray-700'}">
+                                    ${v.stock} pcs
+                                </span>
+                            </div>
+                        `).join('');
+
+                        listContainer.innerHTML += `
+                            <tr class="border-b hover:bg-gray-50 transition-colors">
+                                <td class="px-8 py-6">
+                                    <div class="flex items-center">
+                                        <img src="${product.imageUrl || 'https://via.placeholder.com/40'}" class="w-12 h-12 object-cover mr-6 border rounded-sm">
+                                        <div>
+                                            <p class="text-[11px] font-bold uppercase tracking-wider">${product.name}</p>
+                                            <p class="text-[9px] text-gray-400 uppercase tracking-widest mt-1">Total Junior Stock: ${totalStock}</p>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-8 py-6"><div class="inline-block">${variantsHtml}</div></td>
+                                <td class="px-8 py-6">
+                                    ${totalStock > 0 
+                                        ? `<span class="bg-brandKidsLight text-brandKidsDark text-[8px] font-bold px-3 py-1.5 uppercase tracking-widest border border-teal-100 rounded-sm">In Stock</span>`
+                                        : `<span class="bg-red-50 text-red-600 text-[8px] font-bold px-3 py-1.5 uppercase tracking-widest border border-red-100 rounded-sm">Out of Stock</span>`
+                                    }
+                                </td>
+                            </tr>`;
+                    });
+                }
+                
+                fetchSalesLog();
+
+            } catch (err) {
+                console.error("Fetch Error:", err);
+                document.getElementById('stock-list').innerHTML = '<tr><td colspan="3" class="p-12 text-center text-xs text-red-400 uppercase tracking-widest">Database Sync Failed</td></tr>';
+            }
         }
 
-        function closeConfirm(result) {
-            document.getElementById('customConfirm').classList.add('hidden');
-            if (confirmResolve) confirmResolve(result);
+        async function fetchSalesLog() {
+            const token = localStorage.getItem('tmb_admin_token');
+            const logContainer = document.getElementById('sales-log');
+            
+            try {
+                const res = await fetch(`${API_URL}/admin/orders`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const orders = await res.json();
+                
+                let kidsSales = [];
+                orders.forEach(order => {
+                    // Only process successful stock deductions
+                    if (['completed', 'paid', 'shipped'].includes(order.status.toLowerCase())) {
+                        (order.items || []).forEach(item => {
+                            // STRICT FILTER: Check if the item itself is tagged as 'kids'
+                            // Note: This relies on your API including the category in order items.
+                            if ((item.category || '').toLowerCase() === 'kids') {
+                                kidsSales.push({
+                                    timestamp: order.createdAt,
+                                    name: item.name,
+                                    variant: item.variantName || item.size || 'N/A',
+                                    qty: item.quantity,
+                                    price: (item.price || 0) * (item.quantity || 0)
+                                });
+                            }
+                        });
+                    }
+                });
+
+                kidsSales.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+                if (kidsSales.length === 0) {
+                    logContainer.innerHTML = '<tr><td colspan="4" class="p-12 text-center text-gray-400 uppercase tracking-widest text-[9px]">No recent Kids category sales</td></tr>';
+                    return;
+                }
+
+                logContainer.innerHTML = kidsSales.map(sale => {
+                    const dt = new Date(sale.timestamp);
+                    return `
+                        <tr class="border-b hover:bg-gray-50 transition-colors">
+                            <td class="px-8 py-4">
+                                <span class="block font-bold text-gray-800">${dt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                                <span class="text-[9px] text-gray-400 uppercase">${dt.toLocaleDateString('en-GB')}</span>
+                            </td>
+                            <td class="px-8 py-4">
+                                <span class="block uppercase font-bold text-brandKidsDark">${sale.name}</span>
+                                <span class="text-[9px] text-gray-400 uppercase">Variant: ${sale.variant}</span>
+                            </td>
+                            <td class="px-8 py-4">
+                                <span class="font-mono bg-red-50 text-red-600 px-2 py-0.5 rounded-sm font-bold">-${sale.qty}</span>
+                            </td>
+                            <td class="px-8 py-4 text-right font-bold">₦${sale.price.toLocaleString()}</td>
+                        </tr>`;
+                }).join('');
+
+            } catch (err) {
+                logContainer.innerHTML = '<tr><td colspan="4" class="p-12 text-center text-red-400 uppercase tracking-widest text-[9px]">Log Sync Failed</td></tr>';
+            }
         }
 
         function logout() {
@@ -210,202 +276,7 @@
             window.location.href = 'tmbadmin-login.html';
         }
 
-        function addVariantRow(size = '', price = '', stock = '') {
-            const container = document.getElementById('variantsContainer');
-            const rowId = Date.now() + Math.random();
-            const html = `
-                <div class="variant-row border-b border-gray-100 pb-3" id="row-${rowId}">
-                    <div class="grid grid-cols-12 gap-2 mb-2">
-                        <div class="col-span-4">
-                            <input type="text" placeholder="Size" class="input-field v-size" value="${size}" required>
-                        </div>
-                        <div class="col-span-4">
-                            <input type="number" placeholder="Price" class="input-field v-price" value="${price}" required>
-                        </div>
-                        <div class="col-span-4">
-                            <input type="number" placeholder="Stock" class="input-field v-stock" value="${stock}" required>
-                        </div>
-                    </div>
-                    <div class="flex justify-end">
-                        <button type="button" onclick="removeVariantRow('row-${rowId}')" class="text-[8px] uppercase font-bold text-red-400">
-                            <i class="fa-solid fa-trash-can mr-1"></i> Remove
-                        </button>
-                    </div>
-                </div>
-            `;
-            container.insertAdjacentHTML('beforeend', html);
-        }
-
-        function removeVariantRow(id) {
-            const rows = document.querySelectorAll('.variant-row');
-            if(rows.length > 1) {
-                document.getElementById(id).remove();
-            } else {
-                showAlert("At least one variant is required.", true);
-            }
-        }
-
-        window.onload = () => { 
-            addVariantRow(); 
-            loadProducts(); 
-        };
-
-        async function loadProducts() {
-            try {
-                const response = await fetch(`${API_URL}/products`);
-                const products = await response.json();
-                // FILTER FOR KIDS CATEGORY
-                globalProducts = products.filter(p => p.category === 'kids');
-                const grid = document.getElementById('inventoryGrid');
-                
-                if (globalProducts.length === 0) {
-                    grid.innerHTML = '<p class="text-[10px] uppercase text-gray-400 col-span-full text-center py-12">No kids fragrances found.</p>';
-                    return;
-                }
-
-                grid.innerHTML = globalProducts.map(product => `
-                    <div class="bg-white border p-2 lg:p-4 group">
-                        <div class="aspect-square bg-gray-50 mb-3 overflow-hidden relative border border-gray-100">
-                            <img src="${product.imageUrl}" alt="${product.name}" class="w-full h-full object-cover">
-                        </div>
-                        <h4 class="text-[10px] lg:text-xs font-bold uppercase tracking-wider mb-2 truncate-2 h-8 leading-tight">${product.name}</h4>
-                        
-                        <div class="space-y-1 mb-3">
-                            ${(product.variants || []).map(v => {
-                                const stockStatus = Number(v.stock) <= 0 ? 'text-red-500 font-bold' : 'text-gray-400';
-                                return `
-                                <div class="text-[9px] border-b border-gray-50 pb-1">
-                                    <div class="flex justify-between mb-0.5">
-                                        <span class="text-gray-500 uppercase">${v.size}</span>
-                                        <span class="font-bold">₦${Number(v.price).toLocaleString()}</span>
-                                    </div>
-                                    <div class="text-right">
-                                        <span class="${stockStatus}">${v.stock || 0} IN STOCK</span>
-                                    </div>
-                                </div>
-                                `;
-                            }).join('')}
-                        </div>
-                        
-                        <div class="flex flex-col gap-2 border-t pt-3">
-                            <button onclick="editProduct('${product._id}')" class="text-[8px] uppercase tracking-widest text-brandKidsDark hover:underline font-bold text-center">Edit Details</button>
-                            <button onclick="deleteProduct('${product._id}')" class="text-[8px] uppercase tracking-widest text-red-400 hover:text-red-700 font-bold transition text-center">Delete Item</button>
-                        </div>
-                    </div>
-                `).join('');
-            } catch (err) { console.error(err); }
-        }
-
-        function editProduct(id) {
-            const product = globalProducts.find(p => p._id === id);
-            if (!product) return;
-            document.getElementById('editProductId').value = product._id;
-            document.getElementById('pName').value = product.name;
-            document.getElementById('pDesc').value = product.description || '';
-            document.getElementById('variantsContainer').innerHTML = '';
-            product.variants.forEach(v => addVariantRow(v.size, v.price, v.stock));
-            document.getElementById('formTitle').innerText = "Edit Kid's Scent: " + product.name;
-            document.getElementById('submitBtn').innerText = "Save Changes";
-            document.getElementById('cancelEdit').classList.remove('hidden');
-            document.getElementById('imageUpload').required = false;
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-
-        function resetForm() {
-            document.getElementById('addScentForm').reset();
-            document.getElementById('editProductId').value = '';
-            document.getElementById('variantsContainer').innerHTML = '';
-            addVariantRow();
-            document.getElementById('formTitle').innerText = "Add New Kid's Scent";
-            document.getElementById('submitBtn').innerText = "Update Kids Collection";
-            document.getElementById('cancelEdit').classList.add('hidden');
-            document.getElementById('imageUpload').required = true;
-            document.getElementById('fileNameDisplay').innerText = "Click to upload image";
-        }
-
-        document.getElementById('addScentForm').onsubmit = async (e) => {
-            e.preventDefault();
-            const editId = document.getElementById('editProductId').value;
-            const submitBtn = document.getElementById('submitBtn');
-            const file = document.getElementById('imageUpload').files[0];
-            const token = localStorage.getItem('tmb_admin_token');
-
-            const rows = document.querySelectorAll('.variant-row');
-            const variants = Array.from(rows).map(row => ({
-                size: row.querySelector('.v-size').value,
-                price: row.querySelector('.v-price').value,
-                stock: row.querySelector('.v-stock').value
-            }));
-
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> PROCESSING...';
-
-            let imageBase64 = null;
-            if (file) {
-                const reader = new FileReader();
-                imageBase64 = await new Promise(resolve => {
-                    reader.onload = () => resolve(reader.result.split(',')[1]);
-                    reader.readAsDataURL(file);
-                });
-            }
-
-            const payload = {
-                name: document.getElementById('pName').value,
-                description: document.getElementById('pDesc').value,
-                category: 'kids', // SETTING CATEGORY TO KIDS
-                variants: variants,
-                ...(imageBase64 && { imageBase64, fileName: file.name, contentType: file.type })
-            };
-
-            const url = editId ? `${API_URL}/admin/products/${editId}` : `${API_URL}/admin/products`;
-            const method = editId ? 'PUT' : 'POST';
-
-            try {
-                const response = await fetch(url, {
-                    method: method,
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify(payload)
-                });
-
-                if (response.ok) {
-                    showAlert(editId ? "Inventory updated." : "New kids scent added.");
-                    setTimeout(() => location.reload(), 1500);
-                } else {
-                    const errData = await response.json();
-                    showAlert(errData.error || "Update failed.", true);
-                }
-            } catch (err) { showAlert("Server error.", true); }
-            finally { submitBtn.disabled = false; submitBtn.innerText = "Update Kids Collection"; }
-        };
-
-        function toggleSidebar() {
-            document.getElementById('sidebar').classList.toggle('-translate-x-full');
-            document.getElementById('overlay').classList.toggle('active');
-        }
-        
-        document.getElementById('imageUpload').onchange = function() {
-            const name = this.files[0]?.name || "Click to upload image";
-            document.getElementById('fileNameDisplay').innerText = name;
-        };
-
-        async function deleteProduct(id) {
-            const confirmed = await showConfirm("Permanently remove this scent?");
-            if(!confirmed) return;
-            const token = localStorage.getItem('tmb_admin_token');
-            try {
-                const res = await fetch(`${API_URL}/admin/products/${id}`, {
-                    method: 'DELETE',
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                if(res.ok) {
-                    showAlert("Deleted.");
-                    setTimeout(() => location.reload(), 1000);
-                }
-            } catch (err) { showAlert("Error deleting.", true); }
-        }
+        window.onload = fetchKidsInventory;
     </script>
 </body>
 </html>

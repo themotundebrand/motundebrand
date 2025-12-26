@@ -14,8 +14,8 @@
                     colors: {
                         brandWhite: '#FFFFFF',
                         brandBlack: '#000000',
-                        brandPinkDark: '#D48A96',
-                        brandPinkLight: '#F7C8D0',
+                        brandGold: '#C5A059',
+                        brandGray: '#4A4A4A',
                     }
                 }
             }
@@ -25,10 +25,8 @@
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700&display=swap');
         body { font-family: 'Inter', sans-serif; background-color: #FBFBFB; }
         .sidebar { transition: all 0.3s ease; }
-        .nav-link:hover { background-color: #F7C8D0; color: #000; }
-        .active-link { background-color: #F7C8D0; color: #000; }
-        .mobile-overlay { background: rgba(0,0,0,0.5); display: none; }
-        .mobile-overlay.active { display: block; }
+        .nav-link:hover { background-color: #f3f4f6; color: #000; }
+        .active-link { background-color: #000000; color: #fff !important; }
         .custom-scrollbar::-webkit-scrollbar { width: 4px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #000000; }
@@ -44,11 +42,11 @@
     </div>
 
     <div class="flex">
-        <div id="overlay" onclick="toggleSidebar()" class="mobile-overlay fixed inset-0 z-40 lg:hidden"></div>
+        <div id="overlay" onclick="toggleSidebar()" class="fixed inset-0 z-40 lg:hidden bg-black/50 hidden transition-opacity"></div>
         
         <aside id="sidebar" class="sidebar fixed lg:static inset-y-0 left-0 z-50 w-64 bg-white border-r transform -translate-x-full lg:translate-x-0 h-screen flex flex-col">
             <div class="p-8 border-b">
-                <a href="tmbdashboard.html"><h1 class="font-bold tracking-[0.3em] text-sm text-center hover:text-brandPinkDark transition">TMB SYSTEM</h1></a>
+                <a href="tmbdashboard.html"><h1 class="font-bold tracking-[0.3em] text-sm text-center hover:text-brandGold transition">TMB SYSTEM</h1></a>
             </div>
 
             <nav class="flex-1 px-4 py-8 space-y-1 overflow-y-auto">
@@ -62,7 +60,7 @@
                     <i class="fa-solid fa-venus mr-3 w-5 text-gray-400"></i> Women Scents
                 </a>
                 <a href="menscents.html" class="nav-link active-link flex items-center px-4 py-3 text-[10px] tracking-widest uppercase font-semibold transition-all">
-                    <i class="fa-solid fa-mars mr-3 w-5 text-brandBlack"></i> Men Scents
+                    <i class="fa-solid fa-mars mr-3 w-5"></i> Men Scents
                 </a>
                 <a href="bodymistspray.html" class="nav-link flex items-center px-4 py-3 text-[10px] tracking-widest uppercase font-semibold transition-all">
                     <i class="fa-solid fa-spray-can mr-3 w-5 text-gray-400"></i> Mists & Sprays
@@ -97,25 +95,28 @@
                 <div class="flex justify-between items-center mb-12">
                     <div>
                         <h2 class="text-2xl font-light tracking-tight mb-1">Men's Collection</h2>
-                        <p class="text-[9px] uppercase tracking-[0.3em] text-gray-500 font-bold">Live Inventory Deductions</p>
+                        <p class="text-[9px] uppercase tracking-[0.3em] text-gray-400 font-bold">Strictly Men's Fragrance Inventory</p>
+                    </div>
+                    <div class="text-right">
+                        <span id="men-count" class="text-[10px] font-bold bg-gray-100 px-3 py-1 uppercase tracking-widest">0 Products</span>
                     </div>
                 </div>
 
                 <div class="mb-12">
                     <h3 class="text-[10px] uppercase tracking-widest font-bold text-gray-400 mb-4 flex items-center">
-                        <i class="fa-solid fa-box mr-2"></i> Current Inventory Status
+                        <i class="fa-solid fa-box-open mr-2 text-black"></i> Live Men's Stock
                     </h3>
                     <div class="bg-white border shadow-sm overflow-hidden rounded-sm">
                         <table class="w-full text-left border-collapse">
                             <thead>
                                 <tr class="bg-gray-50 border-b text-[9px] uppercase tracking-widest font-bold text-gray-400">
-                                    <th class="px-8 py-4">Product Details</th>
-                                    <th class="px-8 py-4">Sizing & Stock</th>
+                                    <th class="px-8 py-4">Product</th>
+                                    <th class="px-8 py-4">Inventory Breakdown</th>
                                     <th class="px-8 py-4">Status</th>
                                 </tr>
                             </thead>
                             <tbody id="stock-list">
-                                <tr><td colspan="3" class="p-12 text-center text-xs uppercase tracking-widest text-gray-400">Syncing database...</td></tr>
+                                <tr><td colspan="3" class="p-12 text-center text-xs uppercase tracking-widest text-gray-400 italic">Filtering men's products...</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -123,21 +124,21 @@
 
                 <div>
                     <h3 class="text-[10px] uppercase tracking-widest font-bold text-gray-400 mb-4 flex items-center">
-                        <i class="fa-solid fa-history mr-2"></i> Recent Sales & Deductions
+                        <i class="fa-solid fa-arrow-down-long mr-2 text-red-500"></i> Men's Category Deductions
                     </h3>
                     <div class="bg-white border shadow-sm overflow-hidden rounded-sm">
                         <div class="max-h-96 overflow-y-auto custom-scrollbar">
                             <table class="w-full text-left border-collapse">
-                                <thead>
+                                <thead class="sticky top-0 z-10">
                                     <tr class="bg-gray-50 border-b text-[9px] uppercase tracking-widest font-bold text-gray-400">
-                                        <th class="px-8 py-4">Time & Date</th>
-                                        <th class="px-8 py-4">Item Details</th>
-                                        <th class="px-8 py-4">Movement</th>
+                                        <th class="px-8 py-4">Timestamp</th>
+                                        <th class="px-8 py-4">Product Unit</th>
+                                        <th class="px-8 py-4">Deduction</th>
                                         <th class="px-8 py-4 text-right">Value</th>
                                     </tr>
                                 </thead>
                                 <tbody id="sales-log" class="text-[11px]">
-                                    <tr><td colspan="4" class="p-12 text-center text-gray-400 uppercase tracking-widest">Loading sales history...</td></tr>
+                                    <tr><td colspan="4" class="p-12 text-center text-gray-400 uppercase tracking-widest italic">Scanning logs...</td></tr>
                                 </tbody>
                             </table>
                         </div>
@@ -152,56 +153,54 @@
 
         function toggleSidebar() {
             document.getElementById('sidebar').classList.toggle('-translate-x-full');
-            document.getElementById('overlay').classList.toggle('active');
+            document.getElementById('overlay').classList.toggle('hidden');
         }
 
         async function fetchMenInventory() {
             try {
                 const res = await fetch(`${API_URL}/products`);
                 const products = await res.json();
+                
+                // STRICT FILTER: Only "men" category
                 const menScents = products.filter(p => (p.category || '').toLowerCase() === 'men');
                 
+                document.getElementById('men-count').innerText = `${menScents.length} Products Found`;
                 const listContainer = document.getElementById('stock-list');
                 listContainer.innerHTML = '';
 
                 if (menScents.length === 0) {
-                    listContainer.innerHTML = '<tr><td colspan="3" class="p-12 text-center text-xs text-gray-400 uppercase tracking-widest">No Men category products found</td></tr>';
+                    listContainer.innerHTML = '<tr><td colspan="3" class="p-12 text-center text-xs text-gray-400 uppercase tracking-widest">No products in the Men category found</td></tr>';
                 } else {
                     menScents.forEach(product => {
+                        const totalStock = (product.variants || []).reduce((sum, v) => sum + (parseInt(v.stock) || 0), 0);
                         const variantsHtml = (product.variants || []).map(v => `
-                            <div class="flex justify-between items-center mb-1 border-b border-gray-100 pb-1 last:border-0 w-40">
+                            <div class="flex justify-between items-center mb-1 border-b border-gray-50 pb-1 last:border-0 w-44">
                                 <span class="text-[10px] font-bold text-gray-400 uppercase tracking-tighter">${v.size}</span>
                                 <span class="text-[11px] font-medium ${parseInt(v.stock) < 5 ? 'text-red-500 font-bold' : 'text-gray-900'}">
-                                    ${v.stock} units
+                                    ${v.stock} pcs
                                 </span>
                             </div>
                         `).join('');
 
-                        const totalStock = (product.variants || []).reduce((sum, v) => sum + (parseInt(v.stock) || 0), 0);
-
-                        const row = `
+                        listContainer.innerHTML += `
                             <tr class="border-b hover:bg-gray-50 transition-colors">
                                 <td class="px-8 py-6">
                                     <div class="flex items-center">
-                                        <img src="${product.imageUrl || 'https://via.placeholder.com/40'}" class="w-12 h-12 object-cover mr-6 border rounded-sm grayscale">
+                                        <img src="${product.imageUrl || 'https://via.placeholder.com/40'}" class="w-12 h-12 object-cover mr-6 border rounded-sm">
                                         <div>
                                             <p class="text-[11px] font-bold uppercase tracking-wider">${product.name}</p>
-                                            <p class="text-[9px] text-gray-400 uppercase tracking-widest mt-1">Remaining Inventory: ${totalStock}</p>
+                                            <p class="text-[9px] text-gray-400 uppercase tracking-widest mt-1">Total Unit: ${totalStock}</p>
                                         </div>
                                     </div>
                                 </td>
-                                <td class="px-8 py-6">
-                                    <div class="inline-block">${variantsHtml}</div>
-                                </td>
+                                <td class="px-8 py-6"><div class="inline-block">${variantsHtml}</div></td>
                                 <td class="px-8 py-6">
                                     ${totalStock > 0 
-                                        ? `<span class="bg-gray-900 text-white text-[8px] font-bold px-3 py-1.5 uppercase tracking-widest rounded-sm">Active</span>`
-                                        : `<span class="bg-red-50 text-red-600 text-[8px] font-bold px-3 py-1.5 uppercase tracking-widest border border-red-100 rounded-sm">Sold Out</span>`
+                                        ? `<span class="bg-brandBlack text-white text-[8px] font-bold px-3 py-1.5 uppercase tracking-widest rounded-sm">Available</span>`
+                                        : `<span class="bg-red-50 text-red-600 text-[8px] font-bold px-3 py-1.5 uppercase tracking-widest border border-red-100 rounded-sm">Restock Required</span>`
                                     }
                                 </td>
-                            </tr>
-                        `;
-                        listContainer.innerHTML += row;
+                            </tr>`;
                     });
                 }
                 
@@ -225,18 +224,19 @@
                 
                 let menSales = [];
                 orders.forEach(order => {
-                    // Only count successful deductions
-                    if (['completed', 'paid', 'shipped'].includes(order.status)) {
+                    // Only track confirmed deductions from COMPLETED or PAID orders
+                    if (['completed', 'paid', 'shipped'].includes(order.status.toLowerCase())) {
                         (order.items || []).forEach(item => {
-                            // Note: In a production environment, you'd filter by item.category === 'men'
-                            // if the order items store that info.
-                            menSales.push({
-                                date: order.createdAt,
-                                name: item.name,
-                                variant: item.variantName || item.size || 'N/A',
-                                qty: item.quantity,
-                                price: (item.price || 0) * (item.quantity || 0)
-                            });
+                            // STRICT FILTER: Only items belonging to Men's category
+                            if ((item.category || '').toLowerCase() === 'men') {
+                                menSales.push({
+                                    date: order.createdAt,
+                                    name: item.name,
+                                    variant: item.variantName || item.size || 'N/A',
+                                    qty: item.quantity,
+                                    price: (item.price || 0) * (item.quantity || 0)
+                                });
+                            }
                         });
                     }
                 });
@@ -244,33 +244,29 @@
                 menSales.sort((a, b) => new Date(b.date) - new Date(a.date));
 
                 if (menSales.length === 0) {
-                    logContainer.innerHTML = '<tr><td colspan="4" class="p-12 text-center text-gray-400 uppercase tracking-widest text-[9px]">No recent stock movements</td></tr>';
+                    logContainer.innerHTML = '<tr><td colspan="4" class="p-12 text-center text-gray-400 uppercase tracking-widest text-[9px]">No recent Men\'s stock movement</td></tr>';
                     return;
                 }
 
                 logContainer.innerHTML = menSales.map(sale => {
                     const d = new Date(sale.date);
-                    const timeStr = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                    const dateStr = d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
-
                     return `
                         <tr class="border-b hover:bg-gray-50">
                             <td class="px-8 py-4">
-                                <span class="block font-bold">${timeStr}</span>
-                                <span class="text-[9px] text-gray-400 uppercase tracking-tighter">${dateStr}</span>
+                                <span class="block font-bold">${d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                                <span class="text-[9px] text-gray-400 uppercase">${d.toLocaleDateString('en-GB')}</span>
                             </td>
                             <td class="px-8 py-4">
                                 <span class="block uppercase font-bold text-gray-900">${sale.name}</span>
-                                <span class="text-[9px] text-gray-400 uppercase">Variant: ${sale.variant}</span>
+                                <span class="text-[9px] text-gray-400 uppercase">Size: ${sale.variant}</span>
                             </td>
                             <td class="px-8 py-4 font-mono text-red-600 font-bold">-${sale.qty}</td>
                             <td class="px-8 py-4 text-right font-bold">₦${sale.price.toLocaleString()}</td>
-                        </tr>
-                    `;
+                        </tr>`;
                 }).join('');
 
             } catch (err) {
-                logContainer.innerHTML = '<tr><td colspan="4" class="p-12 text-center text-red-400 uppercase tracking-widest text-[9px]">Failed to sync sales history</td></tr>';
+                logContainer.innerHTML = '<tr><td colspan="4" class="p-12 text-center text-red-400 uppercase tracking-widest text-[9px]">Failed to sync Men\'s logs</td></tr>';
             }
         }
 
