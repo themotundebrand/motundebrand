@@ -876,58 +876,60 @@ router.post('/login', async (req, res) => {
 
 // GET LOGGED-IN USER'S ORDERS
 router.get('/orders/my-orders', async (req, res) => {
-    console.log("LOG: Function triggered for /my-orders");
-    
+    // 1. IMMEDIATE LOG - If you don't see this, the request isn't hitting this code
+    console.log("!!! ATTENTION: Order Route Hit !!!");
+
     try {
         const authHeader = req.headers['authorization'];
         const token = authHeader && authHeader.split(' ')[1];
 
         if (!token) {
-            console.log("LOG: No token found in headers");
-            return res.status(401).json({ error: "Unauthorized" });
+            console.log("FAIL: No Token");
+            return res.status(401).json({ error: "No token provided" });
         }
 
-        // Check if JWT_SECRET is actually loaded
-        if (!process.env.JWT_SECRET) {
-            console.error("LOG ERROR: JWT_SECRET is missing from Environment Variables");
-            return res.status(500).json({ error: "Server Configuration Error" });
-        }
-
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        console.log("LOG: Token verified for user ID:", decoded.id);
-
-        console.log("LOG: Attempting Database Connection...");
-        const db = await getDb(); 
-        console.log("LOG: Database Connected Successfully");
-
-        // Convert string ID to MongoDB ObjectId
-        let userSearchId;
+        // 2. VERIFY JWT
+        let decoded;
         try {
-            userSearchId = new ObjectId(decoded.id);
-        } catch (idErr) {
-            console.error("LOG ERROR: Invalid ObjectId format:", decoded.id);
-            return res.status(400).json({ error: "Invalid ID format" });
+            decoded = jwt.verify(token, process.env.JWT_SECRET);
+            console.log("SUCCESS: Token valid for ID:", decoded.id);
+        } catch (jwtErr) {
+            console.log("FAIL: JWT Verify Error:", jwtErr.message);
+            return res.status(401).json({ error: "Invalid Session" });
         }
 
-        console.log("LOG: Querying 'orders' collection...");
+        // 3. DATABASE CONNECTION
+        console.log("START: Connecting to DB...");
+        const db = await getDb(); 
+        
+        if (!db) {
+            throw new Error("getDb() returned null or undefined");
+        }
+        console.log("SUCCESS: DB Connected");
+
+        // 4. OBJECTID CONVERSION
+        // Use the global ObjectId or pull it from the db object if necessary
+        const searchId = new ObjectId(decoded.id);
+
+        // 5. QUERY
         const orders = await db.collection("orders")
-            .find({ userId: userSearchId })
+            .find({ userId: searchId })
             .sort({ createdAt: -1 })
             .toArray();
 
-        console.log(`LOG: Success. Found ${orders.length} orders.`);
+        console.log("SUCCESS: Found Orders count:", orders.length);
         return res.json(orders);
 
-    } catch (e) {
-        console.error("--- CRITICAL BACKEND CRASH ---");
-        console.error("Error Name:", e.name);
-        console.error("Error Message:", e.message);
-        console.error("Stack Trace:", e.stack);
+    } catch (err) {
+        // THIS IS THE MOST IMPORTANT PART
+        console.error("!!! CRITICAL ROUTE ERROR !!!");
+        console.error("Message:", err.message);
+        console.error("Stack:", err.stack);
         
-        const status = e.name === 'JsonWebTokenError' ? 401 : 500;
-        return res.status(status).json({ 
-            error: "Failed to fetch orders", 
-            details: e.message 
+        return res.status(500).json({ 
+            error: "Internal Server Error", 
+            message: err.message,
+            debug_point: "Catch Block" 
         });
     }
 });
