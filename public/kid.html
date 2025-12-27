@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Men's Collection | The Motunde Brand</title>
+    <title>Kids Collection | The Motunde Brand</title>
     <link rel="icon" type="image/png" href="https://i.imgur.com/CVKXV7R.png">
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -23,15 +23,15 @@
     <style>
         html { scroll-behavior: smooth; }
         ::-webkit-scrollbar { width: 5px; }
-        ::-webkit-scrollbar-track { background: #f1f1f1; }
-        ::-webkit-scrollbar-thumb { background: #000000; }
+        ::-webkit-scrollbar-track { background: #fdfdfd; }
+        ::-webkit-scrollbar-thumb { background: #F7C8D0; }
         
         #sidebar { transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
         .sidebar-open { transform: translateX(0); }
         .sidebar-closed { transform: translateX(-100%); }
 
-        .product-card { transition: all 0.4s ease; border: 1px solid #f8f8f8; }
-        .product-card:hover { border-color: #000000; transform: translateY(-4px); }
+        .product-card { transition: all 0.4s ease; background: #fff; }
+        .product-card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(247, 200, 208, 0.2); }
         
         #custom-toast {
             transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
@@ -53,7 +53,7 @@
 </head>
 <body class="bg-white font-sans antialiased">
 
-    <a href="https://wa.me/2349025291629?text=Hi%20The%20Motunde%20Brand!%20I'm%20interested%20in%20the%20Men's%20Collection..." 
+    <a href="https://wa.me/2349025291629?text=Hi%20Motunde%20Brand!%20I'm%20asking%20about%20the%20Kids%20Collection..." 
        target="_blank" 
        class="fixed bottom-6 right-6 z-[150] bg-[#25D366] p-3.5 rounded-full shadow-2xl transition-transform hover:scale-110 whatsapp-pulse">
         <svg class="w-7 h-7 text-white" fill="currentColor" viewBox="0 0 24 24">
@@ -61,14 +61,15 @@
         </svg>
     </a>
 
-    <nav class="fixed w-full z-[150] bg-brandBlack px-4 md:px-8 py-4 flex justify-between items-center border-b border-white/10">
+    <nav class="fixed w-full z-[150] bg-brandBlack px-4 md:px-8 py-4 flex justify-between items-center border-b border-brandPink/10">
         <div class="flex items-center gap-4">
             <button onclick="toggleSidebar(true)" class="md:hidden text-brandPink">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 8h16M4 16h16" stroke-width="2"></path></svg>
             </button>
             <h1 class="text-brandPink text-xs md:text-lg font-black tracking-luxury uppercase cursor-pointer" onclick="window.location.href='index.html'">The Motunde Brand</h1>
         </div>
-              <div class="hidden md:flex space-x-8 text-[10px] tracking-widest uppercase text-white/90">
+        <div class="hidden md:flex space-x-8 text-[10px] tracking-widest uppercase text-white/80">
+            <a href="index.html" class="hover:text-brandPink transition">Home</a>
             <a href="shop.html" class="hover:text-brandPink transition">Shop</a>
             <a href="womens.html" class="hover:text-brandPink transition">Women</a>
             <a href="mens.html" class="hover:text-brandPink transition">Men</a>
@@ -93,52 +94,102 @@
         <button onclick="toggleSidebar(false)" class="self-end text-brandPink mb-10">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" stroke-width="2"></path></svg>
         </button>
-        <div class="flex flex-col space-y-6 text-[10px] tracking-[0.25em] uppercase text-brandPink/80">
+        <div class="flex flex-col space-y-6 text-[10px] tracking-widest uppercase text-brandPink/80">
             <a href="index.html">Home</a>
             <a href="shop.html">Shop</a>
             <a href="womens.html">Women</a>
-            <a href="mens.html" class="text-brandPink">Men</a>
-            <a href="orderhistory.html">Order History</a>
+            <a href="mens.html">Men</a>
+            <a href="kids.html" class="text-brandPink">Kids</a>
+            <a href="combo.html">Combo</a>
+            <a href="mist.html">Mist</a>
+            <a href="orderhistory.html">My Orders</a>
         </div>
     </aside>
 
-    <header class="pt-32 pb-16 bg-white text-center border-b border-gray-100">
-        <h2 class="text-3xl md:text-5xl font-black uppercase tracking-[0.4em] text-brandBlack">Men</h2>
-        <p class="text-[10px] uppercase tracking-[0.5em] text-gray-400 mt-4">Sophistication & Strength</p>
+    <header class="pt-32 pb-16 bg-[#fff9fa] text-center border-b border-brandPink/20">
+        <h2 class="text-3xl md:text-5xl font-black uppercase tracking-[0.3em] text-brandBlack">Kids Collection</h2>
+        <p class="text-[9px] md:text-[11px] uppercase tracking-[0.5em] text-brandPinkDark mt-5 font-bold">Little Luxuries, Big Style</p>
     </header>
 
-    <main class="max-w-7xl mx-auto px-4 md:px-12 py-16">
-        <div id="men-full-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-6 gap-y-12">
-            <div class="col-span-full py-20 text-center uppercase tracking-widest text-gray-300 text-[10px]">
-                Loading Men's Collection...
+    <main class="max-w-7xl mx-auto px-6 md:px-12 py-16">
+        <div id="kids-full-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 md:gap-12">
+            <div class="col-span-full py-20 text-center animate-pulse">
+                <p class="text-[10px] uppercase tracking-[0.4em] text-gray-300">Discovering magical styles...</p>
             </div>
         </div>
     </main>
 
     <div id="custom-toast" class="fixed bottom-10 left-1/2 -translate-x-1/2 z-[300] pointer-events-none">
-        <div class="bg-black text-brandPink px-8 py-4 shadow-2xl flex items-center gap-4">
-            <span id="toast-message" class="text-[10px] uppercase tracking-widest font-bold">Added to bag</span>
+        <div class="bg-brandBlack text-brandPink px-10 py-4 shadow-2xl rounded-full flex items-center border border-brandPink/20">
+            <span id="toast-message" class="text-[9px] uppercase tracking-widest font-black">Item Added</span>
         </div>
     </div>
 
-    <div id="product-modal" class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/95 opacity-0 invisible pointer-events-none transition-all duration-300">
-        <div class="bg-white w-full max-w-4xl relative flex flex-col md:flex-row">
-            <button onclick="closeModal()" class="absolute top-4 right-4 z-10 text-black">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" stroke-width="2"/></svg>
+    <div id="product-modal" class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/90 opacity-0 invisible pointer-events-none transition-all duration-300">
+        <div class="bg-white w-full max-w-4xl relative flex flex-col md:flex-row overflow-hidden rounded-sm">
+            <button onclick="closeModal()" class="absolute top-4 right-4 z-10 text-brandBlack hover:text-brandPink transition">
+                <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" stroke-width="2"/></svg>
             </button>
             <div class="w-full md:w-1/2 bg-gray-50">
                 <img id="modal-img" src="" class="w-full h-full object-cover">
             </div>
             <div class="w-full md:w-1/2 p-10 flex flex-col justify-center">
-                <h2 id="modal-name" class="text-2xl font-bold uppercase tracking-widest mb-4">Product</h2>
-                <p id="modal-price" class="text-xl mb-8">₦0</p>
-                <div id="modal-sizes" class="flex flex-wrap gap-2 mb-8"></div>
-                <button id="modal-add-btn" class="w-full bg-black text-white py-4 uppercase tracking-widest text-xs hover:bg-brandPink hover:text-black transition-all">Add to Bag</button>
+                <h2 id="modal-name" class="text-2xl font-black uppercase tracking-widest mb-4">Product Name</h2>
+                <p id="modal-price" class="text-xl text-brandPinkDark font-bold mb-8">₦0</p>
+                <div id="modal-sizes" class="flex flex-wrap gap-2 mb-10"></div>
+                <button id="modal-add-btn" class="w-full bg-brandBlack text-brandPink py-5 uppercase tracking-[0.3em] text-[10px] font-bold hover:bg-brandPink hover:text-brandBlack transition-all">Add to Bag</button>
             </div>
         </div>
     </div>
 
-   <footer class="bg-brandBlack pt-16 pb-10 px-6 md:px-12 border-t border-brandPink/5">
+    <section id="combo" class="mb-16 md:mb-24 px-4 md:px-12 relative">
+    <div class="flex justify-between items-end mb-6 md:mb-8">
+        <div>
+            <h2 class="text-brandBlack text-[13px] md:text-xl font-light uppercase tracking-[0.2em] md:tracking-[0.3em]">Combo Deals</h2>
+            <div class="w-8 md:w-12 h-[1px] bg-orange-400 mt-1 md:mt-2"></div>
+        </div>
+        <a href="combo.html" class="text-[8px] md:text-[9px] uppercase tracking-widest text-orange-400 flex items-center gap-1 md:gap-2 font-bold">
+            View All <svg class="w-2.5 h-2.5 md:w-3 md:h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M17 8l4 4m0 0l-4 4m4-4H3" stroke-width="2"/></svg>
+        </a>
+    </div>
+    <div id="combo-grid" class="collection-grid"></div>
+</section>
+
+    <section id="mist" class="mb-16 md:mb-24 px-4 md:px-12 relative">
+        <div class="flex justify-between items-end mb-6 md:mb-8">
+            <div>
+                <h2 class="text-brandBlack text-[13px] md:text-xl font-light uppercase tracking-[0.2em] md:tracking-[0.3em]">Mists & Sprays Collection</h2>
+                <div class="w-8 md:w-12 h-[1px] bg-brandPink mt-1 md:mt-2"></div>
+            </div>
+            <a href="mist.html" class="text-[8px] md:text-[9px] uppercase tracking-widest text-brandPinkDark flex items-center gap-1 md:gap-2 font-bold">
+                View All <svg class="w-2.5 h-2.5 md:w-3 md:h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M17 8l4 4m0 0l-4 4m4-4H3" stroke-width="2"/></svg>
+            </a>
+        </div>
+        <div id="mist-grid" class="collection-grid"></div>
+    </section>
+<section id="deodorant" class="mb-16 md:mb-24 px-4 md:px-12 relative">
+    <div class="flex justify-between items-end mb-6 md:mb-8">
+        <div>
+            <h2 class="text-brandBlack text-[13px] md:text-xl font-light uppercase tracking-[0.2em] md:tracking-[0.3em]">Deodorants & Antiperspirants</h2>
+            <div class="w-8 md:w-12 h-[1px] bg-brandPink mt-1 md:mt-2"></div>
+        </div>
+        <a href="deodorant.html" class="text-[8px] md:text-[9px] uppercase tracking-widest text-brandPinkDark flex items-center gap-1 md:gap-2 font-bold">
+            View All <svg class="w-2.5 h-2.5 md:w-3 md:h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M17 8l4 4m0 0l-4 4m4-4H3" stroke-width="2"/></svg>
+        </a>
+    </div>
+    <div id="deodorant-grid" class="collection-grid"></div>
+</section>
+
+</main>
+
+<div id="custom-toast" class="fixed bottom-10 left-1/2 -translate-x-1/2 z-[300] pointer-events-none">
+    <div class="bg-brandBlack text-brandPink px-8 py-4 shadow-2xl border border-brandPink/20 flex items-center gap-4">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7" stroke-width="2"/></svg>
+        <span id="toast-message" class="text-[10px] uppercase tracking-[0.2em] font-bold">Item added to bag</span>
+    </div>
+</div>
+
+<footer class="bg-brandBlack pt-16 pb-10 px-6 md:px-12 border-t border-brandPink/5">
     <div class="max-w-7xl mx-auto mb-16">
         <div class="grid grid-cols-1 md:grid-cols-4 gap-12">
             <div class="col-span-1">
@@ -206,6 +257,7 @@
             </div>
         </div>
     </div>
+
     <script>
         let currentProducts = [];
         let cart = JSON.parse(localStorage.getItem('tmb_cart')) || [];
@@ -213,7 +265,8 @@
         function toggleSidebar(open) {
             const sb = document.getElementById('sidebar');
             const ov = document.getElementById('sidebar-overlay');
-            sb.className = `fixed top-0 left-0 h-full w-64 bg-brandBlack z-[120] p-6 flex flex-col ${open ? 'sidebar-open' : 'sidebar-closed'}`;
+            sb.classList.toggle('sidebar-open', open);
+            sb.classList.toggle('sidebar-closed', !open);
             ov.classList.toggle('hidden', !open);
         }
 
@@ -229,53 +282,55 @@
         }
 
         function updateCartBadge() {
-            document.getElementById('cart-count').innerText = cart.reduce((a, b) => a + b.quantity, 0);
+            const count = cart.reduce((total, item) => total + item.quantity, 0);
+            document.getElementById('cart-count').innerText = count;
         }
 
-        async function loadMenProducts() {
+        async function loadKidsCollection() {
             try {
                 const res = await fetch('/api/products');
                 const data = await res.json();
-                // Filter for 'men' category
-                currentProducts = data.filter(p => p.category?.toLowerCase().trim() === 'men');
                 
-                const grid = document.getElementById('men-full-grid');
+                // Filter for 'kids' category
+                currentProducts = data.filter(p => p.category?.toLowerCase().trim() === 'kids');
+                
+                const grid = document.getElementById('kids-full-grid');
                 if (currentProducts.length === 0) {
-                    grid.innerHTML = `<div class="col-span-full py-20 text-center text-gray-400 uppercase tracking-widest">No products found.</div>`;
+                    grid.innerHTML = `<div class="col-span-full py-24 text-center text-gray-400 uppercase tracking-[0.3em] text-[10px]">The Kids Collection is coming soon...</div>`;
                     return;
                 }
 
                 grid.innerHTML = currentProducts.map(p => {
                     const variants = p.variants || [];
                     const inStock = variants.some(v => v.stock > 0);
-                    const price = variants[0]?.price || 0;
+                    const firstPrice = variants[0]?.price || 0;
 
                     return `
-                    <div class="product-card bg-white p-2 flex flex-col relative group">
-                        ${!inStock ? `<div class="absolute inset-0 z-10 bg-white/40 flex items-center justify-center font-bold text-[10px] uppercase">Sold Out</div>` : ''}
-                        <div onclick="openModal('${p._id}')" class="aspect-[3/4] overflow-hidden mb-4 bg-gray-50 cursor-pointer">
-                            <img src="${p.imageUrl}" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110">
+                    <div class="product-card flex flex-col group relative">
+                        ${!inStock ? `<div class="absolute inset-0 z-10 bg-white/50 flex items-center justify-center font-bold text-[9px] uppercase tracking-widest">Coming Back Soon</div>` : ''}
+                        <div onclick="openModal('${p._id}')" class="aspect-[1/1] overflow-hidden mb-5 bg-gray-50 cursor-pointer rounded-sm">
+                            <img src="${p.imageUrl}" class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110">
                         </div>
-                        <div class="text-center px-2 pb-4">
-                            <h3 class="uppercase font-bold text-[10px] tracking-widest mb-2 truncate">${p.name}</h3>
-                            <p id="price-${p._id}" class="text-gray-900 font-bold text-[11px] mb-4">₦${Number(price).toLocaleString()}</p>
+                        <div class="text-center px-1">
+                            <h3 class="uppercase font-black text-[9px] tracking-widest mb-2">${p.name}</h3>
+                            <p id="price-${p._id}" class="text-brandPinkDark font-bold text-[11px] mb-5">₦${Number(firstPrice).toLocaleString()}</p>
                             
-                            <select data-id="${p._id}" onchange="updatePrice(this, '${p._id}')" class="w-full border border-gray-200 text-[9px] uppercase py-2 px-2 mb-4 bg-white focus:outline-none">
+                            <select data-id="${p._id}" onchange="updatePrice(this, '${p._id}')" class="w-full border border-gray-100 text-[8px] uppercase py-3 px-2 mb-4 bg-white focus:outline-none focus:border-brandPink">
                                 ${variants.map(v => `<option value="${v.size}" data-price="${v.price}">${v.size}</option>`).join('')}
                             </select>
 
-                            <button onclick="addToBag('${p._id}')" ${!inStock ? 'disabled' : ''} class="w-full ${!inStock ? 'bg-gray-100 text-gray-400' : 'bg-black text-white'} text-[9px] py-3 uppercase tracking-[0.2em] hover:bg-brandPink hover:text-black transition-all">
-                                ${!inStock ? 'Unavailable' : 'Add to Bag'}
+                            <button onclick="addToBag('${p._id}')" ${!inStock ? 'disabled' : ''} class="w-full ${!inStock ? 'bg-gray-100 text-gray-300' : 'bg-brandBlack text-brandPink'} text-[9px] py-4 uppercase font-bold tracking-[0.2em] hover:bg-brandPink hover:text-brandBlack transition-all">
+                                ${!inStock ? 'Sold Out' : 'Add to Bag'}
                             </button>
                         </div>
                     </div>`;
                 }).join('');
-            } catch (err) { console.error(err); }
+            } catch (err) { console.error("Error loading kids collection:", err); }
         }
 
         function updatePrice(sel, id) {
-            const p = sel.options[sel.selectedIndex].dataset.price;
-            document.getElementById(`price-${id}`).innerText = `₦${Number(p).toLocaleString()}`;
+            const price = sel.options[sel.selectedIndex].dataset.price;
+            document.getElementById(`price-${id}`).innerText = `₦${Number(price).toLocaleString()}`;
         }
 
         function addToBag(id) {
@@ -292,7 +347,7 @@
 
             localStorage.setItem('tmb_cart', JSON.stringify(cart));
             updateCartBadge();
-            showNotification(`${p.name} added`);
+            showNotification(`${p.name} Added`);
         }
 
         function openModal(id) {
@@ -312,8 +367,10 @@
             document.body.style.overflow = '';
         }
 
-        loadMenProducts();
-        updateCartBadge();
+        window.onload = () => {
+            loadKidsCollection();
+            updateCartBadge();
+        };
     </script>
 </body>
 </html>

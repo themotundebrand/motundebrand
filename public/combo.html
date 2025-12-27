@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Men's Collection | The Motunde Brand</title>
+    <title>Combo Collections | The Motunde Brand</title>
     <link rel="icon" type="image/png" href="https://i.imgur.com/CVKXV7R.png">
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -14,6 +14,7 @@
                         brandBlack: '#000000',
                         brandPink: '#F7C8D0',
                         brandPinkDark: '#E2A9B3',
+                        brandOrange: '#EA580C'
                     },
                     letterSpacing: { luxury: '0.4em', refined: '0.15em' }
                 }
@@ -23,15 +24,15 @@
     <style>
         html { scroll-behavior: smooth; }
         ::-webkit-scrollbar { width: 5px; }
-        ::-webkit-scrollbar-track { background: #f1f1f1; }
-        ::-webkit-scrollbar-thumb { background: #000000; }
+        ::-webkit-scrollbar-track { background: #fdfdfd; }
+        ::-webkit-scrollbar-thumb { background: #000; }
         
         #sidebar { transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
         .sidebar-open { transform: translateX(0); }
         .sidebar-closed { transform: translateX(-100%); }
 
-        .product-card { transition: all 0.4s ease; border: 1px solid #f8f8f8; }
-        .product-card:hover { border-color: #000000; transform: translateY(-4px); }
+        .product-card { transition: all 0.4s ease; background: #fff; border: 1px solid #f9f9f9; }
+        .product-card:hover { border-color: #F7C8D0; transform: translateY(-5px); }
         
         #custom-toast {
             transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
@@ -53,7 +54,7 @@
 </head>
 <body class="bg-white font-sans antialiased">
 
-    <a href="https://wa.me/2349025291629?text=Hi%20The%20Motunde%20Brand!%20I'm%20interested%20in%20the%20Men's%20Collection..." 
+    <a href="https://wa.me/2349025291629?text=Hi%20Motunde%20Brand!%20I'm%20interested%20in%20your%20Combo%20Packages..." 
        target="_blank" 
        class="fixed bottom-6 right-6 z-[150] bg-[#25D366] p-3.5 rounded-full shadow-2xl transition-transform hover:scale-110 whatsapp-pulse">
         <svg class="w-7 h-7 text-white" fill="currentColor" viewBox="0 0 24 24">
@@ -68,7 +69,7 @@
             </button>
             <h1 class="text-brandPink text-xs md:text-lg font-black tracking-luxury uppercase cursor-pointer" onclick="window.location.href='index.html'">The Motunde Brand</h1>
         </div>
-              <div class="hidden md:flex space-x-8 text-[10px] tracking-widest uppercase text-white/90">
+        <div class="hidden md:flex space-x-8 text-[10px] tracking-widest uppercase text-white/80">
             <a href="shop.html" class="hover:text-brandPink transition">Shop</a>
             <a href="womens.html" class="hover:text-brandPink transition">Women</a>
             <a href="mens.html" class="hover:text-brandPink transition">Men</a>
@@ -93,52 +94,56 @@
         <button onclick="toggleSidebar(false)" class="self-end text-brandPink mb-10">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" stroke-width="2"></path></svg>
         </button>
-        <div class="flex flex-col space-y-6 text-[10px] tracking-[0.25em] uppercase text-brandPink/80">
+         <div class="flex flex-col space-y-6 text-[10px] tracking-[0.25em] uppercase text-brandPink/80">
             <a href="index.html">Home</a>
             <a href="shop.html">Shop</a>
-            <a href="womens.html">Women</a>
-            <a href="mens.html" class="text-brandPink">Men</a>
-            <a href="orderhistory.html">Order History</a>
-        </div>
+            <a href="womens.html" class="text-brandPink">Women</a>
+            <a href="mens.html">Men</a>
+            <a href="kids.html">Kids</a>
+            <a href="combo.html">Combo</a>
+            <a href="mist.html">Mist</a>
+            <div class="pt-6 border-t border-brandPink/10 mt-4">
+                <a href="account.html" class="opacity-50">My Account</a>
+            </div>
     </aside>
 
-    <header class="pt-32 pb-16 bg-white text-center border-b border-gray-100">
-        <h2 class="text-3xl md:text-5xl font-black uppercase tracking-[0.4em] text-brandBlack">Men</h2>
-        <p class="text-[10px] uppercase tracking-[0.5em] text-gray-400 mt-4">Sophistication & Strength</p>
+    <header class="pt-32 pb-16 bg-gray-50 text-center border-b border-gray-100 px-6">
+        <h2 class="text-3xl md:text-5xl font-black uppercase tracking-[0.3em] text-brandBlack">Combo Sets</h2>
+        <p class="text-[9px] md:text-[11px] uppercase tracking-[0.5em] text-gray-500 mt-5">Perfectly Paired Luxuries</p>
     </header>
 
-    <main class="max-w-7xl mx-auto px-4 md:px-12 py-16">
-        <div id="men-full-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-6 gap-y-12">
-            <div class="col-span-full py-20 text-center uppercase tracking-widest text-gray-300 text-[10px]">
-                Loading Men's Collection...
+    <main class="max-w-7xl mx-auto px-6 md:px-12 py-16">
+        <div id="combo-full-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 md:gap-12">
+            <div class="col-span-full py-24 text-center">
+                <p class="text-[10px] uppercase tracking-widest text-gray-300">Loading limited edition bundles...</p>
             </div>
         </div>
     </main>
 
     <div id="custom-toast" class="fixed bottom-10 left-1/2 -translate-x-1/2 z-[300] pointer-events-none">
-        <div class="bg-black text-brandPink px-8 py-4 shadow-2xl flex items-center gap-4">
-            <span id="toast-message" class="text-[10px] uppercase tracking-widest font-bold">Added to bag</span>
+        <div class="bg-brandBlack text-brandPink px-10 py-4 shadow-2xl flex items-center border border-brandPink/20">
+            <span id="toast-message" class="text-[9px] uppercase tracking-widest font-black">Added to bag</span>
         </div>
     </div>
 
     <div id="product-modal" class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/95 opacity-0 invisible pointer-events-none transition-all duration-300">
-        <div class="bg-white w-full max-w-4xl relative flex flex-col md:flex-row">
-            <button onclick="closeModal()" class="absolute top-4 right-4 z-10 text-black">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" stroke-width="2"/></svg>
+        <div class="bg-white w-full max-w-4xl relative flex flex-col md:flex-row overflow-hidden">
+            <button onclick="closeModal()" class="absolute top-4 right-4 z-10 text-brandBlack hover:text-brandPink transition">
+                <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" stroke-width="2"/></svg>
             </button>
-            <div class="w-full md:w-1/2 bg-gray-50">
+            <div class="w-full md:w-1/2 bg-gray-100">
                 <img id="modal-img" src="" class="w-full h-full object-cover">
             </div>
             <div class="w-full md:w-1/2 p-10 flex flex-col justify-center">
-                <h2 id="modal-name" class="text-2xl font-bold uppercase tracking-widest mb-4">Product</h2>
-                <p id="modal-price" class="text-xl mb-8">₦0</p>
-                <div id="modal-sizes" class="flex flex-wrap gap-2 mb-8"></div>
-                <button id="modal-add-btn" class="w-full bg-black text-white py-4 uppercase tracking-widest text-xs hover:bg-brandPink hover:text-black transition-all">Add to Bag</button>
+                <h2 id="modal-name" class="text-2xl font-black uppercase tracking-widest mb-4">Combo Set</h2>
+                <p id="modal-price" class="text-xl text-brandPinkDark font-bold mb-8">₦0</p>
+                <div id="modal-sizes" class="flex flex-wrap gap-2 mb-10"></div>
+                <button id="modal-add-btn" class="w-full bg-brandBlack text-brandPink py-5 uppercase tracking-[0.3em] text-[10px] font-bold hover:bg-brandPink hover:text-brandBlack transition-all">Add Bundle to Bag</button>
             </div>
         </div>
     </div>
 
-   <footer class="bg-brandBlack pt-16 pb-10 px-6 md:px-12 border-t border-brandPink/5">
+  <footer class="bg-brandBlack pt-16 pb-10 px-6 md:px-12 border-t border-brandPink/5">
     <div class="max-w-7xl mx-auto mb-16">
         <div class="grid grid-cols-1 md:grid-cols-4 gap-12">
             <div class="col-span-1">
@@ -206,6 +211,7 @@
             </div>
         </div>
     </div>
+
     <script>
         let currentProducts = [];
         let cart = JSON.parse(localStorage.getItem('tmb_cart')) || [];
@@ -213,8 +219,17 @@
         function toggleSidebar(open) {
             const sb = document.getElementById('sidebar');
             const ov = document.getElementById('sidebar-overlay');
-            sb.className = `fixed top-0 left-0 h-full w-64 bg-brandBlack z-[120] p-6 flex flex-col ${open ? 'sidebar-open' : 'sidebar-closed'}`;
+            sb.classList.toggle('sidebar-open', open);
+            sb.classList.toggle('sidebar-closed', !open);
             ov.classList.toggle('hidden', !open);
+        }
+
+        function toggleComboDetails(event, id) {
+            event.stopPropagation();
+            const el = document.getElementById(`details-${id}`);
+            const icon = document.getElementById(`icon-${id}`);
+            el.classList.toggle('hidden');
+            icon.style.transform = el.classList.contains('hidden') ? 'rotate(0deg)' : 'rotate(180deg)';
         }
 
         function handleAccountClick() {
@@ -229,53 +244,70 @@
         }
 
         function updateCartBadge() {
-            document.getElementById('cart-count').innerText = cart.reduce((a, b) => a + b.quantity, 0);
+            document.getElementById('cart-count').innerText = cart.reduce((total, item) => total + item.quantity, 0);
         }
 
-        async function loadMenProducts() {
+        async function loadComboCollection() {
             try {
                 const res = await fetch('/api/products');
                 const data = await res.json();
-                // Filter for 'men' category
-                currentProducts = data.filter(p => p.category?.toLowerCase().trim() === 'men');
                 
-                const grid = document.getElementById('men-full-grid');
+                // Filter for 'combo' category
+                currentProducts = data.filter(p => p.category?.toLowerCase().trim() === 'combo');
+                
+                const grid = document.getElementById('combo-full-grid');
                 if (currentProducts.length === 0) {
-                    grid.innerHTML = `<div class="col-span-full py-20 text-center text-gray-400 uppercase tracking-widest">No products found.</div>`;
+                    grid.innerHTML = `<div class="col-span-full py-24 text-center text-gray-400 uppercase tracking-widest text-[10px]">New Bundles Loading Soon...</div>`;
                     return;
                 }
 
                 grid.innerHTML = currentProducts.map(p => {
                     const variants = p.variants || [];
                     const inStock = variants.some(v => v.stock > 0);
-                    const price = variants[0]?.price || 0;
+                    const firstPrice = variants[0]?.price || 0;
+                    
+                    // Logic to parse package items from description (split by | or -)
+                    const items = p.description ? p.description.split(/[|\-]+/).map(i => i.trim()).filter(i => i !== "") : [];
 
                     return `
-                    <div class="product-card bg-white p-2 flex flex-col relative group">
-                        ${!inStock ? `<div class="absolute inset-0 z-10 bg-white/40 flex items-center justify-center font-bold text-[10px] uppercase">Sold Out</div>` : ''}
-                        <div onclick="openModal('${p._id}')" class="aspect-[3/4] overflow-hidden mb-4 bg-gray-50 cursor-pointer">
-                            <img src="${p.imageUrl}" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110">
+                    <div class="product-card flex flex-col group relative p-3">
+                        ${!inStock ? `<div class="absolute inset-0 z-10 bg-white/60 flex items-center justify-center font-bold text-[9px] uppercase">Sold Out</div>` : ''}
+                        <div onclick="openModal('${p._id}')" class="aspect-[4/5] overflow-hidden mb-5 bg-gray-50 cursor-pointer">
+                            <img src="${p.imageUrl}" class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105">
                         </div>
-                        <div class="text-center px-2 pb-4">
-                            <h3 class="uppercase font-bold text-[10px] tracking-widest mb-2 truncate">${p.name}</h3>
-                            <p id="price-${p._id}" class="text-gray-900 font-bold text-[11px] mb-4">₦${Number(price).toLocaleString()}</p>
+                        <div class="text-center flex-grow flex flex-col">
+                            <h3 class="uppercase font-black text-[9px] tracking-widest mb-2">${p.name}</h3>
                             
-                            <select data-id="${p._id}" onchange="updatePrice(this, '${p._id}')" class="w-full border border-gray-200 text-[9px] uppercase py-2 px-2 mb-4 bg-white focus:outline-none">
+                            <div class="mb-4 text-left">
+                                <button onclick="toggleComboDetails(event, '${p._id}')" class="flex items-center justify-between w-full text-[7px] font-bold text-brandOrange uppercase tracking-tighter border-b border-orange-50 pb-1">
+                                    <span>What's inside</span>
+                                    <svg id="icon-${p._id}" class="w-2 h-2 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7" stroke-width="4"/></svg>
+                                </button>
+                                <div id="details-${p._id}" class="hidden py-2 bg-gray-50/50 mt-1 px-1">
+                                    <ul class="text-[7px] text-gray-500 space-y-1">
+                                        ${items.map(item => `<li class="truncate">• ${item}</li>`).join('')}
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <p id="price-${p._id}" class="text-brandBlack font-black text-[11px] mb-5">₦${Number(firstPrice).toLocaleString()}</p>
+                            
+                            <select data-id="${p._id}" onchange="updatePrice(this, '${p._id}')" class="w-full border border-gray-100 text-[8px] uppercase py-3 px-2 mb-4 bg-white outline-none">
                                 ${variants.map(v => `<option value="${v.size}" data-price="${v.price}">${v.size}</option>`).join('')}
                             </select>
 
-                            <button onclick="addToBag('${p._id}')" ${!inStock ? 'disabled' : ''} class="w-full ${!inStock ? 'bg-gray-100 text-gray-400' : 'bg-black text-white'} text-[9px] py-3 uppercase tracking-[0.2em] hover:bg-brandPink hover:text-black transition-all">
-                                ${!inStock ? 'Unavailable' : 'Add to Bag'}
+                            <button onclick="addToBag('${p._id}')" ${!inStock ? 'disabled' : ''} class="mt-auto w-full ${!inStock ? 'bg-gray-100 text-gray-300' : 'bg-brandBlack text-brandPink'} text-[9px] py-4 uppercase font-bold tracking-[0.2em] transition-all">
+                                ${!inStock ? 'Unavailable' : 'Add Bundle'}
                             </button>
                         </div>
                     </div>`;
                 }).join('');
-            } catch (err) { console.error(err); }
+            } catch (err) { console.error("Error:", err); }
         }
 
         function updatePrice(sel, id) {
-            const p = sel.options[sel.selectedIndex].dataset.price;
-            document.getElementById(`price-${id}`).innerText = `₦${Number(p).toLocaleString()}`;
+            const price = sel.options[sel.selectedIndex].dataset.price;
+            document.getElementById(`price-${id}`).innerText = `₦${Number(price).toLocaleString()}`;
         }
 
         function addToBag(id) {
@@ -292,7 +324,7 @@
 
             localStorage.setItem('tmb_cart', JSON.stringify(cart));
             updateCartBadge();
-            showNotification(`${p.name} added`);
+            showNotification(`Bundle Added`);
         }
 
         function openModal(id) {
@@ -302,8 +334,8 @@
             document.getElementById('modal-name').innerText = p.name;
             document.getElementById('modal-price').innerText = `₦${Number(p.variants[0].price).toLocaleString()}`;
             
-            const m = document.getElementById('product-modal');
-            m.classList.remove('invisible', 'opacity-0', 'pointer-events-none');
+            const modal = document.getElementById('product-modal');
+            modal.classList.remove('invisible', 'opacity-0', 'pointer-events-none');
             document.body.style.overflow = 'hidden';
         }
 
@@ -312,8 +344,10 @@
             document.body.style.overflow = '';
         }
 
-        loadMenProducts();
-        updateCartBadge();
+        window.onload = () => {
+            loadComboCollection();
+            updateCartBadge();
+        };
     </script>
 </body>
 </html>
