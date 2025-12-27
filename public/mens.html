@@ -68,14 +68,14 @@
             </button>
             <h1 class="text-brandPink text-xs md:text-lg font-black tracking-luxury uppercase cursor-pointer" onclick="window.location.href='index.html'">The Motunde Brand</h1>
         </div>
-              <div class="hidden md:flex space-x-8 text-[10px] tracking-widest uppercase text-white/90">
+        <div class="hidden md:flex space-x-8 text-[10px] tracking-widest uppercase text-white/90">
             <a href="shop.html" class="hover:text-brandPink transition">Shop</a>
-            <a href="womens.html" class="hover:text-brandPink transition">Women</a>
-            <a href="mens.html" class="hover:text-brandPink transition">Men</a>
-            <a href="kids.html" class="text-brandPink">Kids</a>
-            <a href="combo.html" class="text-brandPink">Combo</a>
-            <a href="mist.html" class="text-brandPink">Mist</a>
-            <a href="orderhistory.html" class="hover:text-brandPink transition">Order History</a>
+            <a href="womenscollection.html" class="hover:text-brandPink transition">Women</a>
+            <a href="men.html" class="hover:text-brandPink transition">Men</a>
+            <a href="kids.html" class="hover:text-brandPink transition">Kids</a>
+            <a href="combocollection.html" class="hover:text-brandPink transition">Combo</a>
+            <a href="mistcollection.html" class="hover:text-brandPink transition">Mist</a>
+            <a href="orderhistory.html" class="hover:text-brandPink transition">History</a>
         </div>
         <div class="flex items-center gap-5 text-brandPink">
             <button onclick="handleAccountClick()" class="hover:text-white transition">
@@ -96,8 +96,9 @@
         <div class="flex flex-col space-y-6 text-[10px] tracking-[0.25em] uppercase text-brandPink/80">
             <a href="index.html">Home</a>
             <a href="shop.html">Shop</a>
-            <a href="womens.html">Women</a>
-            <a href="mens.html" class="text-brandPink">Men</a>
+            <a href="womenscollection.html">Women</a>
+            <a href="men.html" class="text-brandPink">Men</a>
+            <a href="kids.html">Kids</a>
             <a href="orderhistory.html">Order History</a>
         </div>
     </aside>
@@ -116,8 +117,8 @@
     </main>
 
     <div id="custom-toast" class="fixed bottom-10 left-1/2 -translate-x-1/2 z-[300] pointer-events-none">
-        <div class="bg-black text-brandPink px-8 py-4 shadow-2xl flex items-center gap-4">
-            <span id="toast-message" class="text-[10px] uppercase tracking-widest font-bold">Added to bag</span>
+        <div class="bg-black text-brandPink px-8 py-4 shadow-2xl flex items-center gap-4 border border-brandPink/20">
+            <span id="toast-message" class="text-[10px] uppercase tracking-widest font-bold">Added to Cart</span>
         </div>
     </div>
 
@@ -151,9 +152,9 @@
                 <div>
                     <h4 class="text-brandPink text-[10px] font-bold tracking-widest uppercase mb-6">Collections</h4>
                     <ul class="text-brandPink/60 text-[9px] space-y-4 tracking-widest uppercase">
-                        <li><a href="womens.html" class="hover:text-brandPink transition">Women</a></li>
-                        <li><a href="mens.html" class="hover:text-brandPink transition">Men</a></li>
-                        <li><a href="kids.html" class="hover:text-brandPink transition">Kids</a></li>
+                        <li><a href="womenscollection.html" class="hover:text-brandPink transition">Women</a></li>
+                        <li><a href="men.html" class="hover:text-brandPink transition">Men</a></li>
+                        <li><a href="kid.html" class="hover:text-brandPink transition">Kids</a></li>
                     </ul>
                 </div>
                 <div>
@@ -186,26 +187,6 @@
     </div>
 </footer>
 
-    <div id="product-modal" class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/90 opacity-0 invisible pointer-events-none">
-        <div class="modal-content bg-white w-full max-w-4xl relative flex flex-col md:flex-row scale-95 shadow-2xl">
-            <button onclick="closeModal()" class="absolute top-4 right-4 z-10 text-brandBlack hover:text-brandPink">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" stroke-width="2"/></svg>
-            </button>
-            <div class="w-full md:w-1/2 bg-gray-100 aspect-square">
-                <img id="modal-img" src="" class="w-full h-full object-cover">
-            </div>
-            <div class="w-full md:w-1/2 p-8 md:p-12 flex flex-col justify-center">
-                <p id="modal-cat" class="text-[10px] uppercase tracking-widest text-brandPinkDark mb-2">Collection</p>
-                <h2 id="modal-name" class="text-2xl font-light uppercase tracking-[0.2em] mb-4">Product Name</h2>
-                <p id="modal-price" class="text-xl font-medium mb-8">₦0</p>
-                <div class="mb-8">
-                    <label class="block text-[10px] uppercase tracking-widest mb-3">Select Size</label>
-                    <div id="modal-sizes" class="flex flex-wrap gap-2"></div>
-                </div>
-                <button id="modal-add-btn" class="w-full bg-brandBlack text-brandPink py-4 uppercase tracking-[0.3em] text-xs hover:bg-brandPink hover:text-brandBlack transition-all">Add to Bag</button>
-            </div>
-        </div>
-    </div>
     <script>
         let currentProducts = [];
         let cart = JSON.parse(localStorage.getItem('tmb_cart')) || [];
@@ -236,7 +217,6 @@
             try {
                 const res = await fetch('/api/products');
                 const data = await res.json();
-                // Filter for 'men' category
                 currentProducts = data.filter(p => p.category?.toLowerCase().trim() === 'men');
                 
                 const grid = document.getElementById('men-full-grid');
@@ -292,7 +272,9 @@
 
             localStorage.setItem('tmb_cart', JSON.stringify(cart));
             updateCartBadge();
-            showNotification(`${p.name} added`);
+            
+            // NOTIFICATION ALERT UPDATED HERE
+            showNotification(`Added to Cart`);
         }
 
         function openModal(id) {

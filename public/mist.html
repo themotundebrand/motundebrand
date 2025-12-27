@@ -103,6 +103,10 @@
             <a href="combo.html">Combo</a>
             <a href="mist.html">Mist</a>
             <a href="orderhistory.html">My Orders</a>
+            
+            <div class="pt-6 border-t border-brandPink/10 mt-4">
+                <a href="account.html" class="text-[9px] tracking-widest opacity-50 hover:opacity-100 transition-opacity">My Account</a>
+            </div>
         </div>
     </aside>
 
@@ -239,7 +243,7 @@
 
             localStorage.setItem('tmb_cart', JSON.stringify(cart));
             updateCartBadge();
-            showNotification(`Scent Added`);
+            showNotification(`Added to Cart`);
         }
 
         function openModal(id) {
