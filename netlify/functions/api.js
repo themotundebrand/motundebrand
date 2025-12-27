@@ -875,37 +875,56 @@ router.post('/login', async (req, res) => {
 });
 
 // GET LOGGED-IN USER'S ORDERS
+// GET LOGGED-IN USER'S ORDERS
 router.get('/orders/my-orders', async (req, res) => {
+    console.log("--- DEBUG: Fetching User Orders ---");
     try {
         const authHeader = req.headers['authorization'];
         const token = authHeader && authHeader.split(' ')[1];
 
-        if (!token) return res.status(401).json({ error: "Unauthorized" });
+        if (!token) {
+            console.error("DEBUG ERROR: No token provided in header");
+            return res.status(401).json({ error: "Unauthorized" });
+        }
 
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        const db = await getDb(); // Ensure your getDb() helper is working
+        console.log("DEBUG: Decoded Token ID:", decoded.id);
 
-        // CRITICAL: Check if decoded.id exists and is a valid 24-character hex string
+        const db = await getDb();
+        console.log("DEBUG: Database connection successful");
+
+        // Validate the ID format
         if (!decoded.id || !/^[0-9a-fA-F]{24}$/.test(decoded.id)) {
+            console.error("DEBUG ERROR: Invalid ID format in token:", decoded.id);
             return res.status(400).json({ error: "Invalid User ID in token" });
         }
 
+        // Attempt to find orders
+        // Note: We log the query we are about to run
+        const query = { userId: new ObjectId(decoded.id) };
+        console.log("DEBUG: Running Query:", JSON.stringify(query));
+
         const orders = await db.collection("orders")
-            .find({ userId: new ObjectId(decoded.id) })
+            .find(query)
             .sort({ createdAt: -1 })
             .toArray();
 
+        console.log(`DEBUG SUCCESS: Found ${orders.length} orders for user ${decoded.id}`);
         res.json(orders);
+
     } catch (e) {
-        console.error("Order Fetch Error:", e);
-        // If it's a JWT error, return 401, otherwise 500
+        console.error("--- FULL DEBUG ERROR STACK ---");
+        console.error(e); // This prints the line number and full error message
+        
         const status = e.name === 'JsonWebTokenError' ? 401 : 500;
         res.status(status).json({ 
             error: "Failed to fetch orders", 
-            details: e.message 
+            details: e.message,
+            stack: process.env.NODE_ENV === 'development' ? e.stack : undefined 
         });
     }
 });
+
 // --- 1. UPDATE USER PROFILE (Name, Phone, WhatsApp, Address) ---
 router.put('/update', async (req, res) => {
     const authHeader = req.headers['authorization'];
