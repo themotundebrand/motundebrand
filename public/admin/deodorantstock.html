@@ -96,151 +96,113 @@
         </aside>
 
 
-       <main class="flex-1 min-h-screen p-6 lg:p-12">
-    <div class="max-w-6xl mx-auto">
-        <div class="flex justify-between items-center mb-12">
-            <div>
-                <h2 class="text-2xl font-light tracking-tight mb-1">Deodorants & Antiperspirants</h2>
-                <p class="text-[9px] uppercase tracking-[0.3em] text-brandDeo font-bold">Unified Inventory Breakdown</p>
-            </div>
-            <button onclick="openAddModal()" class="bg-brandBlack text-white px-6 py-3 text-[10px] uppercase tracking-widest font-bold hover:bg-brandDeo transition">
-                Add New Item
-            </button>
-        </div>
+        <main class="flex-1 min-h-screen p-6 lg:p-12">
+            <div class="max-w-6xl mx-auto">
+                <div class="flex justify-between items-center mb-12">
+                    <div>
+                        <h2 class="text-2xl font-light tracking-tight mb-1">Deodorants & Antiperspirants</h2>
+                        <p class="text-[9px] uppercase tracking-[0.3em] text-brandDeo font-bold">Live Inventory Breakdown</p>
+                    </div>
+                    <button onclick="openAddModal()" class="bg-brandBlack text-white px-6 py-3 text-[10px] uppercase tracking-widest font-bold hover:bg-brandDeo transition">
+                        Add New Item
+                    </button>
+                </div>
 
-        <div class="mb-12">
-            <div class="flex items-center mb-6">
-                <h3 class="mr-4 text-[10px] uppercase tracking-[0.4em] font-bold text-brandDeo">Current Stock Status</h3>
-                <div class="h-[1px] bg-gray-200 flex-1"></div>
-            </div>
-            <div class="bg-white border shadow-sm overflow-hidden rounded-sm">
-                <table class="w-full text-left border-collapse">
-                    <thead>
-                        <tr class="bg-gray-50 border-b text-[9px] uppercase tracking-widest font-bold text-gray-400">
-                            <th class="px-8 py-4">Product Details</th>
-                            <th class="px-8 py-4">Type</th>
-                            <th class="px-8 py-4">Sizes & Stock</th>
-                            <th class="px-8 py-4">Status</th>
-                        </tr>
-                    </thead>
-                    <tbody id="unified-deo-list">
-                        <tr><td colspan="4" class="p-12 text-center text-xs text-gray-400 uppercase">Scanning Database...</td></tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
+                <div class="mb-12">
+                    <div class="flex items-center mb-6">
+                        <h3 class="mr-4 text-[10px] uppercase tracking-[0.4em] font-bold text-brandDeo">Current Stock Status</h3>
+                        <div class="h-[1px] bg-gray-200 flex-1"></div>
+                    </div>
+                    <div class="bg-white border shadow-sm overflow-hidden rounded-sm">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-gray-50 border-b text-[9px] uppercase tracking-widest font-bold text-gray-400">
+                                    <th class="px-8 py-4">Product Details</th>
+                                    <th class="px-8 py-4">Type</th>
+                                    <th class="px-8 py-4">Sizes & Stock</th>
+                                    <th class="px-8 py-4">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="unified-deo-list">
+                                <tr><td colspan="4" class="p-12 text-center text-xs text-gray-400 uppercase">Scanning Database...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
 
-        <div>
-            <div class="flex items-center mb-6">
-                <h3 class="mr-4 text-[10px] uppercase tracking-[0.4em] font-bold text-red-400">Inventory Deduction Log</h3>
-                <div class="h-[1px] bg-red-100 flex-1"></div>
-            </div>
-            <div class="bg-white border border-red-50 shadow-sm overflow-hidden rounded-sm">
-                <div class="max-h-80 overflow-y-auto custom-scrollbar">
-                    <table class="w-full text-left border-collapse">
-                        <thead class="sticky top-0 z-10">
-                            <tr class="bg-red-50 border-b text-[9px] uppercase tracking-widest font-bold text-red-400">
-                                <th class="px-8 py-4">Timestamp</th>
-                                <th class="px-8 py-4">Product Unit</th>
-                                <th class="px-8 py-4">Qty Out</th>
-                                <th class="px-8 py-4 text-right">Revenue</th>
-                            </tr>
-                        </thead>
-                        <tbody id="sales-log" class="text-[11px]">
-                            <tr><td colspan="4" class="p-12 text-center text-gray-400 uppercase tracking-widest">Awaiting sales data...</td></tr>
-                        </tbody>
-                    </table>
+                <div>
+                    <div class="flex items-center mb-6">
+                        <h3 class="mr-4 text-[10px] uppercase tracking-[0.4em] font-bold text-red-400">Inventory Deduction Log</h3>
+                        <div class="h-[1px] bg-red-100 flex-1"></div>
+                    </div>
+                    <div class="bg-white border border-red-50 shadow-sm overflow-hidden rounded-sm">
+                        <div class="max-h-80 overflow-y-auto custom-scrollbar">
+                            <table class="w-full text-left border-collapse">
+                                <thead class="sticky top-0 z-10">
+                                    <tr class="bg-red-50 border-b text-[9px] uppercase tracking-widest font-bold text-red-400">
+                                        <th class="px-8 py-4">Timestamp</th>
+                                        <th class="px-8 py-4">Product Unit</th>
+                                        <th class="px-8 py-4">Qty Out</th>
+                                        <th class="px-8 py-4 text-right">Revenue</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="sales-log" class="text-[11px]">
+                                    <tr><td colspan="4" class="p-12 text-center text-gray-400 uppercase tracking-widest">Awaiting sales data...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
+        </main>
     </div>
-</main>
 
 <script>
-    // 1. CONFIGURATION: Update this to your actual backend URL
-    const API_URL = 'https://themotundebrand-api.herokuapp.com/api'; // Example URL
+    const API_URL = '/api';
 
-    // 2. INITIALIZATION: Call the fetch function when the page finishes loading
-    window.addEventListener('DOMContentLoaded', () => {
-        fetchInventory();
-    });
+    function toggleSidebar() {
+        document.getElementById('sidebar').classList.toggle('-translate-x-full');
+        document.getElementById('overlay').classList.toggle('active');
+    }
 
     async function fetchInventory() {
-        const inventoryTable = document.getElementById('unified-deo-list');
-        
         try {
             const res = await fetch(`${API_URL}/products`);
-            if (!res.ok) throw new Error('Network response was not ok');
-            
             const products = await res.json();
             
-            // Filter products belonging to the 'deodorant' category
-            const collection = products.filter(p => (p.category || '').toLowerCase() === 'deodorant');
+            // Filter based on your DB structure: category is inside variants[0]
+            const collection = products.filter(p => {
+                const firstVariant = p.variants && p.variants[0];
+                return firstVariant && (firstVariant.category || '').toLowerCase() === 'deodorant';
+            });
             
-            // Render the stock table
-            renderTable('unified-deo-list', collection, "No inventory items found in this category");
-            
-            // Fetch and render the sales log
-            fetchSalesLog();
+            renderUnifiedTable(collection);
+            fetchSalesLog(collection);
 
         } catch (err) {
             console.error("Fetch Error:", err);
-            inventoryTable.innerHTML = `
-                <tr>
-                    <td colspan="4" class="p-12 text-center text-xs text-red-400 uppercase font-bold tracking-widest">
-                        CRITICAL: Database Sync Failed. <br>
-                        <span class="text-[8px] font-normal mt-2 block">Check if backend server is running at ${API_URL}</span>
-                    </td>
-                </tr>`;
+            const errorHtml = '<tr><td colspan="4" class="p-12 text-center text-xs text-red-400 uppercase font-bold tracking-widest">CRITICAL: Database Sync Failed</td></tr>';
+            document.getElementById('unified-deo-list').innerHTML = errorHtml;
         }
     }
 
-    async function fetchSalesLog() {
-        const logTable = document.getElementById('sales-log');
-        
-        try {
-            // Adjust this endpoint based on your actual backend route for orders/sales
-            const res = await fetch(`${API_URL}/admin/orders`, {
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('tmb_admin_token')}`
-                }
-            });
-            
-            if (!res.ok) throw new Error('Failed to fetch sales');
-            const orders = await res.json();
-
-            if (orders.length === 0) {
-                logTable.innerHTML = '<tr><td colspan="4" class="p-12 text-center text-gray-400 uppercase tracking-widest text-[9px]">No recent sales recorded</td></tr>';
-                return;
-            }
-
-            // Render log rows
-            logTable.innerHTML = orders.map(order => `
-                <tr class="border-b border-red-50 hover:bg-red-50/30 transition-colors">
-                    <td class="px-8 py-4 font-mono text-gray-400">${new Date(order.createdAt).toLocaleDateString()}</td>
-                    <td class="px-8 py-4 font-bold uppercase text-gray-700">${order.productName || 'Inventory Deduction'}</td>
-                    <td class="px-8 py-4 text-red-500 font-bold">-${order.quantity || 1}</td>
-                    <td class="px-8 py-4 text-right font-bold">₦${(order.totalPrice || 0).toLocaleString()}</td>
-                </tr>
-            `).join('');
-
-        } catch (err) {
-            logTable.innerHTML = '<tr><td colspan="4" class="p-12 text-center text-red-300 uppercase text-[9px]">Log Sync Unavailable</td></tr>';
-        }
-    }
-
-    function renderTable(elementId, items, emptyMsg) {
-        const container = document.getElementById(elementId);
+    function renderUnifiedTable(items) {
+        const container = document.getElementById('unified-deo-list');
         container.innerHTML = '';
 
         if (items.length === 0) {
-            container.innerHTML = `<tr><td colspan="4" class="p-12 text-center text-xs text-gray-400 uppercase tracking-widest">${emptyMsg}</td></tr>`;
+            container.innerHTML = `<tr><td colspan="4" class="p-12 text-center text-xs text-gray-400 uppercase tracking-widest">No inventory items found</td></tr>`;
             return;
         }
 
         items.forEach(product => {
+            // Extract core info from the first variant per your DB structure
+            const firstVariant = product.variants[0] || {};
             const totalStock = (product.variants || []).reduce((sum, v) => sum + (parseInt(v.stock) || 0), 0);
             
+            // Image handling (using imageKey from your variant data)
+            const imgPath = firstVariant.imageKey ? `/uploads/${firstVariant.imageKey}` : 'https://via.placeholder.com/40';
+
             const variantsHtml = (product.variants || []).map(v => `
                 <div class="flex justify-between items-center mb-1 border-b border-gray-50 pb-1 last:border-0 w-40">
                     <span class="text-[10px] font-bold text-gray-400 uppercase">${v.size || 'Standard'}</span>
@@ -253,11 +215,11 @@
                 </div>
             `).join('');
 
-            container.innerHTML += `
+            const row = `
                 <tr class="border-b hover:bg-gray-50 transition-colors group">
                     <td class="px-8 py-6">
                         <div class="flex items-center">
-                            <img src="${product.imageUrl || 'https://via.placeholder.com/40'}" class="w-12 h-12 object-cover mr-6 border border-gray-100 bg-gray-50 rounded-sm grayscale group-hover:grayscale-0 transition-all">
+                            <img src="${imgPath}" class="w-12 h-12 object-cover mr-6 border border-gray-100 bg-gray-50 rounded-sm grayscale group-hover:grayscale-0 transition-all">
                             <div>
                                 <p class="text-[11px] font-bold uppercase tracking-wider mb-1 text-gray-800">${product.name}</p>
                                 <p class="text-[9px] text-gray-400 uppercase tracking-widest font-medium">Net Stock: ${totalStock}</p>
@@ -265,26 +227,93 @@
                         </div>
                     </td>
                     <td class="px-8 py-6">
-                        <span class="text-[9px] font-bold px-2 py-1 uppercase tracking-tighter border border-gray-200 text-gray-500 bg-gray-50 rounded-sm">
-                            ${product.subCategory || 'Deodorant'}
+                         <span class="text-[9px] font-bold px-2 py-1 uppercase tracking-tighter border border-gray-200 text-gray-500 bg-gray-50 rounded-sm">
+                            ${firstVariant.subCategory || 'General'}
                         </span>
                     </td>
-                    <td class="px-8 py-6"><div class="inline-block">${variantsHtml}</div></td>
+                    <td class="px-8 py-6">
+                        <div class="inline-block">${variantsHtml}</div>
+                    </td>
                     <td class="px-8 py-6">
                         ${totalStock > 0 
                             ? `<span class="text-[8px] font-bold px-3 py-1.5 uppercase tracking-widest text-emerald-600 bg-emerald-50 border border-emerald-100 rounded-sm">Available</span>`
                             : `<span class="text-[8px] font-bold px-3 py-1.5 uppercase tracking-widest text-red-600 bg-red-50 border border-red-100 rounded-sm">Out of Stock</span>`
                         }
                     </td>
-                </tr>`;
+                </tr>
+            `;
+            container.innerHTML += row;
         });
     }
 
-    // Helper for Sidebar
-    function toggleSidebar() {
-        document.getElementById('sidebar').classList.toggle('-translate-x-full');
-        document.getElementById('overlay').classList.toggle('active');
+    async function fetchSalesLog(deoProducts) {
+        const token = localStorage.getItem('tmb_admin_token');
+        const logContainer = document.getElementById('sales-log');
+        const deoNames = new Set(deoProducts.map(p => p.name));
+
+        try {
+            const res = await fetch(`${API_URL}/admin/orders`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const orders = await res.json();
+            
+            let filteredSales = [];
+            orders.forEach(order => {
+                const deductionStates = ['completed', 'paid', 'shipped', 'delivered'];
+                if (deductionStates.includes(order.status.toLowerCase())) {
+                    (order.items || []).forEach(item => {
+                        if (deoNames.has(item.name)) {
+                            filteredSales.push({
+                                timestamp: order.createdAt,
+                                name: item.name,
+                                variant: item.variantName || item.size || 'N/A',
+                                qty: item.quantity,
+                                price: (item.price || 0) * (item.quantity || 0)
+                            });
+                        }
+                    });
+                }
+            });
+
+            filteredSales.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+            if (filteredSales.length === 0) {
+                logContainer.innerHTML = '<tr><td colspan="4" class="p-12 text-center text-gray-400 uppercase tracking-widest text-[9px]">No recent Deodorant movements</td></tr>';
+                return;
+            }
+
+            logContainer.innerHTML = filteredSales.slice(0, 20).map(sale => {
+                const dt = new Date(sale.timestamp);
+                return `
+                    <tr class="border-b hover:bg-gray-50 transition-colors">
+                        <td class="px-8 py-4">
+                            <span class="block font-bold text-gray-800 text-[10px]">${dt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                            <span class="text-[9px] text-gray-400 uppercase tracking-tighter">${dt.toLocaleDateString('en-GB')}</span>
+                        </td>
+                        <td class="px-8 py-4">
+                            <span class="block uppercase font-bold text-brandDeo text-[10px]">${sale.name}</span>
+                            <span class="text-[9px] text-gray-400 uppercase">Size: ${sale.variant}</span>
+                        </td>
+                        <td class="px-8 py-4">
+                             <span class="font-mono bg-red-50 text-red-600 px-2 py-1 rounded-sm font-bold text-[11px]">-${sale.qty}</span>
+                        </td>
+                        <td class="px-8 py-4 text-right font-bold text-[10px]">
+                            ₦${sale.price.toLocaleString()}
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        } catch (err) {
+            logContainer.innerHTML = '<tr><td colspan="4" class="p-12 text-center text-red-400 uppercase tracking-widest text-[9px]">Log Sync Error</td></tr>';
+        }
     }
+
+    function logout() {
+        localStorage.removeItem('tmb_admin_token');
+        window.location.href = 'tmbadmin-login.html';
+    }
+
+    window.onload = fetchInventory;
 </script>
 </body>
 </html>
