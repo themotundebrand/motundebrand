@@ -42,6 +42,8 @@
         <a href="#women" class="hover:text-brandPink transition">Women</a>
         <a href="#men" class="hover:text-brandPink transition">Men</a>
         <a href="#kids" class="hover:text-brandPink transition">Kids</a>
+        <a href="orderhistory.html" class="hover:text-brandPink transition">Order History</a>
+
     </div>
 
     <div class="flex items-center gap-5 text-brandPink">
@@ -68,6 +70,8 @@
             <a href="#women" onclick="toggleSidebar(false)" class="hover:text-brandPink transition-colors">Women</a>
             <a href="#men" onclick="toggleSidebar(false)" class="hover:text-brandPink transition-colors">Men</a>
             <a href="#kids" onclick="toggleSidebar(false)" class="hover:text-brandPink transition-colors">Kids</a>
+            <a href="orderhistory.html" onclick="toggleSidebar(false)" class="hover:text-brandPink transition-colors">Order History</a>
+
             <div class="pt-6 border-t border-brandPink/10 mt-4">
                 <a href="account.html" class="text-[9px] tracking-widest opacity-50 hover:opacity-100 transition-opacity">My Account</a>
             </div>
@@ -98,7 +102,7 @@
     </main>
 
     <script>
-        document.addEventListener('DOMContentLoaded', async () => {
+     document.addEventListener('DOMContentLoaded', async () => {
             const token = localStorage.getItem('motunde_token');
             const container = document.getElementById('orders-container');
             const loading = document.getElementById('loading-state');
@@ -110,9 +114,16 @@
             }
 
             try {
-                const response = await fetch('/api/orders/my-orders', {
-                    headers: { 'Authorization': `Bearer ${token}` }
+                // FETCHING FROM YOUR SPECIFIC ENDPOINT
+                const response = await fetch('/api/order/my-orders', {
+                    method: 'GET',
+                    headers: { 
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
                 });
+
+                if (!response.ok) throw new Error("Failed to fetch");
 
                 const orders = await response.json();
                 loading.classList.add('hidden');
@@ -123,55 +134,52 @@
                 }
 
                 container.innerHTML = orders.map(order => `
-                    <div class="order-card bg-white p-6 md:p-8">
-                        <div class="flex flex-col md:flex-row justify-between gap-6 mb-8">
-                            <div class="space-y-2">
-                                <span class="text-[8px] text-gray-400 uppercase tracking-[0.2em]">Order Reference</span>
-                                <h3 class="text-sm font-black tracking-widest">#TMB-${order._id.slice(-6).toUpperCase()}</h3>
-                                <p class="text-[10px] text-gray-500">${new Date(order.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
+                    <div class="order-card bg-white p-6 md:p-10">
+                        <div class="flex flex-col md:flex-row justify-between gap-6 mb-8 pb-6 border-b border-gray-50">
+                            <div class="space-y-1">
+                                <p class="text-[8px] text-gray-400 uppercase tracking-widest">Reference</p>
+                                <h3 class="text-sm font-black tracking-widest uppercase">#TMB-${(order._id || 'N/A').slice(-6).toUpperCase()}</h3>
+                                <p class="text-[10px] text-gray-400">${new Date(order.createdAt).toLocaleDateString()}</p>
                             </div>
                             
-                            <div class="flex flex-wrap gap-4 md:text-right">
-                                <div class="space-y-2">
-                                    <span class="text-[8px] text-gray-400 uppercase tracking-[0.2em]">Status</span>
-                                    <div>
-                                        <span class="px-3 py-1 text-[8px] font-bold uppercase tracking-widest ${getStatusStyle(order.status)}">
-                                            ${order.status || 'Processing'}
-                                        </span>
-                                    </div>
+                            <div class="flex gap-10">
+                                <div class="space-y-1">
+                                    <p class="text-[8px] text-gray-400 uppercase tracking-widest">Status</p>
+                                    <span class="block text-[10px] font-bold uppercase tracking-widest text-brandPinkDark">
+                                        ${order.status || 'Processing'}
+                                    </span>
                                 </div>
-                                <div class="space-y-2 md:min-w-[120px]">
-                                    <span class="text-[8px] text-gray-400 uppercase tracking-[0.2em]">Total Amount</span>
-                                    <p class="text-sm font-black text-brandBlack">₦${order.totalPrice.toLocaleString()}</p>
+                                <div class="space-y-1">
+                                    <p class="text-[8px] text-gray-400 uppercase tracking-widest">Total</p>
+                                    <p class="text-sm font-black">₦${(order.totalPrice || 0).toLocaleString()}</p>
                                 </div>
                             </div>
                         </div>
 
-                        <div class="grid grid-cols-1 gap-4 border-t border-gray-50 pt-6">
-                            ${order.items.map(item => `
+                        <div class="space-y-4">
+                            ${(order.items || []).map(item => `
                                 <div class="flex items-center gap-4">
-                                    <div class="w-12 h-14 bg-gray-100 flex-shrink-0">
-                                        <img src="${item.image || 'https://i.imgur.com/CVKXV7R.png'}" alt="" class="w-full h-full object-cover">
-                                    </div>
+                                    <img src="${item.image || 'https://i.imgur.com/CVKXV7R.png'}" class="w-12 h-16 object-cover bg-gray-50">
                                     <div class="flex-1">
                                         <h4 class="text-[10px] font-bold uppercase tracking-widest">${item.name}</h4>
                                         <p class="text-[9px] text-gray-400 uppercase">Size: ${item.size} | Qty: ${item.quantity}</p>
                                     </div>
+                                    <p class="text-[10px] font-bold">₦${((item.price || 0) * (item.quantity || 1)).toLocaleString()}</p>
                                 </div>
                             `).join('')}
                         </div>
 
-                        <div class="mt-8 pt-6 border-t border-gray-50 flex justify-end">
-                            <button onclick="window.location.href='order-confirmation.html?id=${order._id}'" class="text-[9px] font-black uppercase tracking-widest text-brandPinkDark hover:text-brandBlack transition">
-                                View Full Receipt
-                            </button>
+                        <div class="mt-8 flex justify-end">
+                            <a href="order-confirmation.html?id=${order._id}" class="text-[9px] font-black uppercase tracking-widest border border-brandBlack px-6 py-2 hover:bg-brandBlack hover:text-brandPink transition">
+                                Details
+                            </a>
                         </div>
                     </div>
                 `).join('');
 
             } catch (err) {
-                console.error("Fetch error:", err);
-                loading.innerHTML = `<p class="text-red-500 text-[10px] uppercase tracking-widest">Error loading orders. Please refresh.</p>`;
+                console.error("Order history error:", err);
+                loading.innerHTML = `<p class="text-[10px] uppercase tracking-widest text-red-400">Unable to load orders. Please try again later.</p>`;
             }
         });
 
