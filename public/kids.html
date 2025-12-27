@@ -185,7 +185,7 @@
 <div id="custom-toast" class="fixed bottom-10 left-1/2 -translate-x-1/2 z-[300] pointer-events-none">
     <div class="bg-brandBlack text-brandPink px-8 py-4 shadow-2xl border border-brandPink/20 flex items-center gap-4">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7" stroke-width="2"/></svg>
-        <span id="toast-message" class="text-[10px] uppercase tracking-[0.2em] font-bold">Item added to Bag</span>
+        <span id="toast-message" class="text-[10px] uppercase tracking-[0.2em] font-bold">Item added to Cart</span>
     </div>
 </div>
 
@@ -237,7 +237,7 @@
     </div>
 </footer>
 
-    <div id="product-modal" class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/90 opacity-0 invisible pointer-events-none">
+  <div id="product-modal" class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/90 opacity-0 invisible pointer-events-none">
         <div class="modal-content bg-white w-full max-w-4xl relative flex flex-col md:flex-row scale-95 shadow-2xl">
             <button onclick="closeModal()" class="absolute top-4 right-4 z-10 text-brandBlack hover:text-brandPink">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" stroke-width="2"/></svg>
@@ -253,7 +253,7 @@
                     <label class="block text-[10px] uppercase tracking-widest mb-3">Select Size</label>
                     <div id="modal-sizes" class="flex flex-wrap gap-2"></div>
                 </div>
-                <button id="modal-add-btn" class="w-full bg-brandBlack text-brandPink py-4 uppercase tracking-[0.3em] text-xs hover:bg-brandPink hover:text-brandBlack transition-all">Add to Bag</button>
+                <button id="modal-add-btn" class="w-full bg-brandBlack text-brandPink py-4 uppercase tracking-[0.3em] text-xs hover:bg-brandPink hover:text-brandBlack transition-all">Add to cart</button>
             </div>
         </div>
     </div>
@@ -320,7 +320,7 @@
                             </select>
 
                             <button onclick="addToBag('${p._id}')" ${!inStock ? 'disabled' : ''} class="w-full ${!inStock ? 'bg-gray-100 text-gray-300' : 'bg-brandBlack text-brandPink'} text-[9px] py-4 uppercase font-bold tracking-[0.2em] hover:bg-brandPink hover:text-brandBlack transition-all">
-                                ${!inStock ? 'Sold Out' : 'Add to Bag'}
+                                ${!inStock ? 'Sold Out' : 'Add to Cart'}
                             </button>
                         </div>
                     </div>`;

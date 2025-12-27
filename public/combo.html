@@ -122,7 +122,7 @@
 
     <div id="custom-toast" class="fixed bottom-10 left-1/2 -translate-x-1/2 z-[300] pointer-events-none">
         <div class="bg-brandBlack text-brandPink px-10 py-4 shadow-2xl flex items-center border border-brandPink/20">
-            <span id="toast-message" class="text-[9px] uppercase tracking-widest font-black">Added to bag</span>
+            <span id="toast-message" class="text-[9px] uppercase tracking-widest font-black">Added to Cart</span>
         </div>
     </div>
 
@@ -138,7 +138,7 @@
                 <h2 id="modal-name" class="text-2xl font-black uppercase tracking-widest mb-4">Combo Set</h2>
                 <p id="modal-price" class="text-xl text-brandPinkDark font-bold mb-8">₦0</p>
                 <div id="modal-sizes" class="flex flex-wrap gap-2 mb-10"></div>
-                <button id="modal-add-btn" class="w-full bg-brandBlack text-brandPink py-5 uppercase tracking-[0.3em] text-[10px] font-bold hover:bg-brandPink hover:text-brandBlack transition-all">Add Bundle to Bag</button>
+                <button id="modal-add-btn" class="w-full bg-brandBlack text-brandPink py-5 uppercase tracking-[0.3em] text-[10px] font-bold hover:bg-brandPink hover:text-brandBlack transition-all">Add Bundle to Cart</button>
             </div>
         </div>
     </div>
@@ -190,8 +190,7 @@
         </div>
     </div>
 </footer>
-
-    <div id="product-modal" class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/90 opacity-0 invisible pointer-events-none">
+  <div id="product-modal" class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/90 opacity-0 invisible pointer-events-none">
         <div class="modal-content bg-white w-full max-w-4xl relative flex flex-col md:flex-row scale-95 shadow-2xl">
             <button onclick="closeModal()" class="absolute top-4 right-4 z-10 text-brandBlack hover:text-brandPink">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" stroke-width="2"/></svg>
@@ -207,7 +206,7 @@
                     <label class="block text-[10px] uppercase tracking-widest mb-3">Select Size</label>
                     <div id="modal-sizes" class="flex flex-wrap gap-2"></div>
                 </div>
-                <button id="modal-add-btn" class="w-full bg-brandBlack text-brandPink py-4 uppercase tracking-[0.3em] text-xs hover:bg-brandPink hover:text-brandBlack transition-all">Add to Bag</button>
+                <button id="modal-add-btn" class="w-full bg-brandBlack text-brandPink py-4 uppercase tracking-[0.3em] text-xs hover:bg-brandPink hover:text-brandBlack transition-all">Add to cart</button>
             </div>
         </div>
     </div>
