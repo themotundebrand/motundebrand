@@ -875,7 +875,7 @@ router.post('/login', async (req, res) => {
 });
 
 // GET LOGGED-IN USER'S ORDERS
-router.get('/orders/my-orders', async (req, res) => {
+router.get('/my-orders', async (req, res) => {
     try {
         const authHeader = req.headers['authorization'];
         const token = authHeader && authHeader.split(' ')[1];
@@ -991,7 +991,7 @@ router.post('/change-password', async (req, res) => {
 });
 
 // BACKEND CODE: Replace your current GET /my-orders route with this:
-router.get('/my-orders', async (req, res) => {
+router.get('/orders/my-orders', async (req, res) => {
     try {
         const authHeader = req.headers['authorization'];
         const token = authHeader && authHeader.split(' ')[1];
