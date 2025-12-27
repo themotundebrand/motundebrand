@@ -874,19 +874,22 @@ router.post('/login', async (req, res) => {
     }
 });
 
-// --- GET LOGGED-IN USER'S ORDERS ---
+// GET LOGGED-IN USER'S ORDERS
 router.get('/orders/my-orders', async (req, res) => {
-    const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1];
-
-    if (!token) return res.status(401).json({ error: "Unauthorized" });
-
     try {
-        const decoded = jwt.verify(token, JWT_SECRET);
-        const db = await getDb();
-        
-        // Find orders where the email matches the logged-in user's email
-        // (This is why we added the top-level email field in the previous step!)
+        const authHeader = req.headers['authorization'];
+        const token = authHeader && authHeader.split(' ')[1];
+
+        if (!token) return res.status(401).json({ error: "Unauthorized" });
+
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const db = await getDb(); // Ensure your getDb() helper is working
+
+        // CRITICAL: Check if decoded.id exists and is a valid 24-character hex string
+        if (!decoded.id || !/^[0-9a-fA-F]{24}$/.test(decoded.id)) {
+            return res.status(400).json({ error: "Invalid User ID in token" });
+        }
+
         const orders = await db.collection("orders")
             .find({ userId: new ObjectId(decoded.id) })
             .sort({ createdAt: -1 })
@@ -894,7 +897,13 @@ router.get('/orders/my-orders', async (req, res) => {
 
         res.json(orders);
     } catch (e) {
-        res.status(401).json({ error: "Invalid Session" });
+        console.error("Order Fetch Error:", e);
+        // If it's a JWT error, return 401, otherwise 500
+        const status = e.name === 'JsonWebTokenError' ? 401 : 500;
+        res.status(status).json({ 
+            error: "Failed to fetch orders", 
+            details: e.message 
+        });
     }
 });
 // --- 1. UPDATE USER PROFILE (Name, Phone, WhatsApp, Address) ---
