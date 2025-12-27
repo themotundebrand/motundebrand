@@ -157,25 +157,75 @@
 </main>
 
 <script>
-    // UPDATE THESE FUNCTIONS IN YOUR SCRIPT TAG
+    // 1. CONFIGURATION: Update this to your actual backend URL
+    const API_URL = 'https://themotundebrand-api.herokuapp.com/api'; // Example URL
+
+    // 2. INITIALIZATION: Call the fetch function when the page finishes loading
+    window.addEventListener('DOMContentLoaded', () => {
+        fetchInventory();
+    });
+
     async function fetchInventory() {
+        const inventoryTable = document.getElementById('unified-deo-list');
+        
         try {
             const res = await fetch(`${API_URL}/products`);
+            if (!res.ok) throw new Error('Network response was not ok');
+            
             const products = await res.json();
             
-            // Filter all products belonging to the 'deodorant' category
+            // Filter products belonging to the 'deodorant' category
             const collection = products.filter(p => (p.category || '').toLowerCase() === 'deodorant');
             
-            // Render everything into the single unified table
+            // Render the stock table
             renderTable('unified-deo-list', collection, "No inventory items found in this category");
             
-            // Log still needs the full collection to track sales
-            fetchSalesLog(collection);
+            // Fetch and render the sales log
+            fetchSalesLog();
 
         } catch (err) {
             console.error("Fetch Error:", err);
-            const errorHtml = '<tr><td colspan="4" class="p-12 text-center text-xs text-red-400 uppercase font-bold tracking-widest">CRITICAL: Database Sync Failed</td></tr>';
-            document.getElementById('unified-deo-list').innerHTML = errorHtml;
+            inventoryTable.innerHTML = `
+                <tr>
+                    <td colspan="4" class="p-12 text-center text-xs text-red-400 uppercase font-bold tracking-widest">
+                        CRITICAL: Database Sync Failed. <br>
+                        <span class="text-[8px] font-normal mt-2 block">Check if backend server is running at ${API_URL}</span>
+                    </td>
+                </tr>`;
+        }
+    }
+
+    async function fetchSalesLog() {
+        const logTable = document.getElementById('sales-log');
+        
+        try {
+            // Adjust this endpoint based on your actual backend route for orders/sales
+            const res = await fetch(`${API_URL}/admin/orders`, {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('tmb_admin_token')}`
+                }
+            });
+            
+            if (!res.ok) throw new Error('Failed to fetch sales');
+            const orders = await res.json();
+
+            if (orders.length === 0) {
+                logTable.innerHTML = '<tr><td colspan="4" class="p-12 text-center text-gray-400 uppercase tracking-widest text-[9px]">No recent sales recorded</td></tr>';
+                return;
+            }
+
+            // Render log rows
+            logTable.innerHTML = orders.map(order => `
+                <tr class="border-b border-red-50 hover:bg-red-50/30 transition-colors">
+                    <td class="px-8 py-4 font-mono text-gray-400">${new Date(order.createdAt).toLocaleDateString()}</td>
+                    <td class="px-8 py-4 font-bold uppercase text-gray-700">${order.productName || 'Inventory Deduction'}</td>
+                    <td class="px-8 py-4 text-red-500 font-bold">-${order.quantity || 1}</td>
+                    <td class="px-8 py-4 text-right font-bold">₦${(order.totalPrice || 0).toLocaleString()}</td>
+                </tr>
+            `).join('');
+
+        } catch (err) {
+            logTable.innerHTML = '<tr><td colspan="4" class="p-12 text-center text-red-300 uppercase text-[9px]">Log Sync Unavailable</td></tr>';
         }
     }
 
@@ -203,7 +253,7 @@
                 </div>
             `).join('');
 
-            const row = `
+            container.innerHTML += `
                 <tr class="border-b hover:bg-gray-50 transition-colors group">
                     <td class="px-8 py-6">
                         <div class="flex items-center">
@@ -219,19 +269,21 @@
                             ${product.subCategory || 'Deodorant'}
                         </span>
                     </td>
-                    <td class="px-8 py-6">
-                        <div class="inline-block">${variantsHtml}</div>
-                    </td>
+                    <td class="px-8 py-6"><div class="inline-block">${variantsHtml}</div></td>
                     <td class="px-8 py-6">
                         ${totalStock > 0 
                             ? `<span class="text-[8px] font-bold px-3 py-1.5 uppercase tracking-widest text-emerald-600 bg-emerald-50 border border-emerald-100 rounded-sm">Available</span>`
                             : `<span class="text-[8px] font-bold px-3 py-1.5 uppercase tracking-widest text-red-600 bg-red-50 border border-red-100 rounded-sm">Out of Stock</span>`
                         }
                     </td>
-                </tr>
-            `;
-            container.innerHTML += row;
+                </tr>`;
         });
+    }
+
+    // Helper for Sidebar
+    function toggleSidebar() {
+        document.getElementById('sidebar').classList.toggle('-translate-x-full');
+        document.getElementById('overlay').classList.toggle('active');
     }
 </script>
 </body>
