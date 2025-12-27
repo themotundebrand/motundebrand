@@ -153,17 +153,23 @@
         });
 
         async function fetchOrderHistory() {
-            const container = document.getElementById('order-history-container');
-            const token = localStorage.getItem('motunde_token');
-            
-            try {
-                const response = await fetch('/api/orders/my-orders', {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                
-                if (!response.ok) throw new Error('Database Sync Failed');
-                
-                allOrders = await response.json();
+    const container = document.getElementById('order-history-container');
+    const token = localStorage.getItem('motunde_token');
+    
+    try {
+        // Updated URL to match the router structure
+        const response = await fetch('/api/orders/my-orders', { 
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        // If it still gives 500, let's see the actual error from the server
+        if (!response.ok) {
+            const errorData = await response.json();
+            console.error("Server Error Detail:", errorData);
+            throw new Error(errorData.error || 'Database Sync Failed');
+        }
+        
+        allOrders = await response.json();
 
                 if (!allOrders.length) {
                     container.innerHTML = `<p class="col-span-full text-[9px] text-gray-400 text-center py-10 uppercase tracking-widest">No orders found.</p>`;

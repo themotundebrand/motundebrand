@@ -979,86 +979,43 @@ router.post('/change-password', async (req, res) => {
         res.status(401).json({ error: "Session expired" });
     }
 });
-
-// --- 3. GET ORDER HISTORY (Fixed & Robust) ---
+// GET ORDER HISTORY
 router.get('/my-orders', async (req, res) => {
-    const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1];
-    
-    if (!token) return res.status(401).json({ error: "Not logged in" });
-
     try {
-        const decoded = jwt.verify(token, JWT_SECRET);
+        const authHeader = req.headers['authorization'];
+        const token = authHeader && authHeader.split(' ')[1];
+        if (!token) return res.status(401).json({ error: "Not logged in" });
+
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
         const db = await getDb();
         
-        // 1. Find the user first
+        // 1. Find the user profile
         const user = await db.collection("users").findOne({ _id: new ObjectId(decoded.id) });
         
         if (!user) {
             return res.status(404).json({ error: "User profile not found" });
         }
 
-        // 2. Query orders using THREE matching methods to ensure no orders are missed
-        // This solves the ID mismatch issue you discovered
+        // 2. Query orders using multiple identifiers (solves the ID mismatch)
         const orders = await db.collection("orders")
             .find({
                 $or: [
-                    { userId: new ObjectId(decoded.id) },     // Match by ObjectId
-                    { userId: decoded.id },                  // Match by String ID
-                    { email: user.email.toLowerCase() },     // Match by Top-level Email
-                    { "customerDetails.email": user.email }  // Match by Nested Email
+                    { userId: new ObjectId(decoded.id) },
+                    { userId: decoded.id },
+                    { email: user.email },
+                    { "customerDetails.email": user.email }
                 ]
             })
             .sort({ createdAt: -1 })
             .toArray();
 
-        // Send the orders (even if it's an empty array, it won't be a 500 error)
         res.json(orders);
-
     } catch (e) {
-        console.error("Order History Error:", e.message);
-        
-        // Handle specific JWT errors vs Database errors
-        if (e.name === 'JsonWebTokenError') {
-            return res.status(401).json({ error: "Invalid session" });
-        }
-        
-        res.status(500).json({ 
-            error: "Failed to fetch orders",
-            details: e.message 
-        });
+        console.error("Fetch Orders Error:", e.message);
+        res.status(500).json({ error: "Server error fetching history", details: e.message });
     }
 });
 
-// Backend POST /api/orders
-router.post('/orders', async (req, res) => {
-    try {
-        const authHeader = req.headers['authorization'];
-        const token = authHeader && authHeader.split(' ')[1];
-        const db = await getDb();
-
-        let userId = null;
-        let email = req.body.customerDetails.email;
-
-        // If logged in, get the REAL ID from the token
-        if (token) {
-            const decoded = jwt.verify(token, process.env.JWT_SECRET);
-            userId = new ObjectId(decoded.id); // THIS ENSURES IT MATCHES THE USER COLLECTION
-        }
-
-        const newOrder = {
-            ...req.body,
-            userId: userId, // Set the validated ID
-            createdAt: new Date(),
-            status: 'pending'
-        };
-
-        const result = await db.collection("orders").insertOne(newOrder);
-        res.status(201).json({ orderId: result.insertedId });
-    } catch (e) {
-        res.status(500).json({ error: e.message });
-    }
-});
 
 app.use('/.netlify/functions/api', router);
 app.use('/api', router);
