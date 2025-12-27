@@ -122,7 +122,7 @@
 
     <div id="custom-toast" class="fixed bottom-10 left-1/2 -translate-x-1/2 z-[300] pointer-events-none">
         <div class="bg-brandBlack text-brandPink px-10 py-4 shadow-2xl flex items-center border border-brandPink/20">
-            <span id="toast-message" class="text-[9px] uppercase tracking-widest font-black">Added to Cart</span>
+            <span id="toast-message" class="text-[9px] uppercase tracking-widest font-black">Added to bag</span>
         </div>
     </div>
 
@@ -138,7 +138,7 @@
                 <h2 id="modal-name" class="text-2xl font-black uppercase tracking-widest mb-4">Combo Set</h2>
                 <p id="modal-price" class="text-xl text-brandPinkDark font-bold mb-8">₦0</p>
                 <div id="modal-sizes" class="flex flex-wrap gap-2 mb-10"></div>
-                <button id="modal-add-btn" class="w-full bg-brandBlack text-brandPink py-5 uppercase tracking-[0.3em] text-[10px] font-bold hover:bg-brandPink hover:text-brandBlack transition-all">Add Bundle to Cart</button>
+                <button id="modal-add-btn" class="w-full bg-brandBlack text-brandPink py-5 uppercase tracking-[0.3em] text-[10px] font-bold hover:bg-brandPink hover:text-brandBlack transition-all">Add Bundle to Bag</button>
             </div>
         </div>
     </div>
@@ -207,7 +207,7 @@
                     <label class="block text-[10px] uppercase tracking-widest mb-3">Select Size</label>
                     <div id="modal-sizes" class="flex flex-wrap gap-2"></div>
                 </div>
-                <button id="modal-add-btn" class="w-full bg-brandBlack text-brandPink py-4 uppercase tracking-[0.3em] text-xs hover:bg-brandPink hover:text-brandBlack transition-all">Add to Cart</button>
+                <button id="modal-add-btn" class="w-full bg-brandBlack text-brandPink py-4 uppercase tracking-[0.3em] text-xs hover:bg-brandPink hover:text-brandBlack transition-all">Add to Bag</button>
             </div>
         </div>
     </div>
@@ -296,7 +296,7 @@
                                 ${variants.map(v => `<option value="${v.size}" data-price="${v.price}">${v.size}</option>`).join('')}
                             </select>
 
-                            <button onclick="addToCart('${p._id}')" ${!inStock ? 'disabled' : ''} class="mt-auto w-full ${!inStock ? 'bg-gray-100 text-gray-300' : 'bg-brandBlack text-brandPink'} text-[9px] py-4 uppercase font-bold tracking-[0.2em] transition-all">
+                            <button onclick="addToBag('${p._id}')" ${!inStock ? 'disabled' : ''} class="mt-auto w-full ${!inStock ? 'bg-gray-100 text-gray-300' : 'bg-brandBlack text-brandPink'} text-[9px] py-4 uppercase font-bold tracking-[0.2em] transition-all">
                                 ${!inStock ? 'Unavailable' : 'Add Bundle'}
                             </button>
                         </div>
