@@ -15,7 +15,7 @@
                     colors: {
                         brandWhite: '#FFFFFF',
                         brandBlack: '#000000',
-                        brandPink: '#b453a4',
+                        brandPink: '#F7C8D0',
                         brandPinkDark: '#E2A9B3',
                     },
                     letterSpacing: {
@@ -25,95 +25,95 @@
             }
         }
     </script>
-  <style>
-    .fade-slide {
-        transition: opacity 1.5s cubic-bezier(0.4, 0, 0.2, 1);
-        background-color: #000;
-    }
-
-    /* FULL SCREEN MOBILE FIX */
-    .optimized-img {
-        width: 100%;
-        height: 100%;
-        /* 'cover' ensures the image fills the entire screen area */
-        object-fit: cover; 
-        object-position: center;
-        content-visibility: auto;
-        image-rendering: -webkit-optimize-contrast;
-        transition: transform 6s ease-out;
-        padding: 0; /* Remove padding to ensure it touches edges */
-    }
-
-    /* DESKTOP: Keep the framed luxury look if desired */
-    @media (min-width: 1024px) {
-        .optimized-img {
-            padding: 40px;
-            object-fit: contain;
+    <style>
+        .fade-slide {
+            transition: opacity 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+            background-color: #000;
         }
-    }
 
-    /* REDUCED FONT SIZE FOR MOBILE */
-    .brand-title {
-        /* Smaller base for mobile (1rem), larger for desktop (4.5rem) */
-        font-size: clamp(1rem, 6vw, 4.5rem); 
-        line-height: 1.1;
-        width: 85%;
-        margin-left: auto;
-        margin-right: auto;
-    }
+        /* RESPONSIVE FIX: 
+           'object-fit: contain' ensures the full image is seen without cutouts.
+           We use 'max-h-screen' and 'max-w-full' to prevent overflow.
+        */
+        .optimized-img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain; /* Shows full image, no cropping */
+            object-position: center;
+            content-visibility: auto;
+            image-rendering: -webkit-optimize-contrast;
+            transition: transform 6s ease-out;
+            padding: 0;
+        }
 
-    @keyframes progress {
-        from { width: 0%; }
-        to { width: 100%; }
-    }
+        /* For Desktop: Give it a slight breathing room if preferred */
+        @media (min-width: 1024px) {
+            .optimized-img {
+                padding: 20px;
+            }
+        }
 
-    .timer-bar {
-        animation: progress 9.5s linear forwards;
-    }
+        .brand-title {
+            font-size: clamp(1.5rem, 8vw, 4.5rem); 
+            line-height: 1.1;
+            width: 90%;
+            margin-left: auto;
+            margin-right: auto;
+            text-shadow: 0 0 30px rgba(0,0,0,0.8); /* Better legibility over images */
+        }
 
-    .h-screen-safe {
-        height: 100vh;
-        height: 100dvh; /* Essential for mobile browser address bars */
-    }
-    
-    body { animation: fadeIn 1.5s ease-in; }
-    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes progress {
+            from { width: 0%; }
+            to { width: 100%; }
+        }
 
-    .dot {
-        background-color: rgba(255, 255, 255, 0.2);
-        width: 15px;
-    }
-</style>
+        .timer-bar {
+            animation: progress 9.5s linear forwards;
+        }
+
+        .h-screen-safe {
+            height: 100vh;
+            height: 100dvh; 
+        }
+        
+        body { animation: fadeIn 1.5s ease-in; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .dot {
+            background-color: rgba(255, 255, 255, 0.2);
+            width: 15px;
+        }
+    </style>
 </head>
 <body class="bg-brandBlack text-brandWhite overflow-hidden antialiased">
 
     <div class="fixed top-0 left-0 h-[1px] bg-brandPink z-50 timer-bar"></div>
 
-    <header class="relative h-screen-safe w-full overflow-hidden flex items-center justify-center">
+    <header class="relative h-screen-safe w-full overflow-hidden flex items-center justify-center bg-brandBlack">
         
-    <div id="slider-container" class="absolute inset-0 z-0">
+        <div id="slider-container" class="absolute inset-0 z-0">
             <div class="slider-image absolute inset-0 opacity-100 fade-slide flex items-center justify-center">
-                <div class="absolute inset-0 bg-black/40 z-10"></div>
+                <div class="absolute inset-0 bg-black/30 z-10"></div>
                 <img src="https://i.imgur.com/KQ2leiY.jpeg" fetchpriority="high" class="optimized-img" alt="Luxury Scent 1">
             </div>
             
             <div class="slider-image absolute inset-0 opacity-0 fade-slide flex items-center justify-center">
-                <div class="absolute inset-0 bg-black/40 z-10"></div>
+                <div class="absolute inset-0 bg-black/30 z-10"></div>
                 <img src="https://i.imgur.com/Wp0HCu8.jpeg" class="optimized-img" alt="Luxury Scent 2">
             </div>
             
             <div class="slider-image absolute inset-0 opacity-0 fade-slide flex items-center justify-center">
-                <div class="absolute inset-0 bg-black/40 z-10"></div>
+                <div class="absolute inset-0 bg-black/30 z-10"></div>
                 <img src="https://i.imgur.com/BRl8AVs.jpeg" class="optimized-img" alt="Luxury Scent 3">
             </div>
         </div>
 
-<div class="relative z-30 flex flex-col justify-center items-center text-center px-6 pointer-events-none">
-            <h1 class="brand-title font-bold tracking-luxury uppercase mb-4 drop-shadow-2xl">
+        <div class="relative z-30 flex flex-col justify-center items-center text-center px-6 pointer-events-none">
+            <h1 class="brand-title font-bold tracking-luxury uppercase mb-4">
                 The Motunde Brand
             </h1>
             <div class="w-12 h-[1px] bg-brandPink/60 mb-6"></div>
-            <p class="text-[8px] md:text-xs tracking-[0.6em] md:tracking-[0.8em] uppercase text-brandPink font-light">
+            <p class="text-[9px] md:text-xs tracking-[0.6em] md:tracking-[0.8em] uppercase text-brandPink font-light">
                 Essence of Timeless Luxury
             </p>
         </div>
@@ -138,7 +138,8 @@
                 if (i === index) {
                     slide.style.opacity = '1';
                     slide.style.zIndex = '10';
-                    img.style.transform = "scale(1.1)"; 
+                    // Subtle zoom effect that doesn't push image out of bounds
+                    img.style.transform = "scale(1.05)"; 
                 } else {
                     slide.style.opacity = '0';
                     slide.style.zIndex = '0';
@@ -157,7 +158,6 @@
                 currentIndex++;
                 showSlide(currentIndex);
             } else {
-                // End of intro sequence: Smooth redirect
                 clearInterval(cycle);
                 document.body.style.transition = 'opacity 1.2s ease-in-out';
                 document.body.style.opacity = '0';
@@ -167,13 +167,11 @@
             }
         }
 
-        // Initialize
         const cycle = setInterval(nextSlide, slideInterval);
         showSlide(0);
 
-        // Preload shop data while the user is watching the splash screen
         window.addEventListener('load', () => {
-            fetch('/api/products').catch(() => {}); // Warm up the serverless function
+            fetch('/api/products').catch(() => {});
         });
     </script>
 </body>
