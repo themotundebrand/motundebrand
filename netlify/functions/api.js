@@ -984,51 +984,55 @@ router.get('/my-orders', async (req, res) => {
     try {
         const authHeader = req.headers['authorization'];
         const token = authHeader && authHeader.split(' ')[1];
-        
         if (!token) return res.status(401).json({ error: "Not logged in" });
 
-        // 1. Decode the token
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         const db = await getDb();
         
-        // 2. Safely try to find the user. 
-        // We use a try/catch here so if the ID is malformed, the whole route doesn't crash.
-        let currentUser = null;
+        // 1. Convert token ID to ObjectId safely
+        let userObjectId;
         try {
-            currentUser = await db.collection("users").findOne({ _id: new ObjectId(decoded.id) });
+            userObjectId = new ObjectId(decoded.id);
         } catch (idErr) {
-            console.log("Token ID format mismatch, continuing search by ID string...");
+            // If the ID in the token is not a valid 24-char hex string, 
+            // we don't crash; we just use the string version.
+            userObjectId = decoded.id; 
         }
 
-        // 3. Build a "Wide" Query
-        // This looks for the order using EVERY possible link (ID, String ID, or Email)
-        let query = {
+        // 2. Fetch user profile to get their email (for the fallback search)
+        const user = await db.collection("users").findOne({ 
+            $or: [{ _id: userObjectId }, { _id: decoded.id }] 
+        });
+
+        // 3. Build the Query - Search by BOTH ID and Email
+        // This ensures the order you showed (mistycpayne@gmail.com) is found
+        let orderQuery = {
             $or: [
-                { userId: decoded.id }, // Match as string
-                { "customerDetails.email": currentUser?.email } // Match by email from profile
+                { userId: decoded.id },
+                { userId: userObjectId }
             ]
         };
 
-        // If the ID was valid, also check as ObjectId
-        try {
-            query.$or.push({ userId: new ObjectId(decoded.id) });
-        } catch(e) {}
+        // If we found the user, add their email to the search criteria
+        if (user && user.email) {
+            orderQuery.$or.push({ "email": user.email });
+            orderQuery.$or.push({ "customerDetails.email": user.email });
+        }
 
-        // 4. Fetch the orders
         const orders = await db.collection("orders")
-            .find(query)
+            .find(orderQuery)
             .sort({ createdAt: -1 })
             .toArray();
 
-        // 5. Always return an array (even if empty) to prevent frontend crashes
+        // 4. Return result (even if empty)
         res.json(orders || []);
 
     } catch (e) {
-        // This logs the ACTUAL error to your Netlify Function Logs
-        console.error("DETAILED SERVER ERROR:", e); 
+        // This logs the ACTUAL error to your Netlify dashboard logs
+        console.error("Orders API Error:", e.message);
         res.status(500).json({ 
             error: "Error fetching order", 
-            message: e.message 
+            details: e.message 
         });
     }
 });
