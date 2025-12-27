@@ -874,6 +874,111 @@ router.post('/login', async (req, res) => {
     }
 });
 
+// --- BROADCAST EMAIL SYSTEM ---
+router.post('/admin/broadcast-email', authenticateAdmin, async (req, res) => {
+    try {
+        const db = await getDb();
+        const { type, category, manualEmails, subject, message } = req.body;
+
+        let recipientList = [];
+
+        // 1. Identify Target Audience
+        if (type === 'custom') {
+            // Split by comma and clean whitespace
+            recipientList = manualEmails.split(',').map(e => e.trim()).filter(e => e.includes('@'));
+        } 
+        else if (type === 'members') {
+            const users = await db.collection("users").find({}).project({ email: 1 }).toArray();
+            recipientList = users.map(u => u.email);
+        } 
+        else if (type === 'subscribers') {
+            // Assuming you have a newsletter collection, if not, it defaults to users
+            const subscribers = await db.collection("subscribers").find({}).project({ email: 1 }).toArray();
+            recipientList = subscribers.length > 0 ? subscribers.map(s => s.email) : [];
+        } 
+        else {
+            // "All" - Combine Users and Newsletter Subscribers
+            const users = await db.collection("users").find({}).project({ email: 1 }).toArray();
+            // Using a Set to ensure unique emails
+            const allEmails = new Set(users.map(u => u.email));
+            
+            // If you have a newsletter collection:
+            const subscribers = await db.collection("subscribers").find({}).project({ email: 1 }).toArray();
+            subscribers.forEach(s => allEmails.add(s.email));
+            
+            recipientList = Array.from(allEmails);
+        }
+
+        if (recipientList.length === 0) {
+            return res.status(400).json({ error: "No recipients found for the selected audience." });
+        }
+
+        // 2. Prepare the Email Template
+        // We replace newlines with <br> for HTML rendering
+        const htmlBody = message.replace(/\n/g, '<br>');
+
+        const emailTemplate = `
+            <!DOCTYPE html>
+            <html>
+            <body style="margin: 0; padding: 0; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #000000;">
+                <div style="max-width: 600px; margin: auto; padding: 40px; border: 1px solid #f4f4f4;">
+                    <center>
+                        <img src="https://i.imgur.com/CVKXV7R.png" alt="The Motunde Brand" width="70" style="display: block; margin-bottom: 20px;">
+                        <h1 style="text-transform: uppercase; letter-spacing: 6px; font-size: 18px; font-weight: 300; margin: 0;">The Motunde Brand</h1>
+                        <div style="width: 40px; height: 1px; background: #000; margin: 20px auto;"></div>
+                    </center>
+
+                    <div style="font-size: 14px; line-height: 1.8; color: #333; margin-top: 30px;">
+                        ${htmlBody}
+                    </div>
+
+                    <div style="margin-top: 50px; text-align: center; border-top: 1px solid #f4f4f4; padding-top: 30px;">
+                        <p style="font-size: 11px; color: #999; text-transform: uppercase; letter-spacing: 1px;">
+                            Luxury Scents • Timeless Elegance
+                        </p>
+                        <div style="font-size: 10px; color: #bbb; margin-top: 10px;">
+                            &copy; 2026 THE MOTUNDE BRAND. All rights reserved.<br>
+                            You are receiving this as a valued member of our community.
+                        </div>
+                    </div>
+                </div>
+            </body>
+            </html>
+        `;
+
+        // 3. Dispatch Emails
+        // Note: For very large lists (1000+), consider using a queue service like AWS SES or SendGrid.
+        // For Gmail SMTP, we send them in parallel.
+        const sendPromises = recipientList.map(email => {
+            return transporter.sendMail({
+                from: `"The Motunde Brand" <${process.env.EMAIL_USER}>`,
+                to: email,
+                subject: subject,
+                html: emailTemplate
+            });
+        });
+
+        await Promise.all(sendPromises);
+
+        // 4. Log the broadcast in the database for history
+        await db.collection("broadcast_logs").insertOne({
+            adminId: req.user.id,
+            subject,
+            recipientCount: recipientList.length,
+            category,
+            audienceType: type,
+            sentAt: new Date()
+        });
+
+        res.status(200).json({ 
+            message: `Broadcast sent successfully to ${recipientList.length} recipients.` 
+        });
+
+    } catch (e) {
+        console.error("BROADCAST ERROR:", e);
+        res.status(500).json({ error: "Broadcast failed", details: e.message });
+    }
+});
 
 // --- 1. UPDATE USER PROFILE (Name, Phone, WhatsApp, Address) ---
 router.put('/update', async (req, res) => {

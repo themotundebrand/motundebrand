@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TMB Admin | Communications Hub</title>
+    <link rel="icon" type="image/png" href="https://i.imgur.com/CVKXV7R.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brandWhite: '#FFFFFF',
+                        brandBlack: '#000000',
+                        brandPinkDark: '#D48A96',
+                        brandMist: '#8AB6D4',
+                        brandKidsBlue: '#5BA4B5',
+                        brandDeo: '#4A7C59',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #FBFBFB; }
+        .sidebar { transition: all 0.3s ease; }
+        .nav-link:hover { background-color: #FBFBFB; color: #000; border-left: 4px solid #D48A96; }
+        .mobile-overlay { background: rgba(0,0,0,0.5); display: none; }
+        .mobile-overlay.active { display: block; }
+        .input-focus:focus { border-color: #D48A96; outline: none; ring: 1px; ring-color: #D48A96; }
+        
+        /* Preview Modal styling */
+        #preview-modal { display: none; }
+        #preview-modal.active { display: flex; }
+    </style>
+</head>
+<body class="text-brandBlack">
+
+    <div class="lg:hidden bg-white border-b p-4 flex justify-between items-center sticky top-0 z-50">
+        <span class="font-bold tracking-widest text-xs uppercase">TMB Admin</span>
+        <button onclick="toggleSidebar()" class="text-brandBlack text-xl">
+            <i class="fa-solid fa-bars-staggered"></i>
+        </button>
+    </div>
+
+    <div class="flex">
+        <div id="overlay" onclick="toggleSidebar()" class="mobile-overlay fixed inset-0 z-40 lg:hidden"></div>
+        
+        <aside id="sidebar" class="sidebar fixed lg:static inset-y-0 left-0 z-50 w-64 bg-white border-r transform -translate-x-full lg:translate-x-0 h-screen flex flex-col flex-shrink-0">
+            <div class="p-8 border-b text-center">
+                <h1 class="font-bold tracking-[0.3em] text-sm italic uppercase">TMB Communications</h1>
+            </div>
+
+            <nav class="flex-1 px-4 py-8 space-y-1 overflow-y-auto">
+                <p class="text-[9px] uppercase tracking-[0.2em] text-gray-400 px-4 mb-4 font-bold">Inventory</p>
+                <a href="womenscents.html" class="nav-link flex items-center px-4 py-3 text-[10px] tracking-widest uppercase font-semibold">
+                    <i class="fa-solid fa-venus mr-3 w-5 text-brandPinkDark"></i> Women Scents
+                </a>
+                <a href="menscents.html" class="nav-link flex items-center px-4 py-3 text-[10px] tracking-widest uppercase font-semibold">
+                    <i class="fa-solid fa-mars mr-3 w-5 text-gray-400"></i> Men Scents
+                </a>
+                <a href="bodymistspray.html" class="nav-link flex items-center px-4 py-3 text-[10px] tracking-widest uppercase font-semibold">
+                    <i class="fa-solid fa-spray-can mr-3 w-5 text-brandMist"></i> Mists & Sprays
+                </a>
+                <a href="kidscents.html" class="nav-link flex items-center px-4 py-3 text-[10px] tracking-widest uppercase font-semibold">
+                    <i class="fa-solid fa-child mr-3 w-5 text-brandKidsBlue"></i> Kids Scents
+                </a>
+                <a href="comboscents.html" class="nav-link flex items-center px-4 py-3 text-[10px] tracking-widest uppercase font-semibold">
+                    <i class="fa-solid fa-layer-group mr-3 w-5 text-orange-400"></i> Combo Sets
+                </a>
+                 <a href="deodorant.html" class="nav-link flex items-center px-4 py-3 text-[10px] tracking-widest uppercase font-semibold">
+                    <i class="fa-solid fa-shield-halved mr-3 w-5 text-brandDeo"></i> Deodorants & Antiperspirants 
+                </a>
+
+                <div class="pt-8">
+                    <p class="text-[9px] uppercase tracking-[0.2em] text-gray-400 px-4 mb-4 font-bold">Business</p>
+                     <a href="customer-list.html" class="nav-link flex items-center px-4 py-3 text-[10px] tracking-widest uppercase font-semibold">
+                        <i class="fa-solid fa-bag-shopping mr-3 w-5 text-gray-400"></i> Membership
+                    </a>
+                     <a href="orderstats.html" class="nav-link flex items-center px-4 py-3 text-[10px] tracking-widest uppercase font-semibold">
+                        <i class="fa-solid fa-bag-shopping mr-3 w-5 text-gray-400"></i> Orders
+                    </a>
+                    <a href="analytics.html" class="nav-link flex items-center px-4 py-3 text-[10px] tracking-widest uppercase font-semibold">
+                        <i class="fa-solid fa-chart-simple mr-3 w-5 text-gray-400"></i> Analytics
+                    </a>
+                    <p class="text-[9px] uppercase tracking-[0.2em] text-gray-400 px-4 mb-4 font-bold">Outreach</p>
+                    <a href="emailnews.html" class="nav-link flex items-center px-4 py-3 text-[10px] tracking-widest uppercase font-semibold border-l-4 border-brandPinkDark bg-gray-50">
+                        <i class="fa-solid fa-paper-plane mr-3 w-5 text-brandPinkDark"></i> Broadcast Email
+                    </a>
+                </div>
+            </nav>
+
+            <div class="p-4 border-t">
+                <button onclick="logout()" class="w-full flex items-center justify-center px-4 py-3 text-[10px] uppercase tracking-widest font-bold bg-brandBlack text-white hover:bg-red-900 transition-all">
+                    <i class="fa-solid fa-power-off mr-2"></i> System Exit
+                </button>
+            </div>
+        </aside>
+
+    
+
+        <main class="flex-1 min-h-screen px-6 lg:px-10 py-12">
+            <div class="max-w-4xl mx-auto">
+                <div class="flex justify-between items-end mb-10">
+                    <div>
+                        <h2 class="text-2xl font-light tracking-tight mb-1">Broadcast Terminal</h2>
+                        <p class="text-[9px] uppercase tracking-[0.3em] text-brandPinkDark font-bold">Send updates to your entire audience</p>
+                    </div>
+                    <div class="hidden lg:block text-right">
+                        <p id="current-date" class="text-[10px] uppercase tracking-widest text-gray-400 font-bold"></p>
+                    </div>
+                </div>
+
+                <div class="mb-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <button onclick="applyTemplate('arrival')" class="bg-white border p-4 text-[9px] uppercase tracking-widest font-bold hover:border-brandPinkDark transition flex items-center justify-center">
+                        <i class="fa-solid fa-gift mr-2 text-brandPinkDark"></i> New Arrival Template
+                    </button>
+                    <button onclick="applyTemplate('update')" class="bg-white border p-4 text-[9px] uppercase tracking-widest font-bold hover:border-brandMist transition flex items-center justify-center">
+                        <i class="fa-solid fa-laptop-code mr-2 text-brandMist"></i> Web Update Template
+                    </button>
+                    <button onclick="applyTemplate('maintenance')" class="bg-white border p-4 text-[9px] uppercase tracking-widest font-bold hover:border-orange-400 transition flex items-center justify-center">
+                        <i class="fa-solid fa-wrench mr-2 text-orange-400"></i> Maintenance Template
+                    </button>
+                </div>
+
+                <div class="bg-white border p-8 shadow-sm">
+                    <form id="email-form" class="space-y-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="text-[10px] uppercase tracking-widest font-bold text-gray-400 block mb-2">Target Audience</label>
+                                <select id="recipient-type" class="w-full bg-gray-50 border p-3 text-xs tracking-widest input-focus">
+                                    <option value="all">All (Registered + Non-Registered)</option>
+                                    <option value="members">Registered Members Only</option>
+                                    <option value="subscribers">Newsletter Subscribers Only</option>
+                                    <option value="custom">Manual Entry</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="text-[10px] uppercase tracking-widest font-bold text-gray-400 block mb-2">Category Flag</label>
+                                <select id="email-category" class="w-full bg-gray-50 border p-3 text-xs tracking-widest input-focus">
+                                    <option value="update">General Store Update</option>
+                                    <option value="newsletter">Monthly Newsletter</option>
+                                    <option value="order-notice">Mass Order Status Update</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div id="manual-emails-div" class="hidden">
+                            <label class="text-[10px] uppercase tracking-widest font-bold text-gray-400 block mb-2">Manual Emails (comma separated)</label>
+                            <input type="text" id="manual-emails" placeholder="user@gmail.com, admin@tmb.com" class="w-full bg-gray-50 border p-3 text-xs input-focus">
+                        </div>
+
+                        <div>
+                            <label class="text-[10px] uppercase tracking-widest font-bold text-gray-400 block mb-2">Email Subject Line</label>
+                            <input type="text" id="subject" required class="w-full bg-gray-50 border p-3 text-xs input-focus" placeholder="Enter subject...">
+                        </div>
+
+                        <div>
+                            <label class="text-[10px] uppercase tracking-widest font-bold text-gray-400 block mb-2">Message Body</label>
+                            <textarea id="message" rows="12" required class="w-full bg-gray-50 border p-4 text-sm leading-relaxed input-focus" placeholder="Compose your luxury update here..."></textarea>
+                        </div>
+
+                        <div class="flex flex-col md:flex-row gap-4 pt-4 border-t">
+                            <button type="submit" class="flex-1 bg-brandBlack text-white py-4 text-[10px] uppercase tracking-[0.2em] font-bold hover:bg-brandPinkDark transition-all flex items-center justify-center">
+                                <i class="fa-solid fa-paper-plane mr-2"></i> Launch Broadcast
+                            </button>
+                            <button type="button" onclick="openPreview()" class="flex-1 border border-brandBlack py-4 text-[10px] uppercase tracking-[0.2em] font-bold hover:bg-gray-50 transition-all">
+                                <i class="fa-solid fa-eye mr-2"></i> Preview Layout
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <div id="status-box" class="mt-8 hidden p-4 border text-center text-[10px] uppercase tracking-widest font-bold"></div>
+            </div>
+        </main>
+    </div>
+
+    <div id="preview-modal" class="fixed inset-0 z-[100] bg-black bg-opacity-80 items-center justify-center p-4">
+        <div class="bg-white w-full max-w-lg h-[80vh] flex flex-col overflow-hidden">
+            <div class="p-4 border-b flex justify-between items-center bg-gray-50">
+                <span class="text-[9px] font-bold uppercase tracking-widest">Email Live Preview</span>
+                <button onclick="closePreview()" class="text-xl">&times;</button>
+            </div>
+            <div class="flex-1 overflow-y-auto bg-white p-6" id="preview-content">
+                </div>
+            <div class="p-4 bg-gray-50 text-center">
+                <button onclick="closePreview()" class="text-[9px] uppercase tracking-widest font-bold border border-black px-6 py-2">Close Preview</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = '/api';
+
+        const templates = {
+            arrival: {
+                subject: "DISCOVER: The New Essence Collection",
+                message: "Dear Valued Client,\n\nThe wait is over. We are thrilled to unveil our latest collection: [Collection Name]. Crafted with sophistication and designed for the modern individual.\n\nWHAT'S NEW:\n• [Fragrance 1] - Elegant & Timeless\n• [Fragrance 2] - Bold & Ethereal\n\nExperience the collection before it's gone.\n\nStay Fragrant,\nThe Motunde Brand Management"
+            },
+            update: {
+                subject: "ENHANCED: A Seamless TMB Experience Awaits",
+                message: "Hello,\n\nWe have just deployed a series of updates to our digital store to make your shopping experience smoother, faster, and more secure.\n\nKEY IMPROVEMENTS:\n• Optimized Mobile Browsing\n• Faster Checkout Processing\n\nExplore the new interface today.\n\nBest Regards,\nTMB Technical Team"
+            },
+            maintenance: {
+                subject: "NOTICE: Brief Scheduled Maintenance",
+                message: "Dear Customer,\n\nTo ensure we continue providing the highest level of service, the TMB store will undergo brief scheduled maintenance.\n\nSCHEDULE:\nDate: [Enter Date]\nTime: [Enter Time]\n\nWe apologize for the inconvenience.\n\nWarmly,\nThe Motunde Brand Admin"
+            }
+        };
+
+        function applyTemplate(type) {
+            document.getElementById('subject').value = templates[type].subject;
+            document.getElementById('message').value = templates[type].message;
+        }
+
+        function openPreview() {
+            const subject = document.getElementById('subject').value || "No Subject";
+            const message = document.getElementById('message').value.replace(/\n/g, '<br>');
+            
+            const previewHTML = `
+                <div style="font-family: 'Inter', sans-serif; color: #000;">
+                    <div style="text-align: center; border-bottom: 1px solid #eee; padding-bottom: 20px; margin-bottom: 20px;">
+                        <h1 style="letter-spacing: 0.3em; font-size: 14px; font-weight: bold;">THE MOTUNDE BRAND</h1>
+                    </div>
+                    <p style="font-size: 12px; font-weight: bold; color: #D48A96; text-transform: uppercase; letter-spacing: 1px;">Subject: ${subject}</p>
+                    <div style="font-size: 14px; line-height: 1.6; color: #333; margin-top: 20px;">
+                        ${message}
+                    </div>
+                    <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #eee; text-align: center; font-size: 10px; color: #999; letter-spacing: 1px;">
+                        © 2026 THE MOTUNDE BRAND | LUXURY SCENTS<br>
+                        This is an official administrative broadcast.
+                    </div>
+                </div>
+            `;
+            document.getElementById('preview-content').innerHTML = previewHTML;
+            document.getElementById('preview-modal').classList.add('active');
+        }
+
+        function closePreview() {
+            document.getElementById('preview-modal').classList.remove('active');
+        }
+
+        document.getElementById('recipient-type').addEventListener('change', function(e) {
+            document.getElementById('manual-emails-div').classList.toggle('hidden', e.target.value !== 'custom');
+        });
+
+        async function handleEmailSubmit(e) {
+            e.preventDefault();
+            const token = localStorage.getItem('tmb_admin_token');
+            const statusBox = document.getElementById('status-box');
+            
+            const payload = {
+                type: document.getElementById('recipient-type').value,
+                category: document.getElementById('email-category').value,
+                manualEmails: document.getElementById('manual-emails').value,
+                subject: document.getElementById('subject').value,
+                message: document.getElementById('message').value
+            };
+
+            statusBox.className = "mt-8 p-4 border text-center text-[10px] uppercase tracking-widest font-bold bg-blue-50 text-blue-600";
+            statusBox.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> DISPATCHING BROADCAST...';
+            statusBox.classList.remove('hidden');
+
+            try {
+                const res = await fetch(`${API_URL}/admin/broadcast-email`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                if (res.ok) {
+                    statusBox.className = "mt-8 p-4 border text-center text-[10px] uppercase tracking-widest font-bold bg-green-50 text-green-600";
+                    statusBox.innerHTML = 'BROADCAST SUCCESSFUL';
+                } else { throw new Error(); }
+            } catch (err) {
+                statusBox.className = "mt-8 p-4 border text-center text-[10px] uppercase tracking-widest font-bold bg-red-50 text-red-600";
+                statusBox.innerHTML = 'TRANSMISSION ERROR';
+            }
+        }
+
+        function toggleSidebar() {
+            document.getElementById('sidebar')?.classList.toggle('-translate-x-full');
+            document.getElementById('overlay')?.classList.toggle('active');
+        }
+
+        function logout() {
+            localStorage.removeItem('tmb_admin_token');
+            window.location.href = 'tmbadmin-login.html';
+        }
+
+        document.getElementById('email-form').onsubmit = handleEmailSubmit;
+
+        window.onload = () => {
+            if (!localStorage.getItem('tmb_admin_token')) window.location.href = 'tmbadmin-login.html';
+            document.getElementById('current-date').innerText = new Date().toLocaleDateString('en-US', {
+                weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+            });
+        };
+    </script>
+</body>
+</html>
