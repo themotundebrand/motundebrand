@@ -31,23 +31,30 @@
             background-color: #000;
         }
 
-       .optimized-img {
+     .optimized-img {
             width: 100%;
             height: 100%;
-            /* 'contain' ensures the whole image is visible without cropping */
-            object-fit: contain; 
+            /* 'cover' ensures the image fills the screen, 
+               'contain' would leave black bars but show the whole image */
+            object-fit: cover; 
             object-position: center;
             content-visibility: auto;
             image-rendering: -webkit-optimize-contrast;
             transition: transform 6s ease-out;
-            /* Prevents the image from touching the very edges of the screen */
-            padding: 20px; 
+            padding: 0; /* Removed padding to allow full-screen display */
+        }
+
+        /* Responsive Heading Size */
+        .brand-title {
+            font-size: clamp(1.5rem, 8vw, 4.5rem);
+            line-height: 1.2;
         }
 
         @media (min-width: 1024px) {
             .optimized-img {
-                /* Larger padding for desktop to keep that high-end boutique look */
-                padding: 60px;
+                /* Optional: Add padding back on desktop if you want the framed look */
+                padding: 40px;
+                object-fit: contain;
             }
         }
 
@@ -93,12 +100,12 @@
             </div>
         </div>
 
-        <div class="relative z-30 flex flex-col justify-center items-center text-center px-6 pointer-events-none">
-            <h1 class="text-3xl md:text-5xl lg:text-7xl font-bold tracking-luxury uppercase mb-4 drop-shadow-2xl">
+<div class="relative z-30 flex flex-col justify-center items-center text-center px-6 pointer-events-none">
+            <h1 class="brand-title font-bold tracking-luxury uppercase mb-4 drop-shadow-2xl">
                 The Motunde Brand
             </h1>
             <div class="w-12 h-[1px] bg-brandPink/60 mb-6"></div>
-            <p class="text-[9px] md:text-xs tracking-[0.8em] uppercase text-brandPink font-light">
+            <p class="text-[8px] md:text-xs tracking-[0.6em] md:tracking-[0.8em] uppercase text-brandPink font-light">
                 Essence of Timeless Luxury
             </p>
         </div>
