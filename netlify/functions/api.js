@@ -874,63 +874,45 @@ router.post('/login', async (req, res) => {
     }
 });
 
-// GET LOGGED-IN USER'S ORDERS
 router.get('/orders/my-orders', async (req, res) => {
-    // 1. IMMEDIATE LOG - If you don't see this, the request isn't hitting this code
-    console.log("!!! ATTENTION: Order Route Hit !!!");
-
     try {
         const authHeader = req.headers['authorization'];
         const token = authHeader && authHeader.split(' ')[1];
 
-        if (!token) {
-            console.log("FAIL: No Token");
-            return res.status(401).json({ error: "No token provided" });
+        if (!token) return res.status(401).json({ error: "Unauthorized" });
+
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const db = await getDb();
+
+        // 1. Validate ID format to prevent 500 crash
+        if (!decoded.id || !/^[0-9a-fA-F]{24}$/.test(decoded.id)) {
+            console.error("Invalid ID in token:", decoded.id);
+            return res.status(400).json({ error: "Invalid User Session" });
         }
 
-        // 2. VERIFY JWT
-        let decoded;
-        try {
-            decoded = jwt.verify(token, process.env.JWT_SECRET);
-            console.log("SUCCESS: Token valid for ID:", decoded.id);
-        } catch (jwtErr) {
-            console.log("FAIL: JWT Verify Error:", jwtErr.message);
-            return res.status(401).json({ error: "Invalid Session" });
-        }
+        const userObjectId = new ObjectId(decoded.id);
 
-        // 3. DATABASE CONNECTION
-        console.log("START: Connecting to DB...");
-        const db = await getDb(); 
+        // 2. Search for orders matching the ID OR the user's email 
+        // This is a safety net since your IDs in the database are mismatched
+        const user = await db.collection("users").findOne({ _id: userObjectId });
         
-        if (!db) {
-            throw new Error("getDb() returned null or undefined");
-        }
-        console.log("SUCCESS: DB Connected");
+        const query = {
+            $or: [
+                { userId: userObjectId },
+                { userId: decoded.id }, // in case it's stored as a string
+                { email: user ? user.email : "___none___" } // fallback to email matching
+            ]
+        };
 
-        // 4. OBJECTID CONVERSION
-        // Use the global ObjectId or pull it from the db object if necessary
-        const searchId = new ObjectId(decoded.id);
-
-        // 5. QUERY
         const orders = await db.collection("orders")
-            .find({ userId: searchId })
+            .find(query)
             .sort({ createdAt: -1 })
             .toArray();
 
-        console.log("SUCCESS: Found Orders count:", orders.length);
-        return res.json(orders);
-
-    } catch (err) {
-        // THIS IS THE MOST IMPORTANT PART
-        console.error("!!! CRITICAL ROUTE ERROR !!!");
-        console.error("Message:", err.message);
-        console.error("Stack:", err.stack);
-        
-        return res.status(500).json({ 
-            error: "Internal Server Error", 
-            message: err.message,
-            debug_point: "Catch Block" 
-        });
+        res.json(orders);
+    } catch (e) {
+        console.error("Order Fetch Error:", e);
+        res.status(500).json({ error: "Internal Server Error", details: e.message });
     }
 });
 
