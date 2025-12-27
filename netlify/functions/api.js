@@ -979,8 +979,6 @@ router.post('/change-password', async (req, res) => {
         res.status(401).json({ error: "Session expired" });
     }
 });
-
-// GET ORDER HISTORY
 router.get('/my-orders', async (req, res) => {
     try {
         const authHeader = req.headers['authorization'];
@@ -990,46 +988,34 @@ router.get('/my-orders', async (req, res) => {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         const db = await getDb();
         
-        // --- 1. SAFE OBJECTID CONVERSION ---
-        let userObjectId;
-        try {
-            userObjectId = new ObjectId(decoded.id);
-        } catch (idErr) {
-            console.error("Invalid ID format in token:", decoded.id);
-            return res.status(400).json({ error: "Invalid user session format" });
-        }
-
-        // --- 2. FIND USER WITH NULL CHECK ---
-        const user = await db.collection("users").findOne({ _id: userObjectId });
+        // 1. Get the current user's email from the database using the token ID
+        // Note: We use the ID from the TOKEN, not the one from the order
+        const user = await db.collection("users").findOne({ _id: new ObjectId(decoded.id) });
         
-        // --- 3. THE QUERY (Handles mismatched IDs and Emails) ---
-        // We build the query object carefully
-        let query = {
-            $or: [
-                { userId: userObjectId },
-                { userId: decoded.id } // check for string version too
-            ]
-        };
-
-        // If user exists, also check by their email as a fallback
-        if (user && user.email) {
-            query.$or.push({ email: user.email });
-            query.$or.push({ "customerDetails.email": user.email });
+        if (!user) {
+            return res.status(404).json({ error: "User not found" });
         }
 
+        // 2. Search for orders. 
+        // We check if the email matches OR if the userId matches.
+        // This ensures the order you showed (mistycpayne@gmail.com) WILL appear.
         const orders = await db.collection("orders")
-            .find(query)
+            .find({
+                $or: [
+                    { email: user.email }, 
+                    { "customerDetails.email": user.email },
+                    { userId: decoded.id },
+                    { userId: new ObjectId(decoded.id) }
+                ]
+            })
             .sort({ createdAt: -1 })
             .toArray();
 
         res.json(orders);
 
     } catch (e) {
-        console.error("Critical Route Error:", e);
-        res.status(500).json({ 
-            error: "Error fetching order", 
-            message: e.message 
-        });
+        console.error("Order Fetch Error:", e);
+        res.status(500).json({ error: "Internal Server Error", details: e.message });
     }
 });
 

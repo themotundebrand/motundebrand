@@ -447,7 +447,7 @@
     }
 
     // --- CHECKOUT LOGIC ---
-    async function handleCheckout() {
+   async function handleCheckout() {
         if (cart.length === 0) return showAlert("Empty Bag", "Please add items before checking out.");
         
         const name = document.getElementById('cust-name').value.trim();
@@ -476,7 +476,7 @@
             }
         }
 
-        // Change button state
+        // --- BUTTON LOADING STATE ---
         const checkoutBtn = document.querySelector('button[onclick="handleCheckout()"]');
         const originalText = checkoutBtn.innerText;
         checkoutBtn.innerText = "VERIFYING...";
@@ -484,8 +484,8 @@
 
         try {
             const token = localStorage.getItem('motunde_token');
-            const userData = localStorage.getItem('motunde_user');
-            const user = userData ? JSON.parse(userData) : null;
+            const userRaw = localStorage.getItem('motunde_user');
+            const userData = userRaw ? JSON.parse(userRaw) : null;
 
             const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
             
@@ -503,10 +503,11 @@
                 });
             }
             
-            // --- UPDATED ORDER DATA OBJECT ---
+            // --- UPDATED ORDER DATA OBJECT (ID MISMATCH FIX) ---
             const orderData = {
-                // This ensures the Order collection matches the User collection ID perfectly
-                userId: user ? (user._id || user.id) : null, 
+                // Critical Fix: Ensures the ID matches the User Collection (...3d0e)
+                userId: userData ? (userData._id || userData.id) : null, 
+                
                 items: cart.map(item => ({
                     productId: item.id || item._id, 
                     name: item.name,
@@ -528,7 +529,7 @@
                 paymentMethod: method,
                 receiptBase64,
                 receiptFileName,
-                isGuest: !token // Helper flag for the backend
+                isGuest: !token 
             };
 
             const response = await fetch('/api/orders', {
