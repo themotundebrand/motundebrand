@@ -31,29 +31,33 @@
         background-color: #000;
     }
 
-    /* MOBILE FIRST: Full screen, no gaps */
+    /* FIX: Show full image on mobile without cutting edges */
     .optimized-img {
         width: 100%;
         height: 100%;
-        object-fit: cover; /* This ensures the image fills the screen without stretching */
+        /* 'contain' ensures the entire image is visible; 'cover' cuts it */
+        object-fit: contain; 
         object-position: center;
         content-visibility: auto;
         image-rendering: -webkit-optimize-contrast;
         transition: transform 6s ease-out;
-        padding: 0; 
+        /* Adds a small safe-area padding so image doesn't touch screen edges */
+        padding: 20px; 
     }
 
-    /* DESKTOP ONLY: Framed look */
+    /* DESKTOP: Larger framing */
     @media (min-width: 1024px) {
         .optimized-img {
-            padding: 40px;
-            object-fit: contain; /* Shows the full image with a border/frame */
+            padding: 60px;
+            object-fit: contain;
         }
     }
 
+    /* Responsive Heading: Adjusted for small mobile to prevent override */
     .brand-title {
-        font-size: clamp(1rem, 8vw, 4.5rem);
+        font-size: clamp(1.2rem, 7vw, 4.5rem);
         line-height: 1.2;
+        width: 90%; /* Keeps text within bounds */
     }
 
     @keyframes progress {
@@ -72,6 +76,12 @@
     
     body { animation: fadeIn 1.5s ease-in; }
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+    /* Dot styling fix for visibility */
+    .dot {
+        background-color: rgba(255, 255, 255, 0.2);
+        width: 15px;
+    }
 </style>
 </head>
 <body class="bg-brandBlack text-brandWhite overflow-hidden antialiased">
