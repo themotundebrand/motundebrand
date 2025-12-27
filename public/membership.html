@@ -21,6 +21,10 @@
         }
     </script>
     <style>
+        /* Sidebar Transitions */
+        .sidebar-closed { transform: translateX(-100%); transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+        .sidebar-open { transform: translateX(0); transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+        
         /* Interactive Input Styling */
         input { 
             background: transparent !important; 
@@ -48,35 +52,42 @@
 
     <nav class="w-full z-[150] bg-brandBlack px-4 md:px-8 py-6 flex justify-between items-center border-b border-brandPink/10 sticky top-0">
         <div class="flex items-center gap-4">
+            <button onclick="toggleSidebar(true)" class="text-brandPink md:hidden">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path d="M4 6h16M4 12h16M4 18h16" stroke-width="2" stroke-linecap="round"></path>
+                </svg>
+            </button>
             <h1 class="text-brandPink text-xs md:text-lg font-black tracking-luxury uppercase">The Motunde Brand</h1>
         </div>
+        
         <div class="hidden md:flex space-x-8 text-[10px] tracking-widest uppercase text-white/90">
-           <a href="index.html" class="hover:text-brandPink transition">Home</a>
-        <a href="#women" class="hover:text-brandPink transition">Women</a>
-        <a href="#men" class="hover:text-brandPink transition">Men</a>
-        <a href="#kids" class="hover:text-brandPink transition">Kids</a>
+            <a href="index.html" class="hover:text-brandPink transition">Home</a>
+            <a href="shop.html#women" class="hover:text-brandPink transition">Women</a>
+            <a href="shop.html#men" class="hover:text-brandPink transition">Men</a>
+            <a href="orderhistory.html" class="hover:text-brandPink transition">Orders History</a>
             <button onclick="handleLogout()" class="text-brandPinkDark hover:text-white transition cursor-pointer">Logout</button>
         </div>
+
         <div class="flex items-center gap-5">
             <a href="cart.html" class="relative text-brandPink">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" stroke-width="1.5"></path></svg>
             </a>
         </div>
     </nav>
-    <div id="sidebar-overlay" onclick="toggleSidebar(false)" class="fixed inset-0 bg-black/60 z-[110] hidden backdrop-blur-sm"></div>
+
+    <div id="sidebar-overlay" onclick="toggleSidebar(false)" class="fixed inset-0 bg-black/60 z-[160] hidden backdrop-blur-sm"></div>
     
-    <aside id="sidebar" class="fixed top-0 left-0 h-full w-64 bg-brandBlack z-[120] sidebar-closed p-6 flex flex-col">
+    <aside id="sidebar" class="fixed top-0 left-0 h-full w-64 bg-brandBlack z-[170] sidebar-closed p-6 flex flex-col">
         <button onclick="toggleSidebar(false)" class="self-end text-brandPink mb-10">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" stroke-width="2"></path></svg>
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" stroke-width="2"></path></svg>
         </button>
         <div class="flex flex-col space-y-6 text-[10px] tracking-[0.25em] uppercase text-brandPink/80">
-            <a href="index.html" onclick="toggleSidebar(false)" class="hover:text-brandPink transition-colors">Home</a>
-            <a href="#women" onclick="toggleSidebar(false)" class="hover:text-brandPink transition-colors">Women</a>
-            <a href="#men" onclick="toggleSidebar(false)" class="hover:text-brandPink transition-colors">Men</a>
-            <a href="#kids" onclick="toggleSidebar(false)" class="hover:text-brandPink transition-colors">Kids</a>
-            <div class="pt-6 border-t border-brandPink/10 mt-4">
-                <a href="account.html" class="text-[9px] tracking-widest opacity-50 hover:opacity-100 transition-opacity">My Account</a>
-            </div>
+            <a href="index.html" class="hover:text-brandPink transition">Home</a>
+            <a href="shop.html#women" class="hover:text-brandPink transition">Women</a>
+            <a href="shop.html#men" class="hover:text-brandPink transition">Men</a>
+            <a href="orderhistory.html" class="hover:text-brandPink transition">My Orders</a>
+            <hr class="border-brandPink/10">
+            <button onclick="handleLogout()" class="text-left text-brandPinkDark">Logout</button>
         </div>
     </aside>
 
@@ -142,6 +153,21 @@
     </main>
 
     <script>
+        // SIDEBAR LOGIC
+        function toggleSidebar(open) {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+            if (open) {
+                sidebar.classList.replace('sidebar-closed', 'sidebar-open');
+                overlay.classList.remove('hidden');
+                document.body.style.overflow = 'hidden'; // Prevent scroll
+            } else {
+                sidebar.classList.replace('sidebar-open', 'sidebar-closed');
+                overlay.classList.add('hidden');
+                document.body.style.overflow = 'auto'; // Enable scroll
+            }
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
             const token = localStorage.getItem('motunde_token');
             const user = JSON.parse(localStorage.getItem('motunde_user'));
@@ -151,14 +177,12 @@
                 return; 
             }
 
-            // Populate Fields
             document.getElementById('welcome-name').innerText = `Welcome, ${user.name || 'Member'}`;
             document.getElementById('user-name').value = user.name || '';
             document.getElementById('user-email').value = user.email || '';
             document.getElementById('user-phone').value = user.phone || '';
             document.getElementById('user-whatsapp').value = user.whatsapp || '';
 
-            // Handle Address Object
             const addrField = document.getElementById('user-address');
             const cityField = document.getElementById('user-city');
             const stateField = document.getElementById('user-state');
@@ -172,22 +196,8 @@
             }
         });
 
-         function toggleSidebar(open) {
-        const sidebar = document.getElementById('sidebar');
-        const overlay = document.getElementById('sidebar-overlay');
-        if (open) {
-            sidebar.classList.replace('sidebar-closed', 'sidebar-open');
-            overlay.classList.remove('hidden');
-        } else {
-            sidebar.classList.replace('sidebar-open', 'sidebar-closed');
-            overlay.classList.add('hidden');
-        }
-    }
-    
         async function updateProfile() {
             const token = localStorage.getItem('motunde_token');
-            
-            // Collect updated values
             const updatedData = {
                 name: document.getElementById('user-name').value,
                 phone: document.getElementById('user-phone').value,
@@ -202,7 +212,6 @@
 
             try {
                 showNotification("Saving changes...");
-                
                 const response = await fetch('/api/user/update', {
                     method: 'PUT',
                     headers: { 
@@ -213,11 +222,8 @@
                 });
 
                 if (response.ok) {
-                    // Update Local Storage so changes persist on refresh
                     const current = JSON.parse(localStorage.getItem('motunde_user'));
                     localStorage.setItem('motunde_user', JSON.stringify({ ...current, ...updatedData }));
-                    
-                    // Update UI
                     document.getElementById('welcome-name').innerText = `Welcome, ${updatedData.name}`;
                     showNotification("Profile Updated Successfully");
                 } else {
@@ -258,8 +264,6 @@
         function showNotification(msg) {
             const toast = document.getElementById('notification-toast');
             const messageSpan = document.getElementById('toast-message');
-            if (!toast || !messageSpan) return;
-            
             messageSpan.innerText = msg;
             toast.classList.remove('opacity-0', 'translate-y-10', 'pointer-events-none');
             setTimeout(() => toast.classList.add('opacity-0', 'translate-y-10', 'pointer-events-none'), 3000);
