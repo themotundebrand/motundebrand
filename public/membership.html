@@ -24,7 +24,7 @@
         input { background: transparent !important; border-bottom: 1px solid #eee !important; transition: border-color 0.3s; }
         input:focus { border-color: #F7C8D0 !important; outline: none; }
         #notification-toast { transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
-        .order-card { border-left: 3px solid #F7C8D0; }
+        .order-card { border-left: 4px solid #F7C8D0; }
     </style>
 </head>
 <body class="bg-white font-sans antialiased text-brandBlack">
@@ -59,15 +59,12 @@
         </div>
 
         <section class="mb-20">
-            <div class="flex justify-between items-center mb-8 border-b border-gray-100 pb-4">
+            <div class="flex justify-between items-end border-b border-gray-100 pb-4 mb-8">
                 <h3 class="text-[11px] font-bold uppercase tracking-widest">Your Order History</h3>
-                <button onclick="fetchOrderHistory()" class="text-[8px] text-gray-400 hover:text-brandBlack flex items-center gap-1 uppercase">
-                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" stroke-width="2"/></svg>
-                    Refresh
-                </button>
+                <button onclick="fetchOrderHistory()" class="text-[9px] font-bold text-gray-400 hover:text-brandBlack uppercase tracking-widest transition">Refresh History</button>
             </div>
             <div id="order-history-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <p class="col-span-full text-[9px] text-gray-400 uppercase tracking-widest text-center py-10">Loading orders...</p>
+                <p class="text-[9px] text-gray-400 uppercase tracking-widest py-10">Syncing with server...</p>
             </div>
         </section>
 
@@ -75,8 +72,8 @@
             <div class="lg:col-span-2 space-y-16">
                 <section class="space-y-8">
                     <div class="flex justify-between items-end border-b border-gray-100 pb-4">
-                        <h3 class="text-[11px] font-bold uppercase tracking-widest">1. Personal & Shipping Details</h3>
-                        <button onclick="updateProfile()" class="text-[9px] font-black text-brandPinkDark uppercase tracking-widest hover:text-brandBlack transition">Save Changes</button>
+                        <h3 class="text-[11px] font-bold uppercase tracking-widest">Member Details</h3>
+                        <button onclick="updateProfile()" class="text-[9px] font-black text-brandPinkDark uppercase tracking-widest hover:text-brandBlack transition">Update Profile</button>
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                         <div class="space-y-1"><label class="text-[8px] text-gray-400 uppercase tracking-widest">Full Name</label><input type="text" id="user-name" class="w-full py-2 text-[11px] tracking-widest uppercase font-bold"></div>
@@ -91,12 +88,12 @@
             </div>
 
             <div class="lg:col-span-1">
-                <section class="space-y-8 p-8 bg-gray-50">
-                    <h3 class="text-[11px] font-bold uppercase tracking-widest border-b border-gray-200 pb-4">2. Security</h3>
+                <section class="bg-gray-50 p-8 space-y-8">
+                    <h3 class="text-[11px] font-bold uppercase tracking-widest border-b border-gray-200 pb-4">Security</h3>
                     <div class="space-y-6">
                         <input type="password" id="new-password" placeholder="NEW PASSWORD" class="w-full py-3 text-[10px] tracking-widest uppercase">
-                        <button onclick="changePassword()" class="w-full bg-brandBlack text-brandPink text-[9px] font-bold uppercase tracking-[0.2em] py-3 hover:bg-brandPink hover:text-brandBlack transition">
-                            Update Password
+                        <button onclick="changePassword()" class="w-full bg-brandBlack text-brandPink text-[9px] font-bold uppercase tracking-[0.2em] py-4 hover:bg-brandPink hover:text-brandBlack transition">
+                            Change Password
                         </button>
                     </div>
                 </section>
@@ -114,8 +111,7 @@
                 return;
             }
 
-            // Fill UI Details
-            document.getElementById('welcome-name').innerText = `Welcome, ${user.name}`;
+            document.getElementById('welcome-name').innerText = `Welcome back, ${user.name}`;
             document.getElementById('user-name').value = user.name || '';
             document.getElementById('user-email').value = user.email || '';
             document.getElementById('user-phone').value = user.phone || '';
@@ -132,62 +128,46 @@
             fetchOrderHistory();
         });
 
-        function showNotification(msg) {
-            const toast = document.getElementById('notification-toast');
-            document.getElementById('toast-message').innerText = msg;
-            toast.classList.remove('opacity-0', 'translate-y-10', 'pointer-events-none');
-            setTimeout(() => toast.classList.add('opacity-0', 'translate-y-10', 'pointer-events-none'), 3000);
-        }
-
         async function fetchOrderHistory() {
             const container = document.getElementById('order-history-container');
             const token = localStorage.getItem('motunde_token');
-            
+
             try {
                 const response = await fetch('/api/orders/my-orders', {
-                    headers: { 
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    }
+                    headers: { 'Authorization': `Bearer ${token}` }
                 });
 
-                if (!response.ok) {
-                    // This handles the 500 error specifically
-                    const errRes = await response.json();
-                    throw new Error(errRes.message || 'Database connection error');
-                }
-
+                if (!response.ok) throw new Error('Database Sync Failed');
                 const orders = await response.json();
 
-                if (!orders || !orders.length) {
-                    container.innerHTML = `<p class="col-span-full text-[9px] text-gray-400 uppercase tracking-widest text-center py-10">No orders found.</p>`;
+                if (!orders || orders.length === 0) {
+                    container.innerHTML = `<p class="col-span-full text-[9px] text-gray-400 uppercase tracking-widest text-center py-10">No order history found yet.</p>`;
                     return;
                 }
 
                 container.innerHTML = orders.map(order => `
-                    <div class="order-card bg-white p-6 border border-gray-100 shadow-sm transition hover:shadow-md">
+                    <div class="order-card bg-white p-6 border border-gray-100 shadow-sm">
                         <div class="flex justify-between items-start mb-4">
                             <div>
-                                <span class="text-[8px] text-gray-400 uppercase tracking-widest block mb-1">Order Ref</span>
+                                <span class="text-[7px] text-gray-400 uppercase tracking-widest block">Reference</span>
                                 <span class="text-[10px] font-black uppercase tracking-tighter">#${order._id.slice(-8)}</span>
                             </div>
-                            <span class="text-[7px] px-2 py-1 ${order.status === 'completed' ? 'bg-green-50 text-green-600' : 'bg-brandPink text-brandBlack'} font-bold uppercase tracking-widest">
-                                ${order.status || 'Processing'}
+                            <span class="text-[7px] px-2 py-1 bg-brandPink text-brandBlack font-bold uppercase tracking-widest">
+                                ${order.status || 'Pending'}
                             </span>
                         </div>
                         <div class="mb-4">
-                             <span class="text-[8px] text-gray-400 uppercase tracking-widest block mb-1">Total Amount</span>
-                             <p class="text-[12px] font-bold">₦${Number(order.totalPrice || 0).toLocaleString()}</p>
+                             <span class="text-[7px] text-gray-400 uppercase tracking-widest block">Total Price</span>
+                             <p class="text-[12px] font-bold">₦${(order.totalPrice || 0).toLocaleString()}</p>
                         </div>
-                        <div class="pt-4 border-t border-gray-50 flex justify-between items-center">
-                            <span class="text-[8px] text-gray-400 uppercase font-medium">${new Date(order.createdAt).toLocaleDateString()}</span>
-                            <button class="text-[8px] font-bold text-brandPinkDark hover:text-brandBlack uppercase tracking-widest">View Details</button>
+                        <div class="pt-4 border-t border-gray-50 flex justify-between items-center text-[8px] text-gray-400 uppercase">
+                            <span>${new Date(order.createdAt).toLocaleDateString()}</span>
+                            <span class="font-bold text-brandPinkDark">View Details</span>
                         </div>
                     </div>
                 `).join('');
             } catch (err) {
-                console.error("Order Load Error:", err);
-                container.innerHTML = `<p class="col-span-full text-[9px] text-red-400 uppercase tracking-widest text-center py-10">Sync Error: ${err.message}. Please refresh.</p>`;
+                container.innerHTML = `<p class="col-span-full text-[9px] text-red-500 uppercase tracking-widest text-center py-10">Server Connection Error. Check MongoDB IP Whitelist.</p>`;
             }
         }
 
@@ -246,6 +226,13 @@
             } catch (err) {
                 showNotification("Error changing password");
             }
+        }
+
+        function showNotification(msg) {
+            const toast = document.getElementById('notification-toast');
+            document.getElementById('toast-message').innerText = msg;
+            toast.classList.remove('opacity-0', 'translate-y-10', 'pointer-events-none');
+            setTimeout(() => toast.classList.add('opacity-0', 'translate-y-10', 'pointer-events-none'), 3000);
         }
 
         function handleLogout() {
