@@ -165,26 +165,27 @@
         document.getElementById('overlay').classList.toggle('active');
     }
 
-    async function fetchInventory() {
-        try {
-            const res = await fetch(`${API_URL}/products`);
-            const products = await res.json();
-            
-            // Filter based on your DB structure: category is inside variants[0]
-            const collection = products.filter(p => {
-                const firstVariant = p.variants && p.variants[0];
-                return firstVariant && (firstVariant.category || '').toLowerCase() === 'deodorant';
-            });
-            
-            renderUnifiedTable(collection);
-            fetchSalesLog(collection);
+ async function fetchInventory() {
+    try {
+        const res = await fetch(`${API_URL}/products`);
+        const products = await res.json();
+        
+        // FIX: Look at p.category, not p.variants[0].category
+        const collection = products.filter(p => 
+            (p.category || '').toLowerCase().trim() === 'deodorant'
+        );
+        
+        console.log("Filtered Deodorants:", collection); // Debugging line
+        
+        renderUnifiedTable(collection);
+        fetchSalesLog(collection);
 
-        } catch (err) {
-            console.error("Fetch Error:", err);
-            const errorHtml = '<tr><td colspan="4" class="p-12 text-center text-xs text-red-400 uppercase font-bold tracking-widest">CRITICAL: Database Sync Failed</td></tr>';
-            document.getElementById('unified-deo-list').innerHTML = errorHtml;
-        }
+    } catch (err) {
+        console.error("Fetch Error:", err);
+        const errorHtml = '<tr><td colspan="4" class="p-12 text-center text-xs text-red-400 uppercase font-bold tracking-widest">CRITICAL: Database Sync Failed</td></tr>';
+        document.getElementById('unified-deo-list').innerHTML = errorHtml;
     }
+}
 
     function renderUnifiedTable(items) {
         const container = document.getElementById('unified-deo-list');
@@ -201,7 +202,7 @@
             const totalStock = (product.variants || []).reduce((sum, v) => sum + (parseInt(v.stock) || 0), 0);
             
             // Image handling (using imageKey from your variant data)
-            const imgPath = firstVariant.imageKey ? `/uploads/${firstVariant.imageKey}` : 'https://via.placeholder.com/40';
+        const imgPath = product.imageKey ? `/uploads/${product.imageKey}` : 'https://via.placeholder.com/40';
 
             const variantsHtml = (product.variants || []).map(v => `
                 <div class="flex justify-between items-center mb-1 border-b border-gray-50 pb-1 last:border-0 w-40">
