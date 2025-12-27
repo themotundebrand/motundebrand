@@ -202,7 +202,7 @@
                     <label class="block text-[10px] uppercase tracking-widest mb-3">Select Size</label>
                     <div id="modal-sizes" class="flex flex-wrap gap-2"></div>
                 </div>
-                <button id="modal-add-btn" class="w-full bg-brandBlack text-brandPink py-4 uppercase tracking-[0.3em] text-xs hover:bg-brandPink hover:text-brandBlack transition-all">Add to Cart</button>
+                <button id="modal-add-btn" class="w-full bg-brandBlack text-brandPink py-4 uppercase tracking-[0.3em] text-xs hover:bg-brandPink hover:text-brandBlack transition-all">Add to Bag</button>
             </div>
         </div>
     </div>
@@ -264,8 +264,8 @@
                                 ${variants.map(v => `<option value="${v.size}" data-price="${v.price}">${v.size}</option>`).join('')}
                             </select>
 
-                            <button onclick="addToCart('${p._id}')" ${!inStock ? 'disabled' : ''} class="w-full ${!inStock ? 'bg-gray-100 text-gray-400' : 'bg-black text-white'} text-[9px] py-3 uppercase tracking-[0.2em] hover:bg-brandPink hover:text-black transition-all">
-                                ${!inStock ? 'Unavailable' : 'Add to Cart'}
+                            <button onclick="addToBag('${p._id}')" ${!inStock ? 'disabled' : ''} class="w-full ${!inStock ? 'bg-gray-100 text-gray-400' : 'bg-black text-white'} text-[9px] py-3 uppercase tracking-[0.2em] hover:bg-brandPink hover:text-black transition-all">
+                                ${!inStock ? 'Unavailable' : 'Add to Bag'}
                             </button>
                         </div>
                     </div>`;
@@ -278,7 +278,7 @@
             document.getElementById(`price-${id}`).innerText = `₦${Number(p).toLocaleString()}`;
         }
 
-        function addToCart(id) {
+        function addToBag(id) {
             const p = currentProducts.find(x => x._id === id);
             const sel = document.querySelector(`select[data-id="${id}"]`);
             const price = sel.options[sel.selectedIndex].dataset.price;
