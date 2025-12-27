@@ -980,56 +980,57 @@ router.post('/change-password', async (req, res) => {
     }
 });
 
+// BACKEND CODE: Replace your current GET /my-orders route with this:
 router.get('/my-orders', async (req, res) => {
     try {
         const authHeader = req.headers['authorization'];
         const token = authHeader && authHeader.split(' ')[1];
         if (!token) return res.status(401).json({ error: "Not logged in" });
 
+        // 1. Decode token
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         const db = await getDb();
         
-        // 1. Convert token ID to ObjectId safely
-        let userObjectId;
+        // 2. Safely find the User 
+        // We use a try/catch specifically for the ID conversion to prevent crashing
+        let currentUser = null;
         try {
-            userObjectId = new ObjectId(decoded.id);
-        } catch (idErr) {
-            // If the ID in the token is not a valid 24-char hex string, 
-            // we don't crash; we just use the string version.
-            userObjectId = decoded.id; 
+            currentUser = await db.collection("users").findOne({ _id: new ObjectId(decoded.id) });
+        } catch (idError) {
+            console.error("Invalid ID format in token:", decoded.id);
         }
 
-        // 2. Fetch user profile to get their email (for the fallback search)
-        const user = await db.collection("users").findOne({ 
-            $or: [{ _id: userObjectId }, { _id: decoded.id }] 
-        });
-
-        // 3. Build the Query - Search by BOTH ID and Email
-        // This ensures the order you showed (mistycpayne@gmail.com) is found
-        let orderQuery = {
+        // 3. Build the Query: Search by BOTH ID and Email
+        // This is the "Bridge" that connects your mismatched data
+        let query = {
             $or: [
-                { userId: decoded.id },
-                { userId: userObjectId }
+                { userId: decoded.id }, // Match ID as string
             ]
         };
 
-        // If we found the user, add their email to the search criteria
-        if (user && user.email) {
-            orderQuery.$or.push({ "email": user.email });
-            orderQuery.$or.push({ "customerDetails.email": user.email });
+        // If the ID conversion worked, add it as a search option
+        try {
+            query.$or.push({ userId: new ObjectId(decoded.id) });
+        } catch(e) {}
+
+        // IF we found the user, add their email to the search (The Fallback)
+        if (currentUser && currentUser.email) {
+            query.$or.push({ email: currentUser.email });
+            query.$or.push({ "customerDetails.email": currentUser.email });
         }
 
+        // 4. Fetch the orders
         const orders = await db.collection("orders")
-            .find(orderQuery)
+            .find(query)
             .sort({ createdAt: -1 })
             .toArray();
 
-        // 4. Return result (even if empty)
+        // Always return an array, even if empty, to keep the frontend happy
         res.json(orders || []);
 
     } catch (e) {
-        // This logs the ACTUAL error to your Netlify dashboard logs
-        console.error("Orders API Error:", e.message);
+        // This logs the ACTUAL reason for the 500 error in your Netlify dashboard
+        console.error("CRITICAL SERVER ERROR:", e.message);
         res.status(500).json({ 
             error: "Error fetching order", 
             details: e.message 
