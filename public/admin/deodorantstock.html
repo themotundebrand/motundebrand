@@ -187,66 +187,73 @@
     }
 }
 
-    function renderUnifiedTable(items) {
-        const container = document.getElementById('unified-deo-list');
-        container.innerHTML = '';
+   function renderUnifiedTable(items) {
+    const container = document.getElementById('unified-deo-list');
+    container.innerHTML = '';
 
-        if (items.length === 0) {
-            container.innerHTML = `<tr><td colspan="4" class="p-12 text-center text-xs text-gray-400 uppercase tracking-widest">No inventory items found</td></tr>`;
-            return;
-        }
-
-        items.forEach(product => {
-            // Extract core info from the first variant per your DB structure
-            const firstVariant = product.variants[0] || {};
-            const totalStock = (product.variants || []).reduce((sum, v) => sum + (parseInt(v.stock) || 0), 0);
-            
-            // Image handling (using imageKey from your variant data)
-        const imgPath = product.imageKey ? `/uploads/${product.imageKey}` : 'https://via.placeholder.com/40';
-
-            const variantsHtml = (product.variants || []).map(v => `
-                <div class="flex justify-between items-center mb-1 border-b border-gray-50 pb-1 last:border-0 w-40">
-                    <span class="text-[10px] font-bold text-gray-400 uppercase">${v.size || 'Standard'}</span>
-                    <div class="flex items-center gap-2">
-                        <span class="text-[11px] font-mono ${parseInt(v.stock) < 5 ? 'text-red-500 font-bold' : 'text-gray-700'}">
-                            ${v.stock}
-                        </span>
-                        <span class="text-[8px] text-gray-400 uppercase tracking-tighter">Units</span>
-                    </div>
-                </div>
-            `).join('');
-
-            const row = `
-                <tr class="border-b hover:bg-gray-50 transition-colors group">
-                    <td class="px-8 py-6">
-                        <div class="flex items-center">
-                            <img src="${imgPath}" class="w-12 h-12 object-cover mr-6 border border-gray-100 bg-gray-50 rounded-sm grayscale group-hover:grayscale-0 transition-all">
-                            <div>
-                                <p class="text-[11px] font-bold uppercase tracking-wider mb-1 text-gray-800">${product.name}</p>
-                                <p class="text-[9px] text-gray-400 uppercase tracking-widest font-medium">Net Stock: ${totalStock}</p>
-                            </div>
-                        </div>
-                    </td>
-                    <td class="px-8 py-6">
-                         <span class="text-[9px] font-bold px-2 py-1 uppercase tracking-tighter border border-gray-200 text-gray-500 bg-gray-50 rounded-sm">
-                            ${firstVariant.subCategory || 'General'}
-                        </span>
-                    </td>
-                    <td class="px-8 py-6">
-                        <div class="inline-block">${variantsHtml}</div>
-                    </td>
-                    <td class="px-8 py-6">
-                        ${totalStock > 0 
-                            ? `<span class="text-[8px] font-bold px-3 py-1.5 uppercase tracking-widest text-emerald-600 bg-emerald-50 border border-emerald-100 rounded-sm">Available</span>`
-                            : `<span class="text-[8px] font-bold px-3 py-1.5 uppercase tracking-widest text-red-600 bg-red-50 border border-red-100 rounded-sm">Out of Stock</span>`
-                        }
-                    </td>
-                </tr>
-            `;
-            container.innerHTML += row;
-        });
+    if (items.length === 0) {
+        container.innerHTML = `<tr><td colspan="4" class="p-12 text-center text-xs text-gray-400 uppercase tracking-widest">No inventory items found</td></tr>`;
+        return;
     }
 
+    items.forEach(product => {
+        const firstVariant = product.variants[0] || {};
+        const totalStock = (product.variants || []).reduce((sum, v) => sum + (parseInt(v.stock) || 0), 0);
+        
+        // FIX 1: IMAGE HANDLING
+        // If your backend provides a full URL (like from your S3 signed URL logic), use it.
+        // Otherwise, if you aren't sending signed URLs in the bulk list, 
+        // you may need a helper function to fetch them or make the bucket public-read.
+        const imgPath = product.imageUrl || (product.imageKey ? `/api/products/image/${product.imageKey}` : 'https://via.placeholder.com/40');
+
+        // FIX 2: TYPE HANDLING
+        // Checks product level first, then variant level, then defaults to 'General'
+        const productType = product.subCategory || firstVariant.subCategory || 'General';
+
+        const variantsHtml = (product.variants || []).map(v => `
+            <div class="flex justify-between items-center mb-1 border-b border-gray-50 pb-1 last:border-0 w-40">
+                <span class="text-[10px] font-bold text-gray-400 uppercase">${v.size || 'Standard'}</span>
+                <div class="flex items-center gap-2">
+                    <span class="text-[11px] font-mono ${parseInt(v.stock) < 5 ? 'text-red-500 font-bold' : 'text-gray-700'}">
+                        ${v.stock}
+                    </span>
+                    <span class="text-[8px] text-gray-400 uppercase tracking-tighter">Units</span>
+                </div>
+            </div>
+        `).join('');
+
+        const row = `
+            <tr class="border-b hover:bg-gray-50 transition-colors group">
+                <td class="px-8 py-6">
+                    <div class="flex items-center">
+                        <img src="${imgPath}" alt="${product.name}" 
+                             onerror="this.src='https://via.placeholder.com/40'"
+                             class="w-12 h-12 object-cover mr-6 border border-gray-100 bg-gray-50 rounded-sm grayscale group-hover:grayscale-0 transition-all">
+                        <div>
+                            <p class="text-[11px] font-bold uppercase tracking-wider mb-1 text-gray-800">${product.name}</p>
+                            <p class="text-[9px] text-gray-400 uppercase tracking-widest font-medium">Net Stock: ${totalStock}</p>
+                        </div>
+                    </div>
+                </td>
+                <td class="px-8 py-6">
+                     <span class="text-[9px] font-bold px-2 py-1 uppercase tracking-tighter border border-gray-200 text-gray-500 bg-gray-50 rounded-sm">
+                        ${productType}
+                    </span>
+                </td>
+                <td class="px-8 py-6">
+                    <div class="inline-block">${variantsHtml}</div>
+                </td>
+                <td class="px-8 py-6">
+                    ${totalStock > 0 
+                        ? `<span class="text-[8px] font-bold px-3 py-1.5 uppercase tracking-widest text-emerald-600 bg-emerald-50 border border-emerald-100 rounded-sm">Available</span>`
+                        : `<span class="text-[8px] font-bold px-3 py-1.5 uppercase tracking-widest text-red-600 bg-red-50 border border-red-100 rounded-sm">Out of Stock</span>`
+                    }
+                </td>
+            </tr>
+        `;
+        container.innerHTML += row;
+    });
+}
     async function fetchSalesLog(deoProducts) {
         const token = localStorage.getItem('tmb_admin_token');
         const logContainer = document.getElementById('sales-log');
