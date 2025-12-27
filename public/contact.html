@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact Us | The Motunde Brand</title>
+    <link rel="icon" type="image/png" href="https://i.imgur.com/CVKXV7R.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brandBlack: '#000000',
+                        brandPink: '#F7C8D0',
+                        brandPinkDark: '#E2A9B3',
+                    },
+                    letterSpacing: { luxury: '0.4em', refined: '0.15em' }
+                }
+            }
+        }
+    </script>
+    <style>
+        .sidebar-closed { transform: translateX(-100%); transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+        .sidebar-open { transform: translateX(0); transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+        
+        .contact-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(247, 200, 208, 0.1);
+            transition: all 0.3s ease;
+        }
+        .contact-card:hover {
+            border-color: rgba(247, 200, 208, 0.4);
+            background: rgba(255, 255, 255, 0.05);
+        }
+    </style>
+</head>
+<body class="bg-brandBlack font-sans antialiased text-white">
+
+   
+    <nav class="w-full z-[150] bg-brandBlack px-4 md:px-8 py-6 flex justify-between items-center border-b border-brandPink/10 sticky top-0">
+        <div class="flex items-center gap-4">
+            <button onclick="toggleSidebar(true)" class="text-brandPink md:hidden">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path d="M4 6h16M4 12h16M4 18h16" stroke-width="2" stroke-linecap="round"></path>
+                </svg>
+            </button>
+            <h1 class="text-brandPink text-xs md:text-lg font-black tracking-luxury uppercase">The Motunde Brand</h1>
+        </div>
+        
+        <div class="hidden md:flex space-x-8 text-[10px] tracking-widest uppercase text-white/90">
+            <a href="shop.html" class="hover:text-brandPink transition">Home</a>
+            <a href="shop.html#women" class="hover:text-brandPink transition">Women</a>
+            <a href="shop.html#men" class="hover:text-brandPink transition">Men</a>
+            <a href="orderhistory.html" class="hover:text-brandPink transition">Orders History</a>
+            <button onclick="handleLogout()" class="text-brandPinkDark hover:text-white transition cursor-pointer">Logout</button>
+        </div>
+
+        <div class="flex items-center gap-5">
+            <a href="cart.html" class="relative text-brandPink">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" stroke-width="1.5"></path></svg>
+            </a>
+        </div>
+    </nav>
+
+    <div id="sidebar-overlay" onclick="toggleSidebar(false)" class="fixed inset-0 bg-black/60 z-[160] hidden backdrop-blur-sm"></div>
+    
+    <aside id="sidebar" class="fixed top-0 left-0 h-full w-64 bg-brandBlack z-[170] sidebar-closed p-6 flex flex-col">
+        <button onclick="toggleSidebar(false)" class="self-end text-brandPink mb-10">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" stroke-width="2"></path></svg>
+        </button>
+        <div class="flex flex-col space-y-6 text-[10px] tracking-[0.25em] uppercase text-brandPink/80">
+            <a href="shop.html" class="hover:text-brandPink transition">Home</a>
+            <a href="shop.html#women" class="hover:text-brandPink transition">Women</a>
+            <a href="shop.html#men" class="hover:text-brandPink transition">Men</a>
+            <a href="orderhistory.html" class="hover:text-brandPink transition">My Orders</a>
+            <hr class="border-brandPink/10">
+            <button onclick="handleLogout()" class="text-left text-brandPinkDark">Logout</button>
+        </div>
+    </aside>
+
+    <main class="min-h-screen">
+        <section class="max-w-4xl mx-auto px-6 py-24 text-center">
+            <div class="mb-12">
+                <h2 class="text-brandPink tracking-luxury uppercase text-2xl md:text-3xl mb-4">Private Client Relations</h2>
+                <div class="w-12 h-[1px] bg-brandPink mx-auto"></div>
+            </div>
+            
+            <p class="text-white/70 text-sm md:text-base mb-20 leading-loose max-w-2xl mx-auto font-light tracking-wide">
+                Our fragrance specialists are available to assist you with scent consultations, order inquiries, or gifting advice. We pride ourselves on providing a seamless luxury experience.
+            </p>
+
+            <div class="grid md:grid-cols-3 gap-8">
+                <div class="contact-card p-10">
+                    <h3 class="text-brandPink text-[10px] tracking-luxury uppercase mb-6">Email</h3>
+                    <p class="text-white text-xs md:text-sm font-medium tracking-widest break-words">themotundebrand@gmail.com</p>
+                </div>
+                
+                <div class="contact-card p-10">
+                    <h3 class="text-brandPink text-[10px] tracking-luxury uppercase mb-6">WhatsApp Luxe</h3>
+                    <p class="text-white text-xs md:text-sm font-medium tracking-widest">+234 902 529 1629</p>
+                </div>
+                
+                <div class="contact-card p-10">
+                    <h3 class="text-brandPink text-[10px] tracking-luxury uppercase mb-6">Hours</h3>
+                    <p class="text-white text-xs md:text-sm font-medium tracking-widest">Mon — Sat<br>09:00 — 18:00 WAT</p>
+                </div>
+            </div>
+
+            <div class="mt-24">
+                <a href="https://wa.me/2349025291629" class="inline-block bg-brandPink text-brandBlack px-12 py-4 text-[10px] font-bold uppercase tracking-luxury hover:bg-white transition-colors">
+                    Start Consultation
+                </a>
+            </div>
+        </section>
+    </main>
+
+    <footer class="bg-brandBlack pt-16 pb-10 px-6 md:px-12 border-t border-brandPink/5">
+        <div class="max-w-7xl mx-auto mb-16">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-12">
+                <div class="col-span-1">
+                    <h2 class="text-brandPink text-sm font-black tracking-luxury uppercase mb-6">The Motunde Brand</h2>
+                    <p class="text-brandPink/50 text-[10px] leading-relaxed tracking-widest uppercase max-w-xs">
+                        Timeless elegance for the modern individual. Redefining fashion through quality and luxury.
+                    </p>
+                </div>
+                <div class="col-span-1 md:col-span-2 grid grid-cols-2 gap-4">
+                    <div>
+                        <h4 class="text-brandPink text-[10px] font-bold tracking-widest uppercase mb-6">Collections</h4>
+                        <ul class="text-brandPink/60 text-[9px] space-y-4 tracking-widest uppercase">
+                            <li><a href="shop.html#women" class="hover:text-brandPink transition">Women</a></li>
+                            <li><a href="shop.html#men" class="hover:text-brandPink transition">Men</a></li>
+                            <li><a href="shop.html#kids" class="hover:text-brandPink transition">Kids</a></li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="text-brandPink text-[10px] font-bold tracking-widest uppercase mb-6">Support</h4>
+                        <ul class="text-brandPink/60 text-[9px] space-y-4 tracking-widest uppercase">
+                            <li><a href="contact.html" class="text-brandPink">Contact</a></li>
+                            <li><a href="shipping.html" class="hover:text-brandPink transition">Shipping</a></li>
+                            <li><a href="privacy.html" class="hover:text-brandPink transition">Privacy</a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="col-span-1">
+                    <h4 class="text-brandPink text-[10px] font-bold tracking-widest uppercase mb-6">Newsletter</h4>
+                    <div class="flex border-b border-brandPink/20 pb-2">
+                        <input type="email" placeholder="YOUR EMAIL" class="bg-transparent text-[10px] text-brandPink w-full focus:outline-none placeholder:text-brandPink/20 tracking-widest">
+                        <button class="text-brandPink text-[10px] font-bold ml-2">JOIN</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="border-t border-brandPink/10 pt-8 flex flex-col md:flex-row justify-between items-center gap-6">
+            <p class="text-brandPink/30 text-[8px] tracking-[0.3em] uppercase order-2 md:order-1">
+                © 2026 The Motunde Brand. All Rights Reserved.
+            </p>
+            <div class="flex flex-wrap justify-center gap-5 md:gap-6 order-1 md:order-2">
+                <a href="#" class="text-brandPink/40 hover:text-brandPink transition uppercase text-[8px] tracking-widest">Instagram</a>
+                <a href="#" class="text-brandPink/40 hover:text-brandPink transition uppercase text-[8px] tracking-widest">TikTok</a>
+                <a href="#" class="text-brandPink/40 hover:text-brandPink transition uppercase text-[8px] tracking-widest">Facebook</a>
+            </div>
+        </div>
+    </footer>
+     <a href="https://wa.me/2349025291629?text=Hi%20The%20Motunde%20Brand!%20My%20name%20is%20..." 
+       target="_blank" 
+       class="fixed bottom-6 right-6 z-[150] bg-[#25D366] p-3.5 rounded-full shadow-2xl transition-transform hover:scale-110 active:scale-95 whatsapp-pulse">
+        <svg class="w-7 h-7 text-white" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+        </svg>
+    </a>
+
+    <script>
+        function toggleSidebar(open) {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+            if (open) {
+                sidebar.classList.replace('sidebar-closed', 'sidebar-open');
+                overlay.classList.remove('hidden');
+                document.body.style.overflow = 'hidden';
+            } else {
+                sidebar.classList.replace('sidebar-open', 'sidebar-closed');
+                overlay.classList.add('hidden');
+                document.body.style.overflow = 'auto';
+            }
+        }
+    </script>
+</body>
+</html>
