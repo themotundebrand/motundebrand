@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Men's Collection | The Motunde Brand</title>
+    <link rel="icon" type="image/png" href="https://i.imgur.com/CVKXV7R.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brandBlack: '#000000',
+                        brandPink: '#F7C8D0',
+                        brandPinkDark: '#E2A9B3',
+                    },
+                    letterSpacing: { luxury: '0.4em', refined: '0.15em' }
+                }
+            }
+        }
+    </script>
+    <style>
+        html { scroll-behavior: smooth; }
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #000000; }
+        
+        #sidebar { transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+        .sidebar-open { transform: translateX(0); }
+        .sidebar-closed { transform: translateX(-100%); }
+
+        .product-card { transition: all 0.4s ease; border: 1px solid #f8f8f8; }
+        .product-card:hover { border-color: #000000; transform: translateY(-4px); }
+        
+        #custom-toast {
+            transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            transform: translateY(100px);
+            opacity: 0;
+        }
+        #custom-toast.show { transform: translateY(0); opacity: 1; }
+
+        @keyframes pulse-border {
+            0% { transform: scale(1); opacity: 0.8; }
+            100% { transform: scale(1.4); opacity: 0; }
+        }
+        .whatsapp-pulse::before {
+            content: ''; position: absolute; width: 100%; height: 100%;
+            background-color: #25D366; border-radius: 50%; z-index: -1;
+            animation: pulse-border 2s infinite;
+        }
+    </style>
+</head>
+<body class="bg-white font-sans antialiased">
+
+    <a href="https://wa.me/2349025291629?text=Hi%20The%20Motunde%20Brand!%20I'm%20interested%20in%20the%20Men's%20Collection..." 
+       target="_blank" 
+       class="fixed bottom-6 right-6 z-[150] bg-[#25D366] p-3.5 rounded-full shadow-2xl transition-transform hover:scale-110 whatsapp-pulse">
+        <svg class="w-7 h-7 text-white" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+        </svg>
+    </a>
+
+    <nav class="fixed w-full z-[150] bg-brandBlack px-4 md:px-8 py-4 flex justify-between items-center border-b border-white/10">
+        <div class="flex items-center gap-4">
+            <button onclick="toggleSidebar(true)" class="md:hidden text-brandPink">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 8h16M4 16h16" stroke-width="2"></path></svg>
+            </button>
+            <h1 class="text-brandPink text-xs md:text-lg font-black tracking-luxury uppercase cursor-pointer" onclick="window.location.href='index.html'">The Motunde Brand</h1>
+        </div>
+        <div class="hidden md:flex space-x-8 text-[10px] tracking-widest uppercase text-white/90">
+            <a href="index.html" class="hover:text-brandPink transition">Home</a>
+            <a href="shop.html" class="hover:text-brandPink transition">Shop</a>
+            <a href="womens.html" class="hover:text-brandPink transition">Women</a>
+            <a href="men.html" class="text-brandPink">Men</a>
+            <a href="orderhistory.html" class="hover:text-brandPink transition">Order History</a>
+        </div>
+        <div class="flex items-center gap-5 text-brandPink">
+            <button onclick="handleAccountClick()" class="hover:text-white transition">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" stroke-width="1.5"></path></svg>
+            </button>
+            <button onclick="window.location.href='cart.html'" class="relative hover:text-white transition">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" stroke-width="1.5"></path></svg>
+                <span id="cart-count" class="absolute -top-2 -right-2 bg-brandPink text-brandBlack text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center">0</span>
+            </button>
+        </div>
+    </nav>
+
+    <div id="sidebar-overlay" onclick="toggleSidebar(false)" class="fixed inset-0 bg-black/60 z-[110] hidden backdrop-blur-sm"></div>
+    <aside id="sidebar" class="fixed top-0 left-0 h-full w-64 bg-brandBlack z-[120] sidebar-closed p-6 flex flex-col">
+        <button onclick="toggleSidebar(false)" class="self-end text-brandPink mb-10">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" stroke-width="2"></path></svg>
+        </button>
+        <div class="flex flex-col space-y-6 text-[10px] tracking-[0.25em] uppercase text-brandPink/80">
+            <a href="index.html">Home</a>
+            <a href="shop.html">Shop</a>
+            <a href="womens.html">Women</a>
+            <a href="mens.html" class="text-brandPink">Men</a>
+            <a href="orderhistory.html">Order History</a>
+        </div>
+    </aside>
+
+    <header class="pt-32 pb-16 bg-white text-center border-b border-gray-100">
+        <h2 class="text-3xl md:text-5xl font-black uppercase tracking-[0.4em] text-brandBlack">Men</h2>
+        <p class="text-[10px] uppercase tracking-[0.5em] text-gray-400 mt-4">Sophistication & Strength</p>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 md:px-12 py-16">
+        <div id="men-full-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-6 gap-y-12">
+            <div class="col-span-full py-20 text-center uppercase tracking-widest text-gray-300 text-[10px]">
+                Loading Men's Collection...
+            </div>
+        </div>
+    </main>
+
+    <div id="custom-toast" class="fixed bottom-10 left-1/2 -translate-x-1/2 z-[300] pointer-events-none">
+        <div class="bg-black text-brandPink px-8 py-4 shadow-2xl flex items-center gap-4">
+            <span id="toast-message" class="text-[10px] uppercase tracking-widest font-bold">Added to bag</span>
+        </div>
+    </div>
+
+    <div id="product-modal" class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/95 opacity-0 invisible pointer-events-none transition-all duration-300">
+        <div class="bg-white w-full max-w-4xl relative flex flex-col md:flex-row">
+            <button onclick="closeModal()" class="absolute top-4 right-4 z-10 text-black">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" stroke-width="2"/></svg>
+            </button>
+            <div class="w-full md:w-1/2 bg-gray-50">
+                <img id="modal-img" src="" class="w-full h-full object-cover">
+            </div>
+            <div class="w-full md:w-1/2 p-10 flex flex-col justify-center">
+                <h2 id="modal-name" class="text-2xl font-bold uppercase tracking-widest mb-4">Product</h2>
+                <p id="modal-price" class="text-xl mb-8">₦0</p>
+                <div id="modal-sizes" class="flex flex-wrap gap-2 mb-8"></div>
+                <button id="modal-add-btn" class="w-full bg-black text-white py-4 uppercase tracking-widest text-xs hover:bg-brandPink hover:text-black transition-all">Add to Bag</button>
+            </div>
+        </div>
+    </div>
+
+   <footer class="bg-brandBlack pt-16 pb-10 px-6 md:px-12 border-t border-brandPink/5">
+    <div class="max-w-7xl mx-auto mb-16">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-12">
+            <div class="col-span-1">
+                <h2 class="text-brandPink text-sm font-black tracking-luxury uppercase mb-6">The Motunde Brand</h2>
+                <p class="text-brandPink/50 text-[10px] leading-relaxed tracking-widest uppercase max-w-xs">
+                    Timeless elegance for the modern individual. Redefining fashion through quality and luxury.
+                </p>
+            </div>
+            <div class="col-span-1 md:col-span-2 grid grid-cols-2 gap-4">
+                <div>
+                    <h4 class="text-brandPink text-[10px] font-bold tracking-widest uppercase mb-6">Collections</h4>
+                    <ul class="text-brandPink/60 text-[9px] space-y-4 tracking-widest uppercase">
+                        <li><a href="womens.html" class="hover:text-brandPink transition">Women</a></li>
+                        <li><a href="mens.html" class="hover:text-brandPink transition">Men</a></li>
+                        <li><a href="kids.html" class="hover:text-brandPink transition">Kids</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-brandPink text-[10px] font-bold tracking-widest uppercase mb-6">Support</h4>
+                    <ul class="text-brandPink/60 text-[9px] space-y-4 tracking-widest uppercase">
+                       <li><a href="contact.html" class="hover:text-brandPink transition">Contact</a></li>
+                            <li><a href="shipping.html" class="text-brandPink">Shipping</a></li>
+                            <li><a href="privacy.html" class="hover:text-brandPink transition">Privacy</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-span-1">
+                <h4 class="text-brandPink text-[10px] font-bold tracking-widest uppercase mb-6">Newsletter</h4>
+                <div class="flex border-b border-brandPink/20 pb-2">
+                    <input type="email" placeholder="YOUR EMAIL" class="bg-transparent text-[10px] text-brandPink w-full focus:outline-none placeholder:text-brandPink/20 tracking-widest">
+                    <button class="text-brandPink text-[10px] font-bold ml-2">JOIN</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="border-t border-brandPink/10 pt-8 flex flex-col md:flex-row justify-between items-center gap-6">
+        <p class="text-brandPink/30 text-[8px] tracking-[0.3em] uppercase order-2 md:order-1">
+            © 2026 The Motunde Brand. All Rights Reserved.
+        </p>
+        <div class="flex flex-wrap justify-center gap-5 md:gap-6 order-1 md:order-2">
+            <a href="#" class="text-brandPink/40 hover:text-brandPink transition uppercase text-[8px] tracking-widest">Instagram</a>
+            <a href="#" class="text-brandPink/40 hover:text-brandPink transition uppercase text-[8px] tracking-widest">TikTok</a>
+            <a href="#" class="text-brandPink/40 hover:text-brandPink transition uppercase text-[8px] tracking-widest">Facebook</a>
+        </div>
+    </div>
+</footer>
+
+    <div id="product-modal" class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/90 opacity-0 invisible pointer-events-none">
+        <div class="modal-content bg-white w-full max-w-4xl relative flex flex-col md:flex-row scale-95 shadow-2xl">
+            <button onclick="closeModal()" class="absolute top-4 right-4 z-10 text-brandBlack hover:text-brandPink">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" stroke-width="2"/></svg>
+            </button>
+            <div class="w-full md:w-1/2 bg-gray-100 aspect-square">
+                <img id="modal-img" src="" class="w-full h-full object-cover">
+            </div>
+            <div class="w-full md:w-1/2 p-8 md:p-12 flex flex-col justify-center">
+                <p id="modal-cat" class="text-[10px] uppercase tracking-widest text-brandPinkDark mb-2">Collection</p>
+                <h2 id="modal-name" class="text-2xl font-light uppercase tracking-[0.2em] mb-4">Product Name</h2>
+                <p id="modal-price" class="text-xl font-medium mb-8">₦0</p>
+                <div class="mb-8">
+                    <label class="block text-[10px] uppercase tracking-widest mb-3">Select Size</label>
+                    <div id="modal-sizes" class="flex flex-wrap gap-2"></div>
+                </div>
+                <button id="modal-add-btn" class="w-full bg-brandBlack text-brandPink py-4 uppercase tracking-[0.3em] text-xs hover:bg-brandPink hover:text-brandBlack transition-all">Add to Bag</button>
+            </div>
+        </div>
+    </div>
+    <script>
+        let currentProducts = [];
+        let cart = JSON.parse(localStorage.getItem('tmb_cart')) || [];
+
+        function toggleSidebar(open) {
+            const sb = document.getElementById('sidebar');
+            const ov = document.getElementById('sidebar-overlay');
+            sb.className = `fixed top-0 left-0 h-full w-64 bg-brandBlack z-[120] p-6 flex flex-col ${open ? 'sidebar-open' : 'sidebar-closed'}`;
+            ov.classList.toggle('hidden', !open);
+        }
+
+        function handleAccountClick() {
+            window.location.href = localStorage.getItem('motunde_token') ? 'membership.html' : 'account.html';
+        }
+
+        function showNotification(msg) {
+            const t = document.getElementById('custom-toast');
+            document.getElementById('toast-message').innerText = msg;
+            t.classList.add('show');
+            setTimeout(() => t.classList.remove('show'), 3000);
+        }
+
+        function updateCartBadge() {
+            document.getElementById('cart-count').innerText = cart.reduce((a, b) => a + b.quantity, 0);
+        }
+
+        async function loadMenProducts() {
+            try {
+                const res = await fetch('/api/products');
+                const data = await res.json();
+                // Filter for 'men' category
+                currentProducts = data.filter(p => p.category?.toLowerCase().trim() === 'men');
+                
+                const grid = document.getElementById('men-full-grid');
+                if (currentProducts.length === 0) {
+                    grid.innerHTML = `<div class="col-span-full py-20 text-center text-gray-400 uppercase tracking-widest">No products found.</div>`;
+                    return;
+                }
+
+                grid.innerHTML = currentProducts.map(p => {
+                    const variants = p.variants || [];
+                    const inStock = variants.some(v => v.stock > 0);
+                    const price = variants[0]?.price || 0;
+
+                    return `
+                    <div class="product-card bg-white p-2 flex flex-col relative group">
+                        ${!inStock ? `<div class="absolute inset-0 z-10 bg-white/40 flex items-center justify-center font-bold text-[10px] uppercase">Sold Out</div>` : ''}
+                        <div onclick="openModal('${p._id}')" class="aspect-[3/4] overflow-hidden mb-4 bg-gray-50 cursor-pointer">
+                            <img src="${p.imageUrl}" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110">
+                        </div>
+                        <div class="text-center px-2 pb-4">
+                            <h3 class="uppercase font-bold text-[10px] tracking-widest mb-2 truncate">${p.name}</h3>
+                            <p id="price-${p._id}" class="text-gray-900 font-bold text-[11px] mb-4">₦${Number(price).toLocaleString()}</p>
+                            
+                            <select data-id="${p._id}" onchange="updatePrice(this, '${p._id}')" class="w-full border border-gray-200 text-[9px] uppercase py-2 px-2 mb-4 bg-white focus:outline-none">
+                                ${variants.map(v => `<option value="${v.size}" data-price="${v.price}">${v.size}</option>`).join('')}
+                            </select>
+
+                            <button onclick="addToBag('${p._id}')" ${!inStock ? 'disabled' : ''} class="w-full ${!inStock ? 'bg-gray-100 text-gray-400' : 'bg-black text-white'} text-[9px] py-3 uppercase tracking-[0.2em] hover:bg-brandPink hover:text-black transition-all">
+                                ${!inStock ? 'Unavailable' : 'Add to Bag'}
+                            </button>
+                        </div>
+                    </div>`;
+                }).join('');
+            } catch (err) { console.error(err); }
+        }
+
+        function updatePrice(sel, id) {
+            const p = sel.options[sel.selectedIndex].dataset.price;
+            document.getElementById(`price-${id}`).innerText = `₦${Number(p).toLocaleString()}`;
+        }
+
+        function addToBag(id) {
+            const p = currentProducts.find(x => x._id === id);
+            const sel = document.querySelector(`select[data-id="${id}"]`);
+            const price = sel.options[sel.selectedIndex].dataset.price;
+            const size = sel.value;
+
+            const item = { id: p._id, name: p.name, price: Number(price), size, image: p.imageUrl, quantity: 1 };
+            const idx = cart.findIndex(x => x.id === id && x.size === size);
+            
+            if (idx > -1) cart[idx].quantity += 1;
+            else cart.push(item);
+
+            localStorage.setItem('tmb_cart', JSON.stringify(cart));
+            updateCartBadge();
+            showNotification(`${p.name} added`);
+        }
+
+        function openModal(id) {
+            const p = currentProducts.find(x => x._id === id);
+            if(!p) return;
+            document.getElementById('modal-img').src = p.imageUrl;
+            document.getElementById('modal-name').innerText = p.name;
+            document.getElementById('modal-price').innerText = `₦${Number(p.variants[0].price).toLocaleString()}`;
+            
+            const m = document.getElementById('product-modal');
+            m.classList.remove('invisible', 'opacity-0', 'pointer-events-none');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal() {
+            document.getElementById('product-modal').classList.add('invisible', 'opacity-0', 'pointer-events-none');
+            document.body.style.overflow = '';
+        }
+
+        loadMenProducts();
+        updateCartBadge();
+    </script>
+</body>
+</html>
