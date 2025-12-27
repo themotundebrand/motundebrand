@@ -278,7 +278,7 @@
             document.getElementById(`price-${id}`).innerText = `₦${Number(p).toLocaleString()}`;
         }
 
-        function addToBag(id) {
+        function addToCart(id) {
             const p = currentProducts.find(x => x._id === id);
             const sel = document.querySelector(`select[data-id="${id}"]`);
             const price = sel.options[sel.selectedIndex].dataset.price;
