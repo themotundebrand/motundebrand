@@ -447,7 +447,6 @@
     }
 
     // --- CHECKOUT LOGIC ---
-   // --- CHECKOUT LOGIC ---
     async function handleCheckout() {
         if (cart.length === 0) return showAlert("Empty Bag", "Please add items before checking out.");
         
@@ -485,6 +484,9 @@
 
         try {
             const token = localStorage.getItem('motunde_token');
+            const userData = localStorage.getItem('motunde_user');
+            const user = userData ? JSON.parse(userData) : null;
+
             const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
             
             let receiptBase64 = null;
@@ -501,9 +503,11 @@
                 });
             }
             
+            // --- UPDATED ORDER DATA OBJECT ---
             const orderData = {
+                // This ensures the Order collection matches the User collection ID perfectly
+                userId: user ? (user._id || user.id) : null, 
                 items: cart.map(item => ({
-                    // FIX: Ensure we use the correct ID property (id or _id)
                     productId: item.id || item._id, 
                     name: item.name,
                     size: item.size,
@@ -523,13 +527,10 @@
                 totalPrice: subtotal + FLAT_SHIPPING_FEE,
                 paymentMethod: method,
                 receiptBase64,
-                receiptFileName
+                receiptFileName,
+                isGuest: !token // Helper flag for the backend
             };
 
-            // LOG the data for debugging (Remove in production)
-            console.log("Sending Order Data:", orderData);
-
-            // Use relative path - netlify.toml handles the redirect to functions
             const response = await fetch('/api/orders', {
                 method: 'POST',
                 headers: { 
@@ -543,11 +544,9 @@
 
             if (response.ok) {
                 localStorage.removeItem('tmb_cart');
-                // Ensure we handle both potential ID keys from backend
                 const finalOrderId = result.orderId || result._id;
                 window.location.href = `order.html?id=${finalOrderId}`;
             } else {
-                // If backend returns 400, this will show the specific error (e.g., "Stock error")
                 console.error("Backend Error:", result);
                 showAlert("Order Failed", result.error || "Issue processing order.");
                 checkoutBtn.innerText = originalText;
