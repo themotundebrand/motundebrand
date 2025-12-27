@@ -23,9 +23,8 @@
     <style>
         input { background: transparent !important; border-bottom: 1px solid #eee !important; transition: border-color 0.3s; }
         input:focus { border-color: #F7C8D0 !important; outline: none; }
-        .sidebar-closed { transform: translateX(-100%); transition: transform 0.3s ease-in-out; }
-        .sidebar-open { transform: translateX(0); transition: transform 0.3s ease-in-out; }
         #notification-toast { transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+        .order-card { border-left: 3px solid #F7C8D0; }
     </style>
 </head>
 <body class="bg-white font-sans antialiased text-brandBlack">
@@ -52,209 +51,207 @@
         </div>
     </nav>
 
-    <main class="max-w-7xl mx-auto px-4 md:px-12 py-12 md:py-20">
+    <main class="max-w-7xl mx-auto px-4 md:px-12 py-12">
         <div class="mb-12">
             <h2 class="text-brandBlack text-2xl md:text-3xl font-light uppercase tracking-luxury">Member Profile</h2>
             <p id="welcome-name" class="text-[10px] tracking-widest text-brandPinkDark font-bold mt-2 uppercase"></p>
             <div class="w-12 h-[1px] bg-brandPink mt-4"></div>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-16">
-            
+        <section class="mb-20">
+            <div class="flex justify-between items-center mb-8 border-b border-gray-100 pb-4">
+                <h3 class="text-[11px] font-bold uppercase tracking-widest">Your Order History</h3>
+                <button onclick="fetchOrderHistory()" class="text-[8px] text-gray-400 hover:text-brandBlack flex items-center gap-1 uppercase">
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" stroke-width="2"/></svg>
+                    Refresh
+                </button>
+            </div>
+            <div id="order-history-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <p class="col-span-full text-[9px] text-gray-400 uppercase tracking-widest text-center py-10">Loading orders...</p>
+            </div>
+        </section>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-16 border-t border-gray-100 pt-16">
             <div class="lg:col-span-2 space-y-16">
-                
                 <section class="space-y-8">
                     <div class="flex justify-between items-end border-b border-gray-100 pb-4">
                         <h3 class="text-[11px] font-bold uppercase tracking-widest">1. Personal & Shipping Details</h3>
                         <button onclick="updateProfile()" class="text-[9px] font-black text-brandPinkDark uppercase tracking-widest hover:text-brandBlack transition">Save Changes</button>
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        <div class="space-y-1">
-                            <label class="text-[8px] text-gray-400 uppercase tracking-widest">Full Name</label>
-                            <input type="text" id="user-name" class="w-full py-2 text-[11px] tracking-widest uppercase font-bold">
-                        </div>
-                        <div class="space-y-1">
-                            <label class="text-[8px] text-gray-400 uppercase tracking-widest">Email (Read-only)</label>
-                            <input type="email" id="user-email" readonly class="w-full py-2 text-[11px] tracking-widest uppercase opacity-50 cursor-not-allowed">
-                        </div>
-                        <div class="space-y-1">
-                            <label class="text-[8px] text-gray-400 uppercase tracking-widest">Phone Number</label>
-                            <input type="tel" id="user-phone" class="w-full py-2 text-[11px] tracking-widest uppercase font-bold">
-                        </div>
-                        <div class="space-y-1">
-                            <label class="text-[8px] text-gray-400 uppercase tracking-widest">WhatsApp Number</label>
-                            <input type="tel" id="user-whatsapp" class="w-full py-2 text-[11px] tracking-widest uppercase font-bold">
-                        </div>
-                        <div class="md:col-span-2 space-y-1">
-                            <label class="text-[8px] text-gray-400 uppercase tracking-widest">Street Address</label>
-                            <input type="text" id="user-address" class="w-full py-2 text-[11px] tracking-widest uppercase font-bold">
-                        </div>
-                        <div class="space-y-1">
-                            <label class="text-[8px] text-gray-400 uppercase tracking-widest">City</label>
-                            <input type="text" id="user-city" class="w-full py-2 text-[11px] tracking-widest uppercase font-bold">
-                        </div>
-                        <div class="space-y-1">
-                            <label class="text-[8px] text-gray-400 uppercase tracking-widest">State</label>
-                            <input type="text" id="user-state" class="w-full py-2 text-[11px] tracking-widest uppercase font-bold">
-                        </div>
-                    </div>
-                </section>
-
-                <section class="space-y-8 pt-8 border-t border-gray-100">
-                    <h3 class="text-[11px] font-bold uppercase tracking-widest">2. Security</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        <input type="password" id="new-password" placeholder="NEW PASSWORD" class="w-full py-3 text-[10px] tracking-widest uppercase">
-                        <button onclick="changePassword()" class="bg-brandBlack text-brandPink text-[9px] font-bold uppercase tracking-[0.2em] py-3 hover:bg-brandPink hover:text-brandBlack transition">
-                            Update Password
-                        </button>
+                        <div class="space-y-1"><label class="text-[8px] text-gray-400 uppercase tracking-widest">Full Name</label><input type="text" id="user-name" class="w-full py-2 text-[11px] tracking-widest uppercase font-bold"></div>
+                        <div class="space-y-1"><label class="text-[8px] text-gray-400 uppercase tracking-widest">Email (Read-only)</label><input type="email" id="user-email" readonly class="w-full py-2 text-[11px] tracking-widest uppercase opacity-50 cursor-not-allowed"></div>
+                        <div class="space-y-1"><label class="text-[8px] text-gray-400 uppercase tracking-widest">Phone Number</label><input type="tel" id="user-phone" class="w-full py-2 text-[11px] tracking-widest uppercase font-bold"></div>
+                        <div class="space-y-1"><label class="text-[8px] text-gray-400 uppercase tracking-widest">WhatsApp Number</label><input type="tel" id="user-whatsapp" class="w-full py-2 text-[11px] tracking-widest uppercase font-bold"></div>
+                        <div class="md:col-span-2 space-y-1"><label class="text-[8px] text-gray-400 uppercase tracking-widest">Street Address</label><input type="text" id="user-address" class="w-full py-2 text-[11px] tracking-widest uppercase font-bold"></div>
+                        <div class="space-y-1"><label class="text-[8px] text-gray-400 uppercase tracking-widest">City</label><input type="text" id="user-city" class="w-full py-2 text-[11px] tracking-widest uppercase font-bold"></div>
+                        <div class="space-y-1"><label class="text-[8px] text-gray-400 uppercase tracking-widest">State</label><input type="text" id="user-state" class="w-full py-2 text-[11px] tracking-widest uppercase font-bold"></div>
                     </div>
                 </section>
             </div>
 
             <div class="lg:col-span-1">
-                <div class="bg-gray-50 p-8 min-h-[400px]">
-                    <h3 class="text-[11px] font-bold uppercase tracking-widest mb-8 border-b border-gray-200 pb-4">Order History</h3>
-                    <div id="order-history-container" class="space-y-6">
-                        <p class="text-[9px] text-gray-400 uppercase tracking-widest text-center py-10">Loading orders...</p>
+                <section class="space-y-8 p-8 bg-gray-50">
+                    <h3 class="text-[11px] font-bold uppercase tracking-widest border-b border-gray-200 pb-4">2. Security</h3>
+                    <div class="space-y-6">
+                        <input type="password" id="new-password" placeholder="NEW PASSWORD" class="w-full py-3 text-[10px] tracking-widest uppercase">
+                        <button onclick="changePassword()" class="w-full bg-brandBlack text-brandPink text-[9px] font-bold uppercase tracking-[0.2em] py-3 hover:bg-brandPink hover:text-brandBlack transition">
+                            Update Password
+                        </button>
                     </div>
-                </div>
+                </section>
             </div>
         </div>
     </main>
 
-   <script>
-    // Check Auth on Load
-    document.addEventListener('DOMContentLoaded', () => {
-        const token = localStorage.getItem('motunde_token');
-        const user = JSON.parse(localStorage.getItem('motunde_user'));
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const token = localStorage.getItem('motunde_token');
+            const user = JSON.parse(localStorage.getItem('motunde_user'));
 
-        if (!token || !user) {
-            window.location.href = 'account.html';
-            return;
-        }
-
-        // --- UPDATED: Fill Details (Handling Address Object) ---
-        document.getElementById('welcome-name').innerText = `Welcome, ${user.name}`;
-        document.getElementById('user-name').value = user.name || '';
-        document.getElementById('user-email').value = user.email || '';
-        document.getElementById('user-phone').value = user.phone || '';
-        document.getElementById('user-whatsapp').value = user.whatsapp || user.phone || '';
-
-        // Check if address is an object (from MongoDB) or a simple string
-        if (user.address && typeof user.address === 'object') {
-            document.getElementById('user-address').value = user.address.street || '';
-            document.getElementById('user-city').value = user.address.city || '';
-            document.getElementById('user-state').value = user.address.state || '';
-        } else {
-            document.getElementById('user-address').value = user.address || '';
-        }
-
-        fetchOrderHistory();
-    });
-
-    function showNotification(msg) {
-        const toast = document.getElementById('notification-toast');
-        document.getElementById('toast-message').innerText = msg;
-        toast.classList.remove('opacity-0', 'translate-y-10', 'pointer-events-none');
-        setTimeout(() => toast.classList.add('opacity-0', 'translate-y-10', 'pointer-events-none'), 3000);
-    }
-
-    // --- UPDATED: Update Profile (Saving as Object) ---
-    async function updateProfile() {
-        const updatedData = {
-            name: document.getElementById('user-name').value,
-            phone: document.getElementById('user-phone').value,
-            whatsapp: document.getElementById('user-whatsapp').value,
-            address: {
-                street: document.getElementById('user-address').value,
-                city: document.getElementById('user-city').value,
-                state: document.getElementById('user-state').value,
-                country: "Nigeria"
-            }
-        };
-
-        try {
-            const response = await fetch('/api/user/update', {
-                method: 'PUT',
-                headers: { 
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('motunde_token')}`
-                },
-                body: JSON.stringify(updatedData)
-            });
-
-            if (response.ok) {
-                // Update local storage so the UI stays updated without a refresh
-                const currentUser = JSON.parse(localStorage.getItem('motunde_user'));
-                localStorage.setItem('motunde_user', JSON.stringify({ ...currentUser, ...updatedData }));
-                showNotification("Profile Updated Successfully");
-            } else {
-                showNotification("Update Failed");
-            }
-        } catch (err) {
-            console.error(err);
-            showNotification("Update Failed");
-        }
-    }
-
-    async function changePassword() {
-        const newPass = document.getElementById('new-password').value;
-        if (!newPass) return showNotification("Enter a new password");
-
-        try {
-            const response = await fetch('/api/user/change-password', {
-                method: 'POST',
-                headers: { 
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('motunde_token')}`
-                },
-                body: JSON.stringify({ password: newPass })
-            });
-            if (response.ok) {
-                showNotification("Password Changed");
-                document.getElementById('new-password').value = '';
-            }
-        } catch (err) {
-            showNotification("Error changing password");
-        }
-    }
-
-    async function fetchOrderHistory() {
-        const container = document.getElementById('order-history-container');
-        try {
-            const response = await fetch('/api/orders/my-orders', {
-                headers: { 'Authorization': `Bearer ${localStorage.getItem('motunde_token')}` }
-            });
-            const orders = await response.json();
-
-            if (!orders || !orders.length) {
-                container.innerHTML = `<p class="text-[9px] text-gray-400 uppercase tracking-widest text-center py-10">No orders found.</p>`;
+            if (!token || !user) {
+                window.location.href = 'account.html';
                 return;
             }
 
-            // Note: Use order.totalPrice to match your backend schema
-            container.innerHTML = orders.map(order => `
-                <div class="bg-white p-4 border border-gray-100 shadow-sm mb-3">
-                    <div class="flex justify-between mb-2">
-                        <span class="text-[9px] font-black uppercase tracking-tighter">ID: #${order._id.slice(-6)}</span>
-                        <span class="text-[8px] px-2 py-0.5 ${order.status === 'completed' ? 'bg-green-100' : 'bg-brandPink'} text-brandBlack font-bold uppercase">
-                            ${order.status || 'Pending'}
-                        </span>
-                    </div>
-                    <p class="text-[10px] font-bold">₦${(order.totalPrice || 0).toLocaleString()}</p>
-                    <p class="text-[8px] text-gray-400 uppercase tracking-widest mt-1">${new Date(order.createdAt).toLocaleDateString()}</p>
-                </div>
-            `).join('');
-        } catch (err) {
-            container.innerHTML = `<p class="text-[9px] text-red-400 uppercase tracking-widest text-center py-10">Failed to load history.</p>`;
-        }
-    }
+            // Fill UI Details
+            document.getElementById('welcome-name').innerText = `Welcome, ${user.name}`;
+            document.getElementById('user-name').value = user.name || '';
+            document.getElementById('user-email').value = user.email || '';
+            document.getElementById('user-phone').value = user.phone || '';
+            document.getElementById('user-whatsapp').value = user.whatsapp || user.phone || '';
 
-    function handleLogout() {
-        localStorage.removeItem('motunde_token');
-        localStorage.removeItem('motunde_user');
-        window.location.href = 'account.html';
-    }
-</script>
+            if (user.address && typeof user.address === 'object') {
+                document.getElementById('user-address').value = user.address.street || '';
+                document.getElementById('user-city').value = user.address.city || '';
+                document.getElementById('user-state').value = user.address.state || '';
+            } else {
+                document.getElementById('user-address').value = user.address || '';
+            }
+
+            fetchOrderHistory();
+        });
+
+        function showNotification(msg) {
+            const toast = document.getElementById('notification-toast');
+            document.getElementById('toast-message').innerText = msg;
+            toast.classList.remove('opacity-0', 'translate-y-10', 'pointer-events-none');
+            setTimeout(() => toast.classList.add('opacity-0', 'translate-y-10', 'pointer-events-none'), 3000);
+        }
+
+        async function fetchOrderHistory() {
+            const container = document.getElementById('order-history-container');
+            const token = localStorage.getItem('motunde_token');
+            
+            try {
+                const response = await fetch('/api/orders/my-orders', {
+                    headers: { 
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    // This handles the 500 error specifically
+                    const errRes = await response.json();
+                    throw new Error(errRes.message || 'Database connection error');
+                }
+
+                const orders = await response.json();
+
+                if (!orders || !orders.length) {
+                    container.innerHTML = `<p class="col-span-full text-[9px] text-gray-400 uppercase tracking-widest text-center py-10">No orders found.</p>`;
+                    return;
+                }
+
+                container.innerHTML = orders.map(order => `
+                    <div class="order-card bg-white p-6 border border-gray-100 shadow-sm transition hover:shadow-md">
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <span class="text-[8px] text-gray-400 uppercase tracking-widest block mb-1">Order Ref</span>
+                                <span class="text-[10px] font-black uppercase tracking-tighter">#${order._id.slice(-8)}</span>
+                            </div>
+                            <span class="text-[7px] px-2 py-1 ${order.status === 'completed' ? 'bg-green-50 text-green-600' : 'bg-brandPink text-brandBlack'} font-bold uppercase tracking-widest">
+                                ${order.status || 'Processing'}
+                            </span>
+                        </div>
+                        <div class="mb-4">
+                             <span class="text-[8px] text-gray-400 uppercase tracking-widest block mb-1">Total Amount</span>
+                             <p class="text-[12px] font-bold">₦${Number(order.totalPrice || 0).toLocaleString()}</p>
+                        </div>
+                        <div class="pt-4 border-t border-gray-50 flex justify-between items-center">
+                            <span class="text-[8px] text-gray-400 uppercase font-medium">${new Date(order.createdAt).toLocaleDateString()}</span>
+                            <button class="text-[8px] font-bold text-brandPinkDark hover:text-brandBlack uppercase tracking-widest">View Details</button>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (err) {
+                console.error("Order Load Error:", err);
+                container.innerHTML = `<p class="col-span-full text-[9px] text-red-400 uppercase tracking-widest text-center py-10">Sync Error: ${err.message}. Please refresh.</p>`;
+            }
+        }
+
+        async function updateProfile() {
+            const updatedData = {
+                name: document.getElementById('user-name').value,
+                phone: document.getElementById('user-phone').value,
+                whatsapp: document.getElementById('user-whatsapp').value,
+                address: {
+                    street: document.getElementById('user-address').value,
+                    city: document.getElementById('user-city').value,
+                    state: document.getElementById('user-state').value,
+                    country: "Nigeria"
+                }
+            };
+
+            try {
+                const response = await fetch('/api/user/update', {
+                    method: 'PUT',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('motunde_token')}`
+                    },
+                    body: JSON.stringify(updatedData)
+                });
+
+                if (response.ok) {
+                    const currentUser = JSON.parse(localStorage.getItem('motunde_user'));
+                    localStorage.setItem('motunde_user', JSON.stringify({ ...currentUser, ...updatedData }));
+                    showNotification("Profile Updated Successfully");
+                } else {
+                    showNotification("Update Failed");
+                }
+            } catch (err) {
+                showNotification("Network Error");
+            }
+        }
+
+        async function changePassword() {
+            const newPass = document.getElementById('new-password').value;
+            if (!newPass) return showNotification("Enter a new password");
+
+            try {
+                const response = await fetch('/api/user/change-password', {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('motunde_token')}`
+                    },
+                    body: JSON.stringify({ password: newPass })
+                });
+                if (response.ok) {
+                    showNotification("Password Changed");
+                    document.getElementById('new-password').value = '';
+                }
+            } catch (err) {
+                showNotification("Error changing password");
+            }
+        }
+
+        function handleLogout() {
+            localStorage.clear();
+            window.location.href = 'account.html';
+        }
+    </script>
 </body>
 </html>
