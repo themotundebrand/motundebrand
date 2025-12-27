@@ -157,64 +157,60 @@
         fetchOrderHistory();
     });
 
-    async function fetchOrderHistory() {
-        const container = document.getElementById('order-history-container');
-        const token = localStorage.getItem('motunde_token');
+   async function fetchOrderHistory() {
+    const container = document.getElementById('order-history-container');
+    const token = localStorage.getItem('motunde_token');
+    
+    try {
+        const response = await fetch('/api/orders/my-orders', { 
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
         
-        try {
-            const response = await fetch('/api/orders/my-orders', { 
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            
-            if (!response.ok) {
-                const errorData = await response.json();
-                console.error("Server Error:", errorData);
-                throw new Error(errorData.error || 'Database Sync Failed');
-            }
-            
-            allOrders = await response.json();
+        const data = await response.json();
 
-            if (!allOrders || allOrders.length === 0) {
-                container.innerHTML = `<p class="col-span-full text-[9px] text-gray-400 text-center py-10 uppercase tracking-widest">No orders found.</p>`;
-                return;
-            }
-
-            container.innerHTML = allOrders.map((order, index) => {
-                // DEFENSIVE: Handle ID conversion to string before slicing
-                const fullId = order._id ? order._id.toString() : "";
-                const shortId = fullId ? fullId.slice(-8) : "N/A";
-                
-                // DEFENSIVE: Handle missing status or prices
-                const status = (order.status || 'pending').toLowerCase();
-                const totalPrice = order.totalPrice || 0;
-                const date = order.createdAt ? new Date(order.createdAt).toLocaleDateString() : "N/A";
-
-                return `
-                    <div class="order-card bg-white p-6 border border-gray-100 shadow-sm">
-                        <div class="flex justify-between items-start mb-4">
-                            <div>
-                                <span class="text-[7px] text-gray-400 uppercase tracking-widest block">Reference</span>
-                                <span class="text-[10px] font-black uppercase tracking-tighter">#${shortId}</span>
-                            </div>
-                            <span class="text-[7px] px-2 py-1 ${status === 'completed' ? 'bg-green-100 text-green-700' : 'bg-brandPink text-brandBlack'} font-bold uppercase tracking-widest">
-                                ${status}
-                            </span>
-                        </div>
-                        <p class="text-[14px] font-bold mb-4">₦${totalPrice.toLocaleString()}</p>
-                        <div class="pt-4 border-t border-gray-50 flex justify-between items-center text-[8px] text-gray-400 uppercase font-bold">
-                            <span>${date}</span>
-                            <button onclick="openOrderDetails(${index})" class="text-brandPinkDark hover:text-brandBlack transition underline tracking-widest">View Details</button>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-
-        } catch (err) {
-            console.error("Frontend Fetch Error:", err);
-            container.innerHTML = `<p class="col-span-full text-[9px] text-red-500 text-center py-10 uppercase tracking-widest">Unable to load orders. Please try again later.</p>`;
+        if (!response.ok) {
+            // This will now print the 'details' from the backend fix above
+            console.error("Detailed Server Error:", data);
+            throw new Error(data.error || 'Server Error');
         }
-    }
 
+        allOrders = data;
+
+        if (!allOrders || allOrders.length === 0) {
+            container.innerHTML = `<p class="col-span-full text-[9px] text-gray-400 text-center py-10 uppercase tracking-widest">No orders found.</p>`;
+            return;
+        }
+
+        container.innerHTML = allOrders.map((order, index) => {
+            // DEFENSIVE ID HANDLING
+            const rawId = order._id ? order._id.toString() : "";
+            const displayId = rawId.slice(-8).toUpperCase() || "REF-ERROR";
+
+            return `
+                <div class="order-card bg-white p-6 border border-gray-100 shadow-sm">
+                    <div class="flex justify-between items-start mb-4">
+                        <div>
+                            <span class="text-[7px] text-gray-400 uppercase tracking-widest block">Reference</span>
+                            <span class="text-[10px] font-black uppercase tracking-tighter">#${displayId}</span>
+                        </div>
+                        <span class="text-[7px] px-2 py-1 ${(order.status || '').toLowerCase() === 'completed' ? 'bg-green-100 text-green-700' : 'bg-brandPink text-brandBlack'} font-bold uppercase tracking-widest">
+                            ${order.status || 'Pending'}
+                        </span>
+                    </div>
+                    <p class="text-[14px] font-bold mb-4">₦${(order.totalPrice || 0).toLocaleString()}</p>
+                    <div class="pt-4 border-t border-gray-50 flex justify-between items-center text-[8px] text-gray-400 uppercase font-bold">
+                        <span>${order.createdAt ? new Date(order.createdAt).toLocaleDateString() : 'N/A'}</span>
+                        <button onclick="openOrderDetails(${index})" class="text-brandPinkDark hover:text-brandBlack transition underline tracking-widest">View Details</button>
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+    } catch (err) {
+        console.error("Frontend Fetch Error:", err);
+        container.innerHTML = `<p class="col-span-full text-[9px] text-red-500 text-center py-10 uppercase tracking-widest">Database Sync Error. Please Refresh.</p>`;
+    }
+}
     function openOrderDetails(index) {
         const order = allOrders[index];
         if (!order) return;

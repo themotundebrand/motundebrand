@@ -879,40 +879,50 @@ router.get('/orders/my-orders', async (req, res) => {
     try {
         const authHeader = req.headers['authorization'];
         const token = authHeader && authHeader.split(' ')[1];
-
-        if (!token) return res.status(401).json({ error: "Unauthorized" });
+        if (!token) return res.status(401).json({ error: "Not logged in" });
 
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         const db = await getDb();
-
-        // 1. Get the user's current email from the User collection
-        // We do this because the ID in the order is wrong, but the email is correct
-        const user = await db.collection("users").findOne({ _id: new ObjectId(decoded.id) });
-
-        if (!user) {
-            return res.status(404).json({ error: "User not found" });
+        
+        // --- FIX 1: Safe ID Conversion ---
+        let userSearchId;
+        try {
+            userSearchId = new ObjectId(decoded.id);
+        } catch (e) {
+            userSearchId = decoded.id; // Fallback to string if ObjectId fails
         }
 
-        // 2. Search for orders that match the ID OR the Email
-        // This ensures the user sees their history even with the ID mismatch
+        // --- FIX 2: Find User to get Email ---
+        // We need the email because your IDs are mismatched (...3d0e vs ...da495)
+        const user = await db.collection("users").findOne({ 
+            $or: [{ _id: userSearchId }, { _id: decoded.id }] 
+        });
+
+        if (!user) {
+            console.error("User not found for token ID:", decoded.id);
+            return res.status(404).json({ error: "User profile not found" });
+        }
+
+        // --- FIX 3: Wide Query (The Bridge) ---
+        // We search by ID OR Email to catch that mismatched order
         const orders = await db.collection("orders")
             .find({
                 $or: [
-                    { userId: new ObjectId(decoded.id) }, // Search by ObjectId
-                    { userId: decoded.id },               // Search by String ID
-                    { email: user.email },                // BACKUP: Search by Email
-                    { "customerDetails.email": user.email } // SECOND BACKUP
+                    { userId: decoded.id },
+                    { userId: userSearchId },
+                    { email: user.email },
+                    { "customerDetails.email": user.email }
                 ]
             })
             .sort({ createdAt: -1 })
             .toArray();
 
-        console.log(`Found ${orders.length} orders for ${user.email}`);
-        res.json(orders);
+        res.json(orders || []);
 
     } catch (e) {
-        console.error("Order Fetch Error:", e);
-        res.status(500).json({ error: "Internal Server Error", details: e.message });
+        // This line will finally make the error show up in your Netlify logs
+        console.error("CRITICAL ERROR IN MY-ORDERS:", e.message); 
+        res.status(500).json({ error: "Error fetching order", details: e.message });
     }
 });
 
