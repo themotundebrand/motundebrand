@@ -54,7 +54,7 @@
         }
 
         .brand-title {
-            font-size: clamp(1.5rem, 8vw, 4.5rem); 
+            font-size: clamp(.08rem, 8vw, 4.5rem); 
             line-height: 1.1;
             width: 90%;
             margin-left: auto;
@@ -90,23 +90,31 @@
     <div class="fixed top-0 left-0 h-[1px] bg-brandPink z-50 timer-bar"></div>
 
     <header class="relative h-screen-safe w-full overflow-hidden flex items-center justify-center bg-brandBlack">
-        
-        <div id="slider-container" class="absolute inset-0 z-0">
-            <div class="slider-image absolute inset-0 opacity-100 fade-slide flex items-center justify-center">
-                <div class="absolute inset-0 bg-black/30 z-10"></div>
-                <img src="https://i.imgur.com/KQ2leiY.jpeg" fetchpriority="high" class="optimized-img" alt="Luxury Scent 1">
-            </div>
-            
-            <div class="slider-image absolute inset-0 opacity-0 fade-slide flex items-center justify-center">
-                <div class="absolute inset-0 bg-black/30 z-10"></div>
-                <img src="https://i.imgur.com/Wp0HCu8.jpeg" class="optimized-img" alt="Luxury Scent 2">
-            </div>
-            
-            <div class="slider-image absolute inset-0 opacity-0 fade-slide flex items-center justify-center">
-                <div class="absolute inset-0 bg-black/30 z-10"></div>
-                <img src="https://i.imgur.com/BRl8AVs.jpeg" class="optimized-img" alt="Luxury Scent 3">
-            </div>
-        </div>
+    <div id="slider-container" class="absolute inset-0 z-0 bg-brandBlack">
+    
+    <div class="slider-image absolute inset-0 opacity-100 fade-slide flex items-center justify-center p-4 md:p-0">
+        <div class="absolute inset-0 bg-black/30 z-10 pointer-events-none"></div>
+        <img src="https://i.imgur.com/KQ2leiY.jpeg" 
+             fetchpriority="high" 
+             class="max-h-full max-w-full w-auto h-auto object-contain transition-transform duration-[6000ms] ease-out" 
+             alt="Luxury Scent 1">
+    </div>
+    
+    <div class="slider-image absolute inset-0 opacity-0 fade-slide flex items-center justify-center p-4 md:p-0">
+        <div class="absolute inset-0 bg-black/30 z-10 pointer-events-none"></div>
+        <img src="https://i.imgur.com/Wp0HCu8.jpeg" 
+             class="max-h-full max-w-full w-auto h-auto object-contain transition-transform duration-[6000ms] ease-out" 
+             alt="Luxury Scent 2">
+    </div>
+    
+    <div class="slider-image absolute inset-0 opacity-0 fade-slide flex items-center justify-center p-4 md:p-0">
+        <div class="absolute inset-0 bg-black/30 z-10 pointer-events-none"></div>
+        <img src="https://i.imgur.com/BRl8AVs.jpeg" 
+             class="max-h-full max-w-full w-auto h-auto object-contain transition-transform duration-[6000ms] ease-out" 
+             alt="Luxury Scent 3">
+    </div>
+
+</div>
 
         <div class="relative z-30 flex flex-col justify-center items-center text-center px-6 pointer-events-none">
             <h1 class="brand-title font-bold tracking-luxury uppercase mb-4">
