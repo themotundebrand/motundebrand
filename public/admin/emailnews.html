@@ -31,8 +31,6 @@
         .mobile-overlay { background: rgba(0,0,0,0.5); display: none; }
         .mobile-overlay.active { display: block; }
         .input-focus:focus { border-color: #D48A96; outline: none; ring: 1px; ring-color: #D48A96; }
-        
-        /* Preview Modal styling */
         #preview-modal { display: none; }
         #preview-modal.active { display: flex; }
     </style>
@@ -72,21 +70,17 @@
                     <i class="fa-solid fa-layer-group mr-3 w-5 text-orange-400"></i> Combo Sets
                 </a>
                  <a href="deodorant.html" class="nav-link flex items-center px-4 py-3 text-[10px] tracking-widest uppercase font-semibold">
-                    <i class="fa-solid fa-shield-halved mr-3 w-5 text-brandDeo"></i> Deodorants & Antiperspirants 
+                    <i class="fa-solid fa-shield-halved mr-3 w-5 text-brandDeo"></i> Deodorants 
                 </a>
 
                 <div class="pt-8">
                     <p class="text-[9px] uppercase tracking-[0.2em] text-gray-400 px-4 mb-4 font-bold">Business</p>
                      <a href="customer-list.html" class="nav-link flex items-center px-4 py-3 text-[10px] tracking-widest uppercase font-semibold">
-                        <i class="fa-solid fa-bag-shopping mr-3 w-5 text-gray-400"></i> Membership
+                        <i class="fa-solid fa-users mr-3 w-5 text-gray-400"></i> Membership
                     </a>
                      <a href="orderstats.html" class="nav-link flex items-center px-4 py-3 text-[10px] tracking-widest uppercase font-semibold">
                         <i class="fa-solid fa-bag-shopping mr-3 w-5 text-gray-400"></i> Orders
                     </a>
-                    <a href="analytics.html" class="nav-link flex items-center px-4 py-3 text-[10px] tracking-widest uppercase font-semibold">
-                        <i class="fa-solid fa-chart-simple mr-3 w-5 text-gray-400"></i> Analytics
-                    </a>
-                    <p class="text-[9px] uppercase tracking-[0.2em] text-gray-400 px-4 mb-4 font-bold">Outreach</p>
                     <a href="emailnews.html" class="nav-link flex items-center px-4 py-3 text-[10px] tracking-widest uppercase font-semibold border-l-4 border-brandPinkDark bg-gray-50">
                         <i class="fa-solid fa-paper-plane mr-3 w-5 text-brandPinkDark"></i> Broadcast Email
                     </a>
@@ -100,14 +94,12 @@
             </div>
         </aside>
 
-    
-
         <main class="flex-1 min-h-screen px-6 lg:px-10 py-12">
             <div class="max-w-4xl mx-auto">
                 <div class="flex justify-between items-end mb-10">
                     <div>
                         <h2 class="text-2xl font-light tracking-tight mb-1">Broadcast Terminal</h2>
-                        <p class="text-[9px] uppercase tracking-[0.3em] text-brandPinkDark font-bold">Send updates to your entire audience</p>
+                        <p class="text-[9px] uppercase tracking-[0.3em] text-brandPinkDark font-bold">Design and dispatch luxury communications</p>
                     </div>
                     <div class="hidden lg:block text-right">
                         <p id="current-date" class="text-[10px] uppercase tracking-widest text-gray-400 font-bold"></p>
@@ -115,14 +107,14 @@
                 </div>
 
                 <div class="mb-6 grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <button onclick="applyTemplate('arrival')" class="bg-white border p-4 text-[9px] uppercase tracking-widest font-bold hover:border-brandPinkDark transition flex items-center justify-center">
-                        <i class="fa-solid fa-gift mr-2 text-brandPinkDark"></i> New Arrival Template
+                    <button onclick="applyTemplate('arrival')" class="bg-white border p-4 text-[9px] uppercase tracking-widest font-bold hover:border-brandPinkDark transition flex flex-col items-center gap-2">
+                        <i class="fa-solid fa-gift text-brandPinkDark text-lg"></i> New Arrival
                     </button>
-                    <button onclick="applyTemplate('update')" class="bg-white border p-4 text-[9px] uppercase tracking-widest font-bold hover:border-brandMist transition flex items-center justify-center">
-                        <i class="fa-solid fa-laptop-code mr-2 text-brandMist"></i> Web Update Template
+                    <button onclick="applyTemplate('update')" class="bg-white border p-4 text-[9px] uppercase tracking-widest font-bold hover:border-brandMist transition flex flex-col items-center gap-2">
+                        <i class="fa-solid fa-laptop-code text-brandMist text-lg"></i> Web Update
                     </button>
-                    <button onclick="applyTemplate('maintenance')" class="bg-white border p-4 text-[9px] uppercase tracking-widest font-bold hover:border-orange-400 transition flex items-center justify-center">
-                        <i class="fa-solid fa-wrench mr-2 text-orange-400"></i> Maintenance Template
+                    <button onclick="applyTemplate('maintenance')" class="bg-white border p-4 text-[9px] uppercase tracking-widest font-bold hover:border-brandBlack transition flex flex-col items-center gap-2">
+                        <i class="fa-solid fa-wrench text-brandBlack text-lg"></i> Maintenance
                     </button>
                 </div>
 
@@ -159,8 +151,14 @@
                         </div>
 
                         <div>
+                            <label class="text-[10px] uppercase tracking-widest font-bold text-gray-400 block mb-2">Featured Perfume Image Link</label>
+                            <input type="text" id="image-url" class="w-full bg-gray-50 border p-3 text-xs input-focus" placeholder="Paste link (e.g., https://imgur.com/your-perfume.png)">
+                            <p class="text-[8px] text-gray-400 mt-1 uppercase tracking-tighter">Highly recommended for 'New Arrival' campaigns</p>
+                        </div>
+
+                        <div>
                             <label class="text-[10px] uppercase tracking-widest font-bold text-gray-400 block mb-2">Message Body</label>
-                            <textarea id="message" rows="12" required class="w-full bg-gray-50 border p-4 text-sm leading-relaxed input-focus" placeholder="Compose your luxury update here..."></textarea>
+                            <textarea id="message" rows="10" required class="w-full bg-gray-50 border p-4 text-sm leading-relaxed input-focus" placeholder="Compose your luxury update..."></textarea>
                         </div>
 
                         <div class="flex flex-col md:flex-row gap-4 pt-4 border-t">
@@ -180,58 +178,86 @@
     </div>
 
     <div id="preview-modal" class="fixed inset-0 z-[100] bg-black bg-opacity-80 items-center justify-center p-4">
-        <div class="bg-white w-full max-w-lg h-[80vh] flex flex-col overflow-hidden">
+        <div class="bg-white w-full max-w-lg h-[90vh] flex flex-col overflow-hidden shadow-2xl">
             <div class="p-4 border-b flex justify-between items-center bg-gray-50">
                 <span class="text-[9px] font-bold uppercase tracking-widest">Email Live Preview</span>
                 <button onclick="closePreview()" class="text-xl">&times;</button>
             </div>
-            <div class="flex-1 overflow-y-auto bg-white p-6" id="preview-content">
+            <div class="flex-1 overflow-y-auto bg-[#FBFBFB] p-0" id="preview-content">
                 </div>
-            <div class="p-4 bg-gray-50 text-center">
-                <button onclick="closePreview()" class="text-[9px] uppercase tracking-widest font-bold border border-black px-6 py-2">Close Preview</button>
+            <div class="p-4 bg-white border-t text-center">
+                <button onclick="closePreview()" class="text-[9px] uppercase tracking-widest font-bold border border-black px-8 py-2 hover:bg-black hover:text-white transition">Exit Preview</button>
             </div>
         </div>
     </div>
 
     <script>
         const API_URL = '/api';
+        const BRAND_LOGO = "https://i.imgur.com/CVKXV7R.png";
 
         const templates = {
             arrival: {
-                subject: "DISCOVER: The New Essence Collection",
-                message: "Dear Valued Client,\n\nThe wait is over. We are thrilled to unveil our latest collection: [Collection Name]. Crafted with sophistication and designed for the modern individual.\n\nWHAT'S NEW:\n• [Fragrance 1] - Elegant & Timeless\n• [Fragrance 2] - Bold & Ethereal\n\nExperience the collection before it's gone.\n\nStay Fragrant,\nThe Motunde Brand Management"
+                subject: "NEW ARRIVAL: The Signature Essence",
+                color: "#D48A96",
+                message: "Dear Valued Client,\n\nWe are pleased to introduce our newest addition to the collection. A scent crafted for those who define elegance.\n\nNOTES:\n• Top: Blackcurrant & Bergamot\n• Heart: Rose & Jasmine\n• Base: Pure Vanilla & Sandalwood\n\nExperience the essence of luxury.\n\nWarmly,\nThe Motunde Brand Management"
             },
             update: {
-                subject: "ENHANCED: A Seamless TMB Experience Awaits",
-                message: "Hello,\n\nWe have just deployed a series of updates to our digital store to make your shopping experience smoother, faster, and more secure.\n\nKEY IMPROVEMENTS:\n• Optimized Mobile Browsing\n• Faster Checkout Processing\n\nExplore the new interface today.\n\nBest Regards,\nTMB Technical Team"
+                subject: "TMB DIGITAL: Enhanced Store Experience",
+                color: "#8AB6D4",
+                message: "Hello,\n\nWe've refined our digital boutique to ensure your shopping experience is as seamless as our scents.\n\nIMPROVEMENTS:\n• Faster Mobile Checkout\n• New Virtual Concierge\n• Updated Member Rewards\n\nVisit us today to see what's new."
             },
             maintenance: {
-                subject: "NOTICE: Brief Scheduled Maintenance",
-                message: "Dear Customer,\n\nTo ensure we continue providing the highest level of service, the TMB store will undergo brief scheduled maintenance.\n\nSCHEDULE:\nDate: [Enter Date]\nTime: [Enter Time]\n\nWe apologize for the inconvenience.\n\nWarmly,\nThe Motunde Brand Admin"
+                subject: "NOTICE: Brief Store Maintenance",
+                color: "#000000",
+                message: "Dear Customer,\n\nPlease be advised that our online store will undergo a brief maintenance window to prepare for our upcoming seasonal release.\n\nEstimated Downtime: 1 Hour\n\nWe appreciate your patience.\n\nThe TMB Technical Team"
             }
         };
 
         function applyTemplate(type) {
             document.getElementById('subject').value = templates[type].subject;
             document.getElementById('message').value = templates[type].message;
+            // Set a placeholder perfume image link for arrival template
+            if(type === 'arrival') {
+                document.getElementById('image-url').value = "https://i.imgur.com/CVKXV7R.png";
+            } else {
+                document.getElementById('image-url').value = "";
+            }
         }
 
         function openPreview() {
             const subject = document.getElementById('subject').value || "No Subject";
             const message = document.getElementById('message').value.replace(/\n/g, '<br>');
+            const imageUrl = document.getElementById('image-url').value;
             
+            // Image Logic
+            const displayImage = imageUrl ? `<center><img src="${imageUrl}" style="width: 100%; max-width: 400px; margin: 25px 0; border-radius: 2px;"></center>` : '';
+
             const previewHTML = `
-                <div style="font-family: 'Inter', sans-serif; color: #000;">
-                    <div style="text-align: center; border-bottom: 1px solid #eee; padding-bottom: 20px; margin-bottom: 20px;">
-                        <h1 style="letter-spacing: 0.3em; font-size: 14px; font-weight: bold;">THE MOTUNDE BRAND</h1>
+                <div style="background-color: #ffffff; padding: 40px 20px; font-family: 'Inter', sans-serif; max-width: 600px; margin: auto; border: 1px solid #f0f0f0;">
+                    <center>
+                        <img src="${BRAND_LOGO}" width="60" style="margin-bottom: 20px;">
+                        <h1 style="letter-spacing: 0.5em; font-size: 11px; font-weight: bold; text-transform: uppercase; margin-bottom: 30px;">The Motunde Brand</h1>
+                    </center>
+
+                    ${displayImage}
+
+                    <div style="padding: 0 20px;">
+                        <h2 style="font-size: 16px; font-weight: 300; letter-spacing: 2px; text-transform: uppercase; text-align: center; margin-bottom: 25px;">${subject}</h2>
+                        
+                        <div style="font-size: 13px; line-height: 1.8; color: #333; text-align: justify;">
+                            ${message}
+                        </div>
+
+                        <center style="margin-top: 40px;">
+                            <a href="#" style="background: #000; color: #fff; padding: 12px 30px; text-decoration: none; font-size: 10px; font-weight: bold; letter-spacing: 2px; text-transform: uppercase;">Discover More</a>
+                        </center>
                     </div>
-                    <p style="font-size: 12px; font-weight: bold; color: #D48A96; text-transform: uppercase; letter-spacing: 1px;">Subject: ${subject}</p>
-                    <div style="font-size: 14px; line-height: 1.6; color: #333; margin-top: 20px;">
-                        ${message}
-                    </div>
-                    <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #eee; text-align: center; font-size: 10px; color: #999; letter-spacing: 1px;">
-                        © 2026 THE MOTUNDE BRAND | LUXURY SCENTS<br>
-                        This is an official administrative broadcast.
+
+                    <div style="margin-top: 60px; padding-top: 30px; border-top: 1px solid #f4f4f4; text-align: center;">
+                        <p style="font-size: 9px; color: #999; letter-spacing: 1.5px; text-transform: uppercase;">
+                            Lagos &bull; London &bull; Dubai<br>
+                            &copy; 2026 THE MOTUNDE BRAND
+                        </p>
                     </div>
                 </div>
             `;
@@ -257,11 +283,12 @@
                 category: document.getElementById('email-category').value,
                 manualEmails: document.getElementById('manual-emails').value,
                 subject: document.getElementById('subject').value,
-                message: document.getElementById('message').value
+                message: document.getElementById('message').value,
+                featuredImage: document.getElementById('image-url').value
             };
 
             statusBox.className = "mt-8 p-4 border text-center text-[10px] uppercase tracking-widest font-bold bg-blue-50 text-blue-600";
-            statusBox.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> DISPATCHING BROADCAST...';
+            statusBox.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> DEPLOYING BROADCAST...';
             statusBox.classList.remove('hidden');
 
             try {
@@ -272,11 +299,12 @@
                 });
                 if (res.ok) {
                     statusBox.className = "mt-8 p-4 border text-center text-[10px] uppercase tracking-widest font-bold bg-green-50 text-green-600";
-                    statusBox.innerHTML = 'BROADCAST SUCCESSFUL';
+                    statusBox.innerHTML = 'BROADCAST DISPATCHED SUCCESSFULLY';
+                    document.getElementById('email-form').reset();
                 } else { throw new Error(); }
             } catch (err) {
                 statusBox.className = "mt-8 p-4 border text-center text-[10px] uppercase tracking-widest font-bold bg-red-50 text-red-600";
-                statusBox.innerHTML = 'TRANSMISSION ERROR';
+                statusBox.innerHTML = 'ERROR: TRANSMISSION FAILED';
             }
         }
 
