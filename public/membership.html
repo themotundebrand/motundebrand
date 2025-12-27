@@ -63,6 +63,22 @@
             </a>
         </div>
     </nav>
+    <div id="sidebar-overlay" onclick="toggleSidebar(false)" class="fixed inset-0 bg-black/60 z-[110] hidden backdrop-blur-sm"></div>
+    
+    <aside id="sidebar" class="fixed top-0 left-0 h-full w-64 bg-brandBlack z-[120] sidebar-closed p-6 flex flex-col">
+        <button onclick="toggleSidebar(false)" class="self-end text-brandPink mb-10">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" stroke-width="2"></path></svg>
+        </button>
+        <div class="flex flex-col space-y-6 text-[10px] tracking-[0.25em] uppercase text-brandPink/80">
+            <a href="index.html" onclick="toggleSidebar(false)" class="hover:text-brandPink transition-colors">Home</a>
+            <a href="#women" onclick="toggleSidebar(false)" class="hover:text-brandPink transition-colors">Women</a>
+            <a href="#men" onclick="toggleSidebar(false)" class="hover:text-brandPink transition-colors">Men</a>
+            <a href="#kids" onclick="toggleSidebar(false)" class="hover:text-brandPink transition-colors">Kids</a>
+            <div class="pt-6 border-t border-brandPink/10 mt-4">
+                <a href="account.html" class="text-[9px] tracking-widest opacity-50 hover:opacity-100 transition-opacity">My Account</a>
+            </div>
+        </div>
+    </aside>
 
     <main class="max-w-7xl mx-auto px-4 md:px-12 py-12">
         <div class="mb-12">
@@ -156,6 +172,18 @@
             }
         });
 
+         function toggleSidebar(open) {
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('sidebar-overlay');
+        if (open) {
+            sidebar.classList.replace('sidebar-closed', 'sidebar-open');
+            overlay.classList.remove('hidden');
+        } else {
+            sidebar.classList.replace('sidebar-open', 'sidebar-closed');
+            overlay.classList.add('hidden');
+        }
+    }
+    
         async function updateProfile() {
             const token = localStorage.getItem('motunde_token');
             
