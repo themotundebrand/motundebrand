@@ -873,18 +873,17 @@ router.post('/login', async (req, res) => {
         res.status(500).json({ error: "Login failed" });
     }
 });
-
-// --- BROADCAST EMAIL SYSTEM ---
+// --- UPDATED BROADCAST EMAIL SYSTEM ---
 router.post('/admin/broadcast-email', authenticateAdmin, async (req, res) => {
     try {
         const db = await getDb();
-        const { type, category, manualEmails, subject, message } = req.body;
+        // Added featuredImage to the destructuring
+        const { type, category, manualEmails, subject, message, featuredImage } = req.body;
 
         let recipientList = [];
 
         // 1. Identify Target Audience
         if (type === 'custom') {
-            // Split by comma and clean whitespace
             recipientList = manualEmails.split(',').map(e => e.trim()).filter(e => e.includes('@'));
         } 
         else if (type === 'members') {
@@ -892,17 +891,13 @@ router.post('/admin/broadcast-email', authenticateAdmin, async (req, res) => {
             recipientList = users.map(u => u.email);
         } 
         else if (type === 'subscribers') {
-            // Assuming you have a newsletter collection, if not, it defaults to users
             const subscribers = await db.collection("subscribers").find({}).project({ email: 1 }).toArray();
             recipientList = subscribers.length > 0 ? subscribers.map(s => s.email) : [];
         } 
         else {
-            // "All" - Combine Users and Newsletter Subscribers
             const users = await db.collection("users").find({}).project({ email: 1 }).toArray();
-            // Using a Set to ensure unique emails
             const allEmails = new Set(users.map(u => u.email));
             
-            // If you have a newsletter collection:
             const subscribers = await db.collection("subscribers").find({}).project({ email: 1 }).toArray();
             subscribers.forEach(s => allEmails.add(s.email));
             
@@ -914,31 +909,50 @@ router.post('/admin/broadcast-email', authenticateAdmin, async (req, res) => {
         }
 
         // 2. Prepare the Email Template
-        // We replace newlines with <br> for HTML rendering
         const htmlBody = message.replace(/\n/g, '<br>');
+        
+        // Logic to insert the image if a URL was provided
+        const imageHtml = featuredImage 
+            ? `<center>
+                <img src="${featuredImage}" alt="Featured Collection" style="width: 100%; max-width: 500px; display: block; margin: 25px 0; border-radius: 4px;">
+               </center>` 
+            : '';
 
         const emailTemplate = `
             <!DOCTYPE html>
             <html>
-            <body style="margin: 0; padding: 0; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #000000;">
+            <head>
+                <meta charset="utf-8">
+                <style>
+                    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700&display=swap');
+                </style>
+            </head>
+            <body style="margin: 0; padding: 0; font-family: 'Inter', Helvetica, Arial, sans-serif; background-color: #ffffff; color: #000000;">
                 <div style="max-width: 600px; margin: auto; padding: 40px; border: 1px solid #f4f4f4;">
                     <center>
-                        <img src="https://i.imgur.com/CVKXV7R.png" alt="The Motunde Brand" width="70" style="display: block; margin-bottom: 20px;">
-                        <h1 style="text-transform: uppercase; letter-spacing: 6px; font-size: 18px; font-weight: 300; margin: 0;">The Motunde Brand</h1>
-                        <div style="width: 40px; height: 1px; background: #000; margin: 20px auto;"></div>
+                        <img src="https://i.imgur.com/CVKXV7R.png" alt="The Motunde Brand" width="60" style="display: block; margin-bottom: 20px;">
+                        <h1 style="text-transform: uppercase; letter-spacing: 6px; font-size: 14px; font-weight: bold; margin: 0;">The Motunde Brand</h1>
+                        <div style="width: 30px; height: 1px; background: #D48A96; margin: 20px auto;"></div>
                     </center>
 
-                    <div style="font-size: 14px; line-height: 1.8; color: #333; margin-top: 30px;">
+                    ${imageHtml}
+
+                    <div style="font-size: 14px; line-height: 1.8; color: #333; margin-top: 20px; text-align: left;">
                         ${htmlBody}
                     </div>
 
-                    <div style="margin-top: 50px; text-align: center; border-top: 1px solid #f4f4f4; padding-top: 30px;">
-                        <p style="font-size: 11px; color: #999; text-transform: uppercase; letter-spacing: 1px;">
-                            Luxury Scents • Timeless Elegance
+                    <div style="margin-top: 40px; text-align: center;">
+                        <a href="https://themotundebrand.com" style="background-color: #000000; color: #ffffff; padding: 12px 25px; text-decoration: none; font-size: 11px; font-weight: bold; text-transform: uppercase; letter-spacing: 2px; display: inline-block;">Shop Collection</a>
+                    </div>
+
+                    <div style="margin-top: 60px; text-align: center; border-top: 1px solid #f4f4f4; padding-top: 30px;">
+                        <p style="font-size: 10px; color: #999; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 15px;">
+                            Lagos • London • Dubai
                         </p>
-                        <div style="font-size: 10px; color: #bbb; margin-top: 10px;">
+                        <div style="font-size: 10px; color: #bbb; line-height: 1.6;">
                             &copy; 2026 THE MOTUNDE BRAND. All rights reserved.<br>
-                            You are receiving this as a valued member of our community.
+                            You are receiving this luxury update as a registered member.<br>
+                            <a href="#" style="color: #bbb; text-decoration: underline;">Unsubscribe</a>
                         </div>
                     </div>
                 </div>
@@ -947,8 +961,6 @@ router.post('/admin/broadcast-email', authenticateAdmin, async (req, res) => {
         `;
 
         // 3. Dispatch Emails
-        // Note: For very large lists (1000+), consider using a queue service like AWS SES or SendGrid.
-        // For Gmail SMTP, we send them in parallel.
         const sendPromises = recipientList.map(email => {
             return transporter.sendMail({
                 from: `"The Motunde Brand" <${process.env.EMAIL_USER}>`,
@@ -960,18 +972,19 @@ router.post('/admin/broadcast-email', authenticateAdmin, async (req, res) => {
 
         await Promise.all(sendPromises);
 
-        // 4. Log the broadcast in the database for history
+        // 4. Log the broadcast with featuredImage record
         await db.collection("broadcast_logs").insertOne({
             adminId: req.user.id,
             subject,
             recipientCount: recipientList.length,
             category,
             audienceType: type,
+            featuredImage: featuredImage || null, // Saved for record keeping
             sentAt: new Date()
         });
 
         res.status(200).json({ 
-            message: `Broadcast sent successfully to ${recipientList.length} recipients.` 
+            message: `Broadcast successfully dispatched to ${recipientList.length} recipients.` 
         });
 
     } catch (e) {
