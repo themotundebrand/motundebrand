@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "Luxury Perfume E-commerce - White, Pink, Black Brand",
   "main": "netlify/functions/api.js",
+  "engines": {
+    "node": "20.x"
+  },
   "scripts": {
     "start": "netlify dev",
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -23,4 +26,3 @@
     "netlify-cli": "^17.10.1"
   }
 }
-
