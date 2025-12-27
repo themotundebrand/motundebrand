@@ -979,6 +979,7 @@ router.post('/change-password', async (req, res) => {
         res.status(401).json({ error: "Session expired" });
     }
 });
+
 // GET ORDER HISTORY
 router.get('/my-orders', async (req, res) => {
     try {
@@ -989,33 +990,48 @@ router.get('/my-orders', async (req, res) => {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         const db = await getDb();
         
-        // 1. Find the user profile
-        const user = await db.collection("users").findOne({ _id: new ObjectId(decoded.id) });
-        
-        if (!user) {
-            return res.status(404).json({ error: "User profile not found" });
+        // --- 1. SAFE OBJECTID CONVERSION ---
+        let userObjectId;
+        try {
+            userObjectId = new ObjectId(decoded.id);
+        } catch (idErr) {
+            console.error("Invalid ID format in token:", decoded.id);
+            return res.status(400).json({ error: "Invalid user session format" });
         }
 
-        // 2. Query orders using multiple identifiers (solves the ID mismatch)
+        // --- 2. FIND USER WITH NULL CHECK ---
+        const user = await db.collection("users").findOne({ _id: userObjectId });
+        
+        // --- 3. THE QUERY (Handles mismatched IDs and Emails) ---
+        // We build the query object carefully
+        let query = {
+            $or: [
+                { userId: userObjectId },
+                { userId: decoded.id } // check for string version too
+            ]
+        };
+
+        // If user exists, also check by their email as a fallback
+        if (user && user.email) {
+            query.$or.push({ email: user.email });
+            query.$or.push({ "customerDetails.email": user.email });
+        }
+
         const orders = await db.collection("orders")
-            .find({
-                $or: [
-                    { userId: new ObjectId(decoded.id) },
-                    { userId: decoded.id },
-                    { email: user.email },
-                    { "customerDetails.email": user.email }
-                ]
-            })
+            .find(query)
             .sort({ createdAt: -1 })
             .toArray();
 
         res.json(orders);
+
     } catch (e) {
-        console.error("Fetch Orders Error:", e.message);
-        res.status(500).json({ error: "Server error fetching history", details: e.message });
+        console.error("Critical Route Error:", e);
+        res.status(500).json({ 
+            error: "Error fetching order", 
+            message: e.message 
+        });
     }
 });
-
 
 app.use('/.netlify/functions/api', router);
 app.use('/api', router);
