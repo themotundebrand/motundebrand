@@ -874,57 +874,6 @@ router.post('/login', async (req, res) => {
     }
 });
 
-// GET LOGGED-IN USER'S ORDERS
-router.get('/my-orders', async (req, res) => {
-    try {
-        const authHeader = req.headers['authorization'];
-        const token = authHeader && authHeader.split(' ')[1];
-        if (!token) return res.status(401).json({ error: "Not logged in" });
-
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        const db = await getDb();
-        
-        // --- FIX 1: Safe ID Conversion ---
-        let userSearchId;
-        try {
-            userSearchId = new ObjectId(decoded.id);
-        } catch (e) {
-            userSearchId = decoded.id; // Fallback to string if ObjectId fails
-        }
-
-        // --- FIX 2: Find User to get Email ---
-        // We need the email because your IDs are mismatched (...3d0e vs ...da495)
-        const user = await db.collection("users").findOne({ 
-            $or: [{ _id: userSearchId }, { _id: decoded.id }] 
-        });
-
-        if (!user) {
-            console.error("User not found for token ID:", decoded.id);
-            return res.status(404).json({ error: "User profile not found" });
-        }
-
-        // --- FIX 3: Wide Query (The Bridge) ---
-        // We search by ID OR Email to catch that mismatched order
-        const orders = await db.collection("orders")
-            .find({
-                $or: [
-                    { userId: decoded.id },
-                    { userId: userSearchId },
-                    { email: user.email },
-                    { "customerDetails.email": user.email }
-                ]
-            })
-            .sort({ createdAt: -1 })
-            .toArray();
-
-        res.json(orders || []);
-
-    } catch (e) {
-        // This line will finally make the error show up in your Netlify logs
-        console.error("CRITICAL ERROR IN MY-ORDERS:", e.message); 
-        res.status(500).json({ error: "Error fetching order", details: e.message });
-    }
-});
 
 // --- 1. UPDATE USER PROFILE (Name, Phone, WhatsApp, Address) ---
 router.put('/update', async (req, res) => {
@@ -991,59 +940,62 @@ router.post('/change-password', async (req, res) => {
 });
 
 // BACKEND CODE: Replace your current GET /my-orders route with this:
-router.get('/orders/my-orders', async (req, res) => {
+router.get('/order/my-orders', async (req, res) => {
     try {
         const authHeader = req.headers['authorization'];
         const token = authHeader && authHeader.split(' ')[1];
         if (!token) return res.status(401).json({ error: "Not logged in" });
 
-        // 1. Decode token
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         const db = await getDb();
-        
-        // 2. Safely find the User 
-        // We use a try/catch specifically for the ID conversion to prevent crashing
-        let currentUser = null;
-        try {
-            currentUser = await db.collection("users").findOne({ _id: new ObjectId(decoded.id) });
-        } catch (idError) {
-            console.error("Invalid ID format in token:", decoded.id);
+
+        if (!db) {
+            console.error("Database connection failed");
+            return res.status(500).json({ error: "Database connection failed" });
         }
 
-        // 3. Build the Query: Search by BOTH ID and Email
-        // This is the "Bridge" that connects your mismatched data
-        let query = {
-            $or: [
-                { userId: decoded.id }, // Match ID as string
-            ]
-        };
-
-        // If the ID conversion worked, add it as a search option
+        let userSearchId;
         try {
-            query.$or.push({ userId: new ObjectId(decoded.id) });
-        } catch(e) {}
-
-        // IF we found the user, add their email to the search (The Fallback)
-        if (currentUser && currentUser.email) {
-            query.$or.push({ email: currentUser.email });
-            query.$or.push({ "customerDetails.email": currentUser.email });
+            // Check if ObjectId is defined before using it
+            userSearchId = (typeof ObjectId !== 'undefined') ? new ObjectId(decoded.id) : decoded.id;
+        } catch (e) {
+            userSearchId = decoded.id;
         }
 
-        // 4. Fetch the orders
+        const user = await db.collection("users").findOne({ 
+            $or: [{ _id: userSearchId }, { _id: decoded.id }] 
+        });
+
+        if (!user) {
+            console.error("User not found for token ID:", decoded.id);
+            return res.status(404).json({ error: "User profile not found" });
+        }
+
+        // Build query array dynamically to avoid empty/null values
+        let orConditions = [
+            { userId: decoded.id },
+            { userId: userSearchId }
+        ];
+
+        if (user.email) {
+            orConditions.push({ email: user.email });
+            orConditions.push({ "customerDetails.email": user.email });
+        }
+
         const orders = await db.collection("orders")
-            .find(query)
+            .find({ $or: orConditions })
             .sort({ createdAt: -1 })
             .toArray();
 
-        // Always return an array, even if empty, to keep the frontend happy
         res.json(orders || []);
 
     } catch (e) {
-        // This logs the ACTUAL reason for the 500 error in your Netlify dashboard
-        console.error("CRITICAL SERVER ERROR:", e.message);
+        // IMPORTANT: This will now show up in Netlify black box logs
+        console.error("CRITICAL ERROR IN MY-ORDERS:", e); 
         res.status(500).json({ 
             error: "Error fetching order", 
-            details: e.message 
+            details: e.message,
+            stack: e.stack // Temporary: remove this once fixed
         });
     }
 });
