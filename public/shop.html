@@ -278,7 +278,7 @@
 <div id="custom-toast" class="fixed bottom-10 left-1/2 -translate-x-1/2 z-[300] pointer-events-none">
     <div class="bg-brandBlack text-brandPink px-8 py-4 shadow-2xl border border-brandPink/20 flex items-center gap-4">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7" stroke-width="2"/></svg>
-        <span id="toast-message" class="text-[10px] uppercase tracking-[0.2em] font-bold">Item added to bag</span>
+        <span id="toast-message" class="text-[10px] uppercase tracking-[0.2em] font-bold">Item added to cart</span>
     </div>
 </div>
 
@@ -346,7 +346,7 @@
                     <label class="block text-[10px] uppercase tracking-widest mb-3">Select Size</label>
                     <div id="modal-sizes" class="flex flex-wrap gap-2"></div>
                 </div>
-                <button id="modal-add-btn" class="w-full bg-brandBlack text-brandPink py-4 uppercase tracking-[0.3em] text-xs hover:bg-brandPink hover:text-brandBlack transition-all">Add to Bag</button>
+                <button id="modal-add-btn" class="w-full bg-brandBlack text-brandPink py-4 uppercase tracking-[0.3em] text-xs hover:bg-brandPink hover:text-brandBlack transition-all">Add to cart</button>
             </div>
         </div>
     </div>
@@ -446,7 +446,7 @@
 
             if (stockAvailable < qtyRequested) {
                 showNotification(`Only ${stockAvailable} left`);
-                btn.innerText = "Add to Bag";
+                btn.innerText = "Add to Cart";
             } else {
                 const cartItem = {
                     id: p._id,
@@ -462,13 +462,13 @@
 
                 localStorage.setItem('tmb_cart', JSON.stringify(cart));
                 updateCartBadge();
-                showNotification(`${p.name} added to bag`);
-                btn.innerText = "Add to Bag";
+                showNotification(`${p.name} added to cart`);
+                btn.innerText = "Add to Cart";
                 qtyElement.innerText = "1"; 
             }
         } catch (err) {
             showNotification("Error. Try again.");
-            btn.innerText = "Add to Bag";
+            btn.innerText = "Add to Cart";
         } finally { btn.disabled = false; }
     }
 
@@ -523,7 +523,7 @@
             addBtn.innerText = "SOLD OUT";
         } else {
             addBtn.disabled = false;
-            addBtn.innerText = "ADD TO BAG";
+            addBtn.innerText = "ADD TO CART";
             let selectedModalSize = availableVariants[0].size;
             let selectedModalPrice = availableVariants[0].price;
             priceDisplay.innerText = `₦${Number(selectedModalPrice).toLocaleString()}`;
@@ -604,7 +604,7 @@
                         <button onclick="updateQty('${p._id}', 1)" class="px-3 py-1">+</button>
                     </div>
                     <button onclick="handleAddToCart('${p._id}')" id="btn-${p._id}" ${isOutOfStock ? 'disabled' : ''} class="w-full ${isOutOfStock ? 'bg-gray-200' : 'bg-brandBlack text-brandPink'} text-[8px] py-2.5 uppercase tracking-widest">
-                        ${isOutOfStock ? 'Out of Stock' : 'Add to Bag'}
+                        ${isOutOfStock ? 'Out of Stock' : 'Add to Cart'}
                     </button>
                 </div>
             </div>`;
