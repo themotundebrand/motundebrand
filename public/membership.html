@@ -25,9 +25,29 @@
         input:focus { border-color: #F7C8D0 !important; outline: none; }
         #notification-toast { transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
         .order-card { border-left: 4px solid #F7C8D0; }
+        /* Modal Animation */
+        #order-modal { transition: opacity 0.3s ease; }
+        .modal-content { transition: transform 0.3s ease-out; transform: translateY(20px); }
+        #order-modal.active { opacity: 1; pointer-events: auto; }
+        #order-modal.active .modal-content { transform: translateY(0); }
     </style>
 </head>
 <body class="bg-white font-sans antialiased text-brandBlack">
+
+    <div id="order-modal" class="fixed inset-0 z-[300] bg-black/60 flex items-center justify-center p-4 opacity-0 pointer-events-none">
+        <div class="modal-content bg-white w-full max-w-lg p-8 shadow-2xl overflow-y-auto max-h-[90vh]">
+            <div class="flex justify-between items-center mb-8 border-b pb-4">
+                <h3 class="text-[12px] font-black uppercase tracking-widest">Order Details</h3>
+                <button onclick="closeModal()" class="text-gray-400 hover:text-black">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" stroke-width="2"/></svg>
+                </button>
+            </div>
+            <div id="modal-items-container" class="space-y-6">
+                </div>
+            <div id="modal-summary" class="mt-8 pt-6 border-t border-gray-100 space-y-2">
+                </div>
+        </div>
+    </div>
 
     <div id="notification-toast" class="fixed bottom-10 left-1/2 -translate-x-1/2 z-[200] opacity-0 translate-y-10 pointer-events-none">
         <div class="bg-brandBlack text-brandPink px-8 py-4 shadow-2xl border border-brandPink/20 min-w-[300px]">
@@ -60,11 +80,11 @@
 
         <section class="mb-20">
             <div class="flex justify-between items-end border-b border-gray-100 pb-4 mb-8">
-                <h3 class="text-[11px] font-bold uppercase tracking-widest">Your Order History</h3>
-                <button onclick="fetchOrderHistory()" class="text-[9px] font-bold text-gray-400 hover:text-brandBlack uppercase tracking-widest transition">Refresh History</button>
+                <h3 class="text-[11px] font-bold uppercase tracking-widest">Order History</h3>
+                <button onclick="fetchOrderHistory()" class="text-[9px] font-bold text-gray-400 hover:text-brandBlack uppercase tracking-widest transition">Sync Orders</button>
             </div>
             <div id="order-history-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <p class="text-[9px] text-gray-400 uppercase tracking-widest py-10">Syncing with server...</p>
+                <p class="text-[9px] text-gray-400 uppercase tracking-widest py-10">Checking database...</p>
             </div>
         </section>
 
@@ -72,14 +92,14 @@
             <div class="lg:col-span-2 space-y-16">
                 <section class="space-y-8">
                     <div class="flex justify-between items-end border-b border-gray-100 pb-4">
-                        <h3 class="text-[11px] font-bold uppercase tracking-widest">Member Details</h3>
-                        <button onclick="updateProfile()" class="text-[9px] font-black text-brandPinkDark uppercase tracking-widest hover:text-brandBlack transition">Update Profile</button>
+                        <h3 class="text-[11px] font-bold uppercase tracking-widest">Shipping Information</h3>
+                        <button onclick="updateProfile()" class="text-[9px] font-black text-brandPinkDark uppercase tracking-widest hover:text-brandBlack transition">Save Details</button>
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                         <div class="space-y-1"><label class="text-[8px] text-gray-400 uppercase tracking-widest">Full Name</label><input type="text" id="user-name" class="w-full py-2 text-[11px] tracking-widest uppercase font-bold"></div>
-                        <div class="space-y-1"><label class="text-[8px] text-gray-400 uppercase tracking-widest">Email (Read-only)</label><input type="email" id="user-email" readonly class="w-full py-2 text-[11px] tracking-widest uppercase opacity-50 cursor-not-allowed"></div>
-                        <div class="space-y-1"><label class="text-[8px] text-gray-400 uppercase tracking-widest">Phone Number</label><input type="tel" id="user-phone" class="w-full py-2 text-[11px] tracking-widest uppercase font-bold"></div>
-                        <div class="space-y-1"><label class="text-[8px] text-gray-400 uppercase tracking-widest">WhatsApp Number</label><input type="tel" id="user-whatsapp" class="w-full py-2 text-[11px] tracking-widest uppercase font-bold"></div>
+                        <div class="space-y-1"><label class="text-[8px] text-gray-400 uppercase tracking-widest">Email</label><input type="email" id="user-email" readonly class="w-full py-2 text-[11px] tracking-widest uppercase opacity-50 cursor-not-allowed"></div>
+                        <div class="space-y-1"><label class="text-[8px] text-gray-400 uppercase tracking-widest">Phone</label><input type="tel" id="user-phone" class="w-full py-2 text-[11px] tracking-widest uppercase font-bold"></div>
+                        <div class="space-y-1"><label class="text-[8px] text-gray-400 uppercase tracking-widest">WhatsApp</label><input type="tel" id="user-whatsapp" class="w-full py-2 text-[11px] tracking-widest uppercase font-bold"></div>
                         <div class="md:col-span-2 space-y-1"><label class="text-[8px] text-gray-400 uppercase tracking-widest">Street Address</label><input type="text" id="user-address" class="w-full py-2 text-[11px] tracking-widest uppercase font-bold"></div>
                         <div class="space-y-1"><label class="text-[8px] text-gray-400 uppercase tracking-widest">City</label><input type="text" id="user-city" class="w-full py-2 text-[11px] tracking-widest uppercase font-bold"></div>
                         <div class="space-y-1"><label class="text-[8px] text-gray-400 uppercase tracking-widest">State</label><input type="text" id="user-state" class="w-full py-2 text-[11px] tracking-widest uppercase font-bold"></div>
@@ -90,32 +110,26 @@
             <div class="lg:col-span-1">
                 <section class="bg-gray-50 p-8 space-y-8">
                     <h3 class="text-[11px] font-bold uppercase tracking-widest border-b border-gray-200 pb-4">Security</h3>
-                    <div class="space-y-6">
-                        <input type="password" id="new-password" placeholder="NEW PASSWORD" class="w-full py-3 text-[10px] tracking-widest uppercase">
-                        <button onclick="changePassword()" class="w-full bg-brandBlack text-brandPink text-[9px] font-bold uppercase tracking-[0.2em] py-4 hover:bg-brandPink hover:text-brandBlack transition">
-                            Change Password
-                        </button>
-                    </div>
+                    <input type="password" id="new-password" placeholder="NEW PASSWORD" class="w-full py-3 text-[10px] tracking-widest uppercase">
+                    <button onclick="changePassword()" class="w-full bg-brandBlack text-brandPink text-[9px] font-bold uppercase tracking-[0.2em] py-4 hover:bg-brandPink hover:text-brandBlack transition">Update Password</button>
                 </section>
             </div>
         </div>
     </main>
 
     <script>
+        let allOrders = []; // Store orders globally to access details
+
         document.addEventListener('DOMContentLoaded', () => {
             const token = localStorage.getItem('motunde_token');
             const user = JSON.parse(localStorage.getItem('motunde_user'));
+            if (!token || !user) { window.location.href = 'account.html'; return; }
 
-            if (!token || !user) {
-                window.location.href = 'account.html';
-                return;
-            }
-
-            document.getElementById('welcome-name').innerText = `Welcome back, ${user.name}`;
+            document.getElementById('welcome-name').innerText = `Welcome, ${user.name}`;
             document.getElementById('user-name').value = user.name || '';
             document.getElementById('user-email').value = user.email || '';
             document.getElementById('user-phone').value = user.phone || '';
-            document.getElementById('user-whatsapp').value = user.whatsapp || user.phone || '';
+            document.getElementById('user-whatsapp').value = user.whatsapp || '';
 
             if (user.address && typeof user.address === 'object') {
                 document.getElementById('user-address').value = user.address.street || '';
@@ -124,51 +138,76 @@
             } else {
                 document.getElementById('user-address').value = user.address || '';
             }
-
             fetchOrderHistory();
         });
 
         async function fetchOrderHistory() {
             const container = document.getElementById('order-history-container');
             const token = localStorage.getItem('motunde_token');
-
             try {
                 const response = await fetch('/api/orders/my-orders', {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
-
                 if (!response.ok) throw new Error('Database Sync Failed');
-                const orders = await response.json();
+                allOrders = await response.json();
 
-                if (!orders || orders.length === 0) {
-                    container.innerHTML = `<p class="col-span-full text-[9px] text-gray-400 uppercase tracking-widest text-center py-10">No order history found yet.</p>`;
+                if (!allOrders.length) {
+                    container.innerHTML = `<p class="col-span-full text-[9px] text-gray-400 text-center py-10 uppercase tracking-widest">No orders found.</p>`;
                     return;
                 }
 
-                container.innerHTML = orders.map(order => `
+                container.innerHTML = allOrders.map((order, index) => `
                     <div class="order-card bg-white p-6 border border-gray-100 shadow-sm">
                         <div class="flex justify-between items-start mb-4">
                             <div>
                                 <span class="text-[7px] text-gray-400 uppercase tracking-widest block">Reference</span>
                                 <span class="text-[10px] font-black uppercase tracking-tighter">#${order._id.slice(-8)}</span>
                             </div>
-                            <span class="text-[7px] px-2 py-1 bg-brandPink text-brandBlack font-bold uppercase tracking-widest">
+                            <span class="text-[7px] px-2 py-1 ${order.status === 'completed' ? 'bg-green-50 text-green-600' : 'bg-brandPink text-brandBlack'} font-bold uppercase tracking-widest">
                                 ${order.status || 'Pending'}
                             </span>
                         </div>
-                        <div class="mb-4">
-                             <span class="text-[7px] text-gray-400 uppercase tracking-widest block">Total Price</span>
-                             <p class="text-[12px] font-bold">₦${(order.totalPrice || 0).toLocaleString()}</p>
-                        </div>
-                        <div class="pt-4 border-t border-gray-50 flex justify-between items-center text-[8px] text-gray-400 uppercase">
+                        <p class="text-[12px] font-bold mb-4">₦${(order.totalPrice || 0).toLocaleString()}</p>
+                        <div class="pt-4 border-t border-gray-50 flex justify-between items-center text-[8px] text-gray-400 uppercase font-bold">
                             <span>${new Date(order.createdAt).toLocaleDateString()}</span>
-                            <span class="font-bold text-brandPinkDark">View Details</span>
+                            <button onclick="openOrderDetails(${index})" class="text-brandPinkDark hover:text-brandBlack transition">View Details</button>
                         </div>
                     </div>
                 `).join('');
             } catch (err) {
-                container.innerHTML = `<p class="col-span-full text-[9px] text-red-500 uppercase tracking-widest text-center py-10">Server Connection Error. Check MongoDB IP Whitelist.</p>`;
+                container.innerHTML = `<p class="col-span-full text-[9px] text-red-500 text-center py-10 uppercase tracking-widest">Error: Could not connect to database.</p>`;
             }
+        }
+
+        function openOrderDetails(index) {
+            const order = allOrders[index];
+            const itemsContainer = document.getElementById('modal-items-container');
+            const summaryContainer = document.getElementById('modal-summary');
+            
+            itemsContainer.innerHTML = order.items.map(item => `
+                <div class="flex items-center gap-4">
+                    <img src="${item.image}" class="w-16 h-16 object-cover bg-gray-50" alt="${item.name}">
+                    <div class="flex-1">
+                        <h4 class="text-[10px] font-black uppercase tracking-widest">${item.name}</h4>
+                        <p class="text-[8px] text-gray-400 uppercase tracking-widest">${item.size} — Qty: ${item.quantity}</p>
+                    </div>
+                    <span class="text-[10px] font-bold">₦${(item.price * item.quantity).toLocaleString()}</span>
+                </div>
+            `).join('');
+
+            summaryContainer.innerHTML = `
+                <div class="flex justify-between text-[10px] font-black uppercase tracking-widest">
+                    <span>Total Paid</span>
+                    <span>₦${(order.totalPrice || 0).toLocaleString()}</span>
+                </div>
+                <p class="text-[7px] text-gray-400 uppercase tracking-widest">Payment: ${order.paymentMethod || 'Online'}</p>
+            `;
+
+            document.getElementById('order-modal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('order-modal').classList.remove('active');
         }
 
         async function updateProfile() {
@@ -183,49 +222,31 @@
                     country: "Nigeria"
                 }
             };
-
             try {
                 const response = await fetch('/api/user/update', {
                     method: 'PUT',
-                    headers: { 
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${localStorage.getItem('motunde_token')}`
-                    },
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('motunde_token')}` },
                     body: JSON.stringify(updatedData)
                 });
-
                 if (response.ok) {
-                    const currentUser = JSON.parse(localStorage.getItem('motunde_user'));
-                    localStorage.setItem('motunde_user', JSON.stringify({ ...currentUser, ...updatedData }));
+                    const current = JSON.parse(localStorage.getItem('motunde_user'));
+                    localStorage.setItem('motunde_user', JSON.stringify({ ...current, ...updatedData }));
                     showNotification("Profile Updated Successfully");
-                } else {
-                    showNotification("Update Failed");
                 }
-            } catch (err) {
-                showNotification("Network Error");
-            }
+            } catch (err) { showNotification("Update Failed"); }
         }
 
         async function changePassword() {
             const newPass = document.getElementById('new-password').value;
             if (!newPass) return showNotification("Enter a new password");
-
             try {
                 const response = await fetch('/api/user/change-password', {
                     method: 'POST',
-                    headers: { 
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${localStorage.getItem('motunde_token')}`
-                    },
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('motunde_token')}` },
                     body: JSON.stringify({ password: newPass })
                 });
-                if (response.ok) {
-                    showNotification("Password Changed");
-                    document.getElementById('new-password').value = '';
-                }
-            } catch (err) {
-                showNotification("Error changing password");
-            }
+                if (response.ok) { showNotification("Password Changed"); document.getElementById('new-password').value = ''; }
+            } catch (err) { showNotification("Error changing password"); }
         }
 
         function showNotification(msg) {
@@ -235,10 +256,7 @@
             setTimeout(() => toast.classList.add('opacity-0', 'translate-y-10', 'pointer-events-none'), 3000);
         }
 
-        function handleLogout() {
-            localStorage.clear();
-            window.location.href = 'account.html';
-        }
+        function handleLogout() { localStorage.clear(); window.location.href = 'account.html'; }
     </script>
 </body>
 </html>
