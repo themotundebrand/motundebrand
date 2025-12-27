@@ -875,52 +875,59 @@ router.post('/login', async (req, res) => {
 });
 
 // GET LOGGED-IN USER'S ORDERS
-// GET LOGGED-IN USER'S ORDERS
 router.get('/orders/my-orders', async (req, res) => {
-    console.log("--- DEBUG: Fetching User Orders ---");
+    console.log("LOG: Function triggered for /my-orders");
+    
     try {
         const authHeader = req.headers['authorization'];
         const token = authHeader && authHeader.split(' ')[1];
 
         if (!token) {
-            console.error("DEBUG ERROR: No token provided in header");
+            console.log("LOG: No token found in headers");
             return res.status(401).json({ error: "Unauthorized" });
         }
 
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        console.log("DEBUG: Decoded Token ID:", decoded.id);
-
-        const db = await getDb();
-        console.log("DEBUG: Database connection successful");
-
-        // Validate the ID format
-        if (!decoded.id || !/^[0-9a-fA-F]{24}$/.test(decoded.id)) {
-            console.error("DEBUG ERROR: Invalid ID format in token:", decoded.id);
-            return res.status(400).json({ error: "Invalid User ID in token" });
+        // Check if JWT_SECRET is actually loaded
+        if (!process.env.JWT_SECRET) {
+            console.error("LOG ERROR: JWT_SECRET is missing from Environment Variables");
+            return res.status(500).json({ error: "Server Configuration Error" });
         }
 
-        // Attempt to find orders
-        // Note: We log the query we are about to run
-        const query = { userId: new ObjectId(decoded.id) };
-        console.log("DEBUG: Running Query:", JSON.stringify(query));
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        console.log("LOG: Token verified for user ID:", decoded.id);
 
+        console.log("LOG: Attempting Database Connection...");
+        const db = await getDb(); 
+        console.log("LOG: Database Connected Successfully");
+
+        // Convert string ID to MongoDB ObjectId
+        let userSearchId;
+        try {
+            userSearchId = new ObjectId(decoded.id);
+        } catch (idErr) {
+            console.error("LOG ERROR: Invalid ObjectId format:", decoded.id);
+            return res.status(400).json({ error: "Invalid ID format" });
+        }
+
+        console.log("LOG: Querying 'orders' collection...");
         const orders = await db.collection("orders")
-            .find(query)
+            .find({ userId: userSearchId })
             .sort({ createdAt: -1 })
             .toArray();
 
-        console.log(`DEBUG SUCCESS: Found ${orders.length} orders for user ${decoded.id}`);
-        res.json(orders);
+        console.log(`LOG: Success. Found ${orders.length} orders.`);
+        return res.json(orders);
 
     } catch (e) {
-        console.error("--- FULL DEBUG ERROR STACK ---");
-        console.error(e); // This prints the line number and full error message
+        console.error("--- CRITICAL BACKEND CRASH ---");
+        console.error("Error Name:", e.name);
+        console.error("Error Message:", e.message);
+        console.error("Stack Trace:", e.stack);
         
         const status = e.name === 'JsonWebTokenError' ? 401 : 500;
-        res.status(status).json({ 
+        return res.status(status).json({ 
             error: "Failed to fetch orders", 
-            details: e.message,
-            stack: process.env.NODE_ENV === 'development' ? e.stack : undefined 
+            details: e.message 
         });
     }
 });
