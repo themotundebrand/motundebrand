@@ -102,10 +102,10 @@
             </button>
         </div>
     </nav>
-        <div id="sidebar-overlay" onclick="toggleSidebar(false)" class="fixed inset-0 bg-black/60 z-[110] hidden backdrop-blur-sm"></div>
 
-
-     <aside id="sidebar" class="fixed top-0 left-0 h-full w-64 bg-brandBlack z-[120] sidebar-closed p-6 flex flex-col">
+    <div id="sidebar-overlay" onclick="toggleSidebar(false)" class="fixed inset-0 bg-black/60 z-[110] hidden backdrop-blur-sm"></div>
+    
+    <aside id="sidebar" class="fixed top-0 left-0 h-full w-64 bg-brandBlack z-[120] sidebar-closed p-6 flex flex-col">
         <button onclick="toggleSidebar(false)" class="self-end text-brandPink mb-10"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" stroke-width="2"></path></svg></button>
         <div class="flex flex-col space-y-6 text-[10px] tracking-[0.25em] uppercase text-brandPink/80">
             <a href="shop.html" class="hover:text-brandPink transition">Shop</a>
@@ -117,6 +117,7 @@
             <a href="orderhistory.html" class="hover:text-brandPink">Order History</a>
         </div>
     </aside>
+
 
     <main class="pt-28 pb-12 px-4 md:px-12">
         <header class="text-center mb-12">
