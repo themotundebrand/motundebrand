@@ -213,7 +213,7 @@
         </div>
     </div>
 </footer>
-  <script>
+ <script>
     // --- 1. Global State ---
     let currentProducts = [];
     let cart = JSON.parse(localStorage.getItem('tmb_cart')) || [];
@@ -253,19 +253,22 @@
 
     // --- 4. Core Cart Synchronizer ---
     function syncCart(product, size, price, quantity) {
+        // Validation: Ensure quantity is a clean number and at least 1
+        const cleanQty = Math.max(1, parseInt(quantity) || 1);
+
         const item = { 
             id: product._id, 
             name: product.name, 
             price: Number(price), 
             size: size, 
             image: product.imageUrl, 
-            quantity: quantity 
+            quantity: cleanQty 
         };
 
         const idx = cart.findIndex(x => x.id === product._id && x.size === size);
         
         if (idx > -1) {
-            cart[idx].quantity += quantity;
+            cart[idx].quantity += cleanQty;
         } else {
             cart.push(item);
         }
@@ -359,6 +362,7 @@
         const product = currentProducts.find(p => p._id === pId);
 
         if (!product) return;
+        // Correctly using the current modalQty
         syncCart(product, size, price, modalQty);
         closeModal();
     }
@@ -368,9 +372,8 @@
         document.body.style.overflow = '';
     }
 
-    // --- 6. Grid Controllers (Synchronized with Shop.html) ---
+    // --- 6. Grid Controllers (Fixed Jump Issue) ---
 
-    // Updated to match your shop.html function name 'updateQty'
     function updateQty(id, change) {
         const qtyEl = document.getElementById(`qty-${id}`);
         const sel = document.querySelector(`select[data-id="${id}"]`);
@@ -378,19 +381,22 @@
         
         if (!p || !sel || !qtyEl) return;
 
-        // Force parseInt to prevent math errors
-        let currentQty = parseInt(qtyEl.innerText) || 1;
+        // Force reading as Integer and trim any whitespace
+        let currentQty = parseInt(qtyEl.innerText.trim());
+        if (isNaN(currentQty)) currentQty = 1;
+
         const selectedSize = sel.value;
         const variant = p.variants.find(v => v.size === selectedSize);
         const maxStock = variant ? variant.stock : 0;
 
         let nextQty = currentQty + change;
 
+        // Lock between 1 and max stock
         if (nextQty < 1) {
             nextQty = 1;
         } else if (nextQty > maxStock) {
             nextQty = maxStock;
-            showNotification(`Only ${maxStock} items available in ${selectedSize}`);
+            showNotification(`Only ${maxStock} items in ${selectedSize}`);
         }
 
         qtyEl.innerText = nextQty;
@@ -401,7 +407,7 @@
         const priceEl = document.getElementById(`price-${id}`);
         if (priceEl) priceEl.innerText = `₦${Number(price).toLocaleString()}`;
         
-        // Reset quantity back to 1 when size changes
+        // Anti-zero: Always reset to 1 when user switches sizes
         const qtyEl = document.getElementById(`qty-${id}`);
         if (qtyEl) qtyEl.innerText = "1";
     }
@@ -413,7 +419,7 @@
         
         if (!p || !sel || !qtyEl) return;
 
-        const qtyToAdd = parseInt(qtyEl.innerText);
+        const qtyToAdd = parseInt(qtyEl.innerText) || 1;
         const price = sel.options[sel.selectedIndex].dataset.price;
         const size = sel.value;
         const btn = document.querySelector(`button[onclick="handleGridAddToCart('${id}')"]`);
@@ -422,7 +428,6 @@
         btn.disabled = true;
 
         try {
-            // Live Database Stock Check
             const res = await fetch(`/api/products/${id}/stock`);
             const data = await res.json();
             const variant = data.variants.find(v => v.size === size);
