@@ -869,21 +869,39 @@ function rotateSlides() {
         document.getElementById(`slide-${currentIdx + 1}`).classList.replace('slide-hidden', 'slide-active');
     }
 }
-
-// --- FINALIZED OUTFLICKZ AD LOGIC WITH REDIRECT ---
+// --- TWICE-DAILY RANDOMIZED AD LOGIC WITH REDIRECT ---
 document.addEventListener('DOMContentLoaded', () => {
     const overlay = document.getElementById('videoAdOverlay');
     const video = document.getElementById('adVideo');
     const skipBtn = document.getElementById('skipBtn');
     const muteIcon = document.getElementById('muteIcon');
 
-    const hasSeenAd = sessionStorage.getItem('tmb_ad_seen');
+    // 1. Get today's date (formatted as YYYY-MM-DD)
+    const today = new Date().toISOString().split('T')[0];
+    
+    // 2. Load stored data from localStorage
+    let adData = JSON.parse(localStorage.getItem('outflickz_ad_tracker')) || { date: today, count: 0 };
 
-    if (!hasSeenAd && overlay && video) {
+    // 3. If it's a new day, reset the count
+    if (adData.date !== today) {
+        adData = { date: today, count: 0 };
+    }
+
+    // 4. Set Probability (0.5 = 50% chance it shows up on any load)
+    const randomChance = Math.random() > 0.5;
+
+    // 5. Check if they have views remaining today
+    if (adData.count < 2 && randomChance && overlay && video) {
+        // Show after a tiny delay for a smooth entrance
         setTimeout(() => {
             overlay.classList.remove('hidden');
             overlay.classList.add('flex');
             
+            // Increment count and save
+            adData.count += 1;
+            localStorage.setItem('outflickz_ad_tracker', JSON.stringify(adData));
+
+            // Try playing with sound
             video.muted = false;
             let playPromise = video.play();
 
@@ -897,9 +915,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // AUTO-REDIRECT WHEN VIDEO FINISHES
             video.onended = function() {
-                console.log("Video finished. Redirecting to home...");
-                sessionStorage.setItem('tmb_ad_seen', 'true');
-                window.location.href = 'shop.html'; // Directs to your welcome page
+                console.log("Ad finished. Redirecting...");
+                window.location.href = 'index.html'; 
             };
 
             // Show Skip button after 6 seconds
@@ -907,7 +924,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if(skipBtn) skipBtn.classList.remove('hidden');
             }, 6000); 
 
-        }, 5000); 
+        }, 2000); // 2 second delay for premium feel
     }
 });
 
@@ -922,6 +939,16 @@ function toggleMute(event) {
     } else {
         video.muted = true;
         icon.innerText = "🔇";
+    }
+}
+
+function closeAd() {
+    const overlay = document.getElementById('videoAdOverlay');
+    const video = document.getElementById('adVideo');
+    if(video) video.pause();
+    if(overlay) {
+        overlay.classList.add('hidden');
+        overlay.classList.remove('flex');
     }
 }
 

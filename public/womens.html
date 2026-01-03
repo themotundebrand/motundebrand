@@ -201,6 +201,31 @@
         </div>
     </div>
 </footer>
+<div id="videoAdOverlay" class="fixed inset-0 z-[1000] bg-black/95 hidden items-center justify-center p-0 md:p-4 backdrop-blur-md">
+    <div class="relative w-full h-full md:h-auto md:max-w-[400px] bg-black md:rounded-xl overflow-hidden shadow-2xl">
+        
+        <a href="https://www.outflickz.com" target="_blank" class="block w-full h-full cursor-pointer">
+            <video id="adVideo" class="w-full h-full md:h-auto object-cover md:object-contain" playsinline autoplay>
+                <source src="outflickz-ads.mp4" type="video/mp4">
+            </video>
+        </a>
+
+        <button onclick="toggleMute(event)" class="absolute top-6 left-6 bg-black/60 text-white p-2 rounded-full border border-white/20 z-[1020] flex items-center justify-center">
+            <span id="muteIcon" class="text-lg">🔇</span>
+        </button>
+
+        <button id="skipBtn" onclick="closeAd()" class="absolute top-6 right-6 bg-black/60 text-white px-4 py-2 rounded-full text-[10px] font-bold uppercase tracking-widest border border-white/20 hidden">
+            Skip Ad
+        </button>
+
+        <div class="absolute bottom-10 left-0 right-0 px-8">
+            <a href="https://www.outflickz.com" class="block w-full bg-white text-black py-4 rounded-full text-center text-[11px] font-black uppercase tracking-widest shadow-xl">
+                Visit outflickz.com
+            </a>
+        </div>
+    </div>
+</div>
+
   <script>
     let currentProducts = [];
     let cart = JSON.parse(localStorage.getItem('tmb_cart')) || [];
@@ -406,6 +431,89 @@
         document.getElementById('sidebar').classList.toggle('sidebar-open', open);
         document.getElementById('sidebar-overlay').classList.toggle('hidden', !open);
     }
+
+    // --- TWICE-DAILY RANDOMIZED AD LOGIC WITH REDIRECT ---
+document.addEventListener('DOMContentLoaded', () => {
+    const overlay = document.getElementById('videoAdOverlay');
+    const video = document.getElementById('adVideo');
+    const skipBtn = document.getElementById('skipBtn');
+    const muteIcon = document.getElementById('muteIcon');
+
+    // 1. Get today's date (formatted as YYYY-MM-DD)
+    const today = new Date().toISOString().split('T')[0];
+    
+    // 2. Load stored data from localStorage
+    let adData = JSON.parse(localStorage.getItem('outflickz_ad_tracker')) || { date: today, count: 0 };
+
+    // 3. If it's a new day, reset the count
+    if (adData.date !== today) {
+        adData = { date: today, count: 0 };
+    }
+
+    // 4. Set Probability (0.5 = 50% chance it shows up on any load)
+    const randomChance = Math.random() > 0.5;
+
+    // 5. Check if they have views remaining today
+    if (adData.count < 2 && randomChance && overlay && video) {
+        // Show after a tiny delay for a smooth entrance
+        setTimeout(() => {
+            overlay.classList.remove('hidden');
+            overlay.classList.add('flex');
+            
+            // Increment count and save
+            adData.count += 1;
+            localStorage.setItem('outflickz_ad_tracker', JSON.stringify(adData));
+
+            // Try playing with sound
+            video.muted = false;
+            let playPromise = video.play();
+
+            if (playPromise !== undefined) {
+                playPromise.catch(() => {
+                    video.muted = true;
+                    if(muteIcon) muteIcon.innerText = "🔇";
+                    video.play();
+                });
+            }
+
+            // AUTO-REDIRECT WHEN VIDEO FINISHES
+            video.onended = function() {
+                console.log("Ad finished. Redirecting...");
+                window.location.href = 'index.html'; 
+            };
+
+            // Show Skip button after 6 seconds
+            setTimeout(() => {
+                if(skipBtn) skipBtn.classList.remove('hidden');
+            }, 6000); 
+
+        }, 2000); // 2 second delay for premium feel
+    }
+});
+
+function toggleMute(event) {
+    event.preventDefault();
+    event.stopPropagation();
+    const video = document.getElementById('adVideo');
+    const icon = document.getElementById('muteIcon');
+    if (video.muted) {
+        video.muted = false;
+        icon.innerText = "🔊";
+    } else {
+        video.muted = true;
+        icon.innerText = "🔇";
+    }
+}
+
+function closeAd() {
+    const overlay = document.getElementById('videoAdOverlay');
+    const video = document.getElementById('adVideo');
+    if(video) video.pause();
+    if(overlay) {
+        overlay.classList.add('hidden');
+        overlay.classList.remove('flex');
+    }
+}
 
     window.onload = () => {
         loadWomenCollection();
