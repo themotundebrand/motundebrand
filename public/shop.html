@@ -366,9 +366,8 @@
     // --- 1. Initialize Cart & Global State ---
     let currentProducts = [];
     let cart = JSON.parse(localStorage.getItem('tmb_cart')) || [];
-    let modalQty = 1; // Global tracker for modal-specific quantity
+    let modalQty = 1; 
 
-    // --- Account Navigation Logic ---
     function handleAccountClick() {
         const token = localStorage.getItem('motunde_token');
         const user = localStorage.getItem('motunde_user');
