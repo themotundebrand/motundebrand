@@ -20,67 +20,87 @@
             }
         }
     </script>
-   <style>
+  <style>
     html { scroll-behavior: smooth; }
     ::-webkit-scrollbar { height: 3px; }
     ::-webkit-scrollbar-track { background: transparent; }
     ::-webkit-scrollbar-thumb { background: #F7C8D0; }
 
-    /* New Floral/Perfume Background Overlay */
+    /* 1. Background Watermark Pattern */
     body {
         background-color: #ffffff;
-        background-image: url('https://www.transparenttextures.com/patterns/cubes.png'); /* Placeholder: Replace with your specific floral/perfume pattern URL */
+        /* Subtle hexagonal pattern layer */
+        background-image: url('https://www.transparenttextures.com/patterns/hexellence.png'); 
         background-attachment: fixed;
     }
 
-    /* Transparent Floral Overlay Layer */
+    /* Transparent Floral Overlay (Tree watermark effect) */
     .bg-floral-overlay {
         position: fixed;
         inset: 0;
         z-index: -1;
-        opacity: 0.05; /* Keeps it very subtle/transparent */
-        background-image: url('https://i.imgur.com/Wp0HCu8.jpeg'); /* Using your hero image as a subtle texture */
-        background-size: cover;
-        background-position: center;
+        opacity: 0.04; /* Very subtle so it doesn't distract */
+        background-image: url('https://i.imgur.com/Wp0HCu8.jpeg'); 
+        background-size: 600px;
+        background-repeat: repeat;
         filter: grayscale(100%);
         pointer-events: none;
     }
 
-    /* REMOVED 3D EFFECTS - Clean Minimalist Cards */
+    /* 2. Snappy Notification (Fix for "Hanging" issue) */
+    #custom-toast {
+        position: fixed;
+        bottom: 5rem; /* Raised slightly to clear WhatsApp button */
+        left: 50%;
+        transform: translateX(-50%) translateY(30px);
+        z-index: 9999; /* Highest priority */
+        opacity: 0;
+        pointer-events: none;
+        transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.2s ease;
+    }
+
+    #custom-toast.show {
+        transform: translateX(-50%) translateY(0);
+        opacity: 1;
+        pointer-events: auto;
+    }
+
+    /* Solid Toast Style */
+    #custom-toast > div {
+        background-color: #000000 !important;
+        color: #F7C8D0 !important;
+        padding: 1rem 2rem;
+        border: 1px solid rgba(247, 200, 208, 0.2);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        min-width: 280px;
+    }
+
+    /* 3. Clean Product Cards (No 3D) */
     .product-card {
         transition: all 0.3s ease;
-        box-shadow: none; /* Removed 3D Depth */
+        box-shadow: none;
         border: 1px solid #f3f4f6;
+        background: white;
     }
     .product-card:hover {
-        transform: translateY(-4px); /* Simplified lift */
+        transform: translateY(-4px);
         border-color: #F7C8D0;
     }
 
-    /* Clean Buttons (No 3D/Glassmorphism) */
-    .btn-action {
-        transition: all 0.2s ease;
-        box-shadow: none !important;
-        text-shadow: none !important;
-    }
-    .btn-action:active {
-        transform: scale(0.98);
-    }
-
-    /* Typography Update - Bold but Flat */
+    /* Typography */
     h1, h2, h3, h4, .font-bold {
         font-weight: 800 !important;
         letter-spacing: 0.05em;
     }
 
-    /* Sidebar & Modal Logic */
+    /* Sidebar & Grid */
     #sidebar { transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
     .sidebar-open { transform: translateX(0); }
     .sidebar-closed { transform: translateX(-100%); }
-    #product-modal { transition: opacity 0.3s ease-out; }
-    .modal-content { transition: opacity 0.3s ease; transform: none !important; }
-
-    /* Grid Layouts */
+    
     .collection-grid {
         display: grid;
         grid-auto-flow: column;
@@ -96,7 +116,7 @@
     }
 </style>
 </head>
-<body class="bg-white font-sans antialiased overflow-x-hidden relative">
+<body class="bg-pink font-sans antialiased overflow-x-hidden relative">
     <div class="bg-floral-overlay"></div>
 
     <a href="https://wa.me/2349025291629?text=Hi%20The%20Motunde%20Brand!%20My%20name%20is%20..." 
@@ -380,6 +400,7 @@
     let currentProducts = [];
     let cart = JSON.parse(localStorage.getItem('tmb_cart')) || [];
     let modalQty = 1; 
+    let toastTimer; // Define this at the very top of your script
 
     function handleAccountClick() {
         const token = localStorage.getItem('motunde_token');
@@ -397,20 +418,23 @@
     }
     checkLoginStatus();
 
-  // --- 2. Notification Helper ---
 function showNotification(message) {
     const toast = document.getElementById('custom-toast');
     const toastMsg = document.getElementById('toast-message');
     if(!toast || !toastMsg) return;
 
+    // Clear any previous timer to force a fresh cycle
+    clearTimeout(toastTimer);
+
     toastMsg.innerText = message;
     toast.classList.add('show');
 
-    // Disappears after 1.5 seconds instead of 3
-    setTimeout(() => { 
+    // Remove after 1.8 seconds
+    toastTimer = setTimeout(() => { 
         toast.classList.remove('show'); 
-    }, 1500); 
+    }, 1800); 
 }
+
     // --- 3. Cart Badge Update ---
     function updateCartBadge() {
         const count = cart.reduce((sum, item) => sum + item.quantity, 0);
