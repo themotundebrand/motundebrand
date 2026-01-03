@@ -330,31 +330,43 @@
     </div>
 </footer>
 
-    <div id="product-modal" class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/90 opacity-0 invisible pointer-events-none">
-        <div class="modal-content bg-white w-full max-w-4xl relative flex flex-col md:flex-row scale-95 shadow-2xl">
-            <button onclick="closeModal()" class="absolute top-4 right-4 z-10 text-brandBlack hover:text-brandPink">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" stroke-width="2"/></svg>
-            </button>
-            <div class="w-full md:w-1/2 bg-gray-100 aspect-square">
-                <img id="modal-img" src="" class="w-full h-full object-cover">
+  <div id="product-modal" class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/90 opacity-0 invisible pointer-events-none">
+    <div class="modal-content bg-white w-full max-w-4xl relative flex flex-col md:flex-row scale-95 shadow-2xl">
+        <button onclick="closeModal()" class="absolute top-4 right-4 z-10 text-brandBlack hover:text-brandPink">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" stroke-width="2"/></svg>
+        </button>
+        <div class="w-full md:w-1/2 bg-gray-100 aspect-square">
+            <img id="modal-img" src="" class="w-full h-full object-cover">
+        </div>
+        <div class="w-full md:w-1/2 p-8 md:p-12 flex flex-col justify-center">
+            <p id="modal-cat" class="text-[10px] uppercase tracking-widest text-brandPinkDark mb-2">Collection</p>
+            <h2 id="modal-name" class="text-2xl font-light uppercase tracking-[0.2em] mb-4">Product Name</h2>
+            <p id="modal-price" class="text-xl font-medium mb-6">₦0</p>
+            
+            <div class="mb-6">
+                <label class="block text-[10px] uppercase tracking-widest mb-3">Select Size</label>
+                <div id="modal-sizes" class="flex flex-wrap gap-2"></div>
             </div>
-            <div class="w-full md:w-1/2 p-8 md:p-12 flex flex-col justify-center">
-                <p id="modal-cat" class="text-[10px] uppercase tracking-widest text-brandPinkDark mb-2">Collection</p>
-                <h2 id="modal-name" class="text-2xl font-light uppercase tracking-[0.2em] mb-4">Product Name</h2>
-                <p id="modal-price" class="text-xl font-medium mb-8">₦0</p>
-                <div class="mb-8">
-                    <label class="block text-[10px] uppercase tracking-widest mb-3">Select Size</label>
-                    <div id="modal-sizes" class="flex flex-wrap gap-2"></div>
+
+            <div class="mb-8">
+                <label class="block text-[10px] uppercase tracking-widest mb-3">Quantity</label>
+                <div class="flex items-center w-32 border border-gray-200">
+                    <button onclick="updateModalQty(-1)" class="flex-1 py-2 hover:bg-gray-50">-</button>
+                    <span id="modal-qty" class="flex-1 text-center font-bold text-sm">1</span>
+                    <button onclick="updateModalQty(1)" class="flex-1 py-2 hover:bg-gray-50">+</button>
                 </div>
-                <button id="modal-add-btn" class="w-full bg-brandBlack text-brandPink py-4 uppercase tracking-[0.3em] text-xs hover:bg-brandPink hover:text-brandBlack transition-all">Add to cart</button>
             </div>
+
+            <button id="modal-add-btn" class="w-full bg-brandBlack text-brandPink py-4 uppercase tracking-[0.3em] text-xs hover:bg-brandPink hover:text-brandBlack transition-all">Add to cart</button>
         </div>
     </div>
+</div>
 
   <script>
     // --- 1. Initialize Cart & Global State ---
     let currentProducts = [];
     let cart = JSON.parse(localStorage.getItem('tmb_cart')) || [];
+    let modalQty = 1; // Global tracker for modal-specific quantity
 
     // --- Account Navigation Logic ---
     function handleAccountClick() {
@@ -377,6 +389,7 @@
     function showNotification(message) {
         const toast = document.getElementById('custom-toast');
         const toastMsg = document.getElementById('toast-message');
+        if(!toast || !toastMsg) return;
         toastMsg.innerText = message;
         toast.classList.add('show');
         setTimeout(() => { toast.classList.remove('show'); }, 3000);
@@ -385,7 +398,8 @@
     // --- 3. Cart Badge Update ---
     function updateCartBadge() {
         const count = cart.reduce((sum, item) => sum + item.quantity, 0);
-        document.getElementById('cart-count').innerText = count;
+        const badge = document.getElementById('cart-count');
+        if(badge) badge.innerText = count;
     }
     updateCartBadge();
 
@@ -400,7 +414,7 @@
         }
     }
 
-    // --- 4. Quantity Controller ---
+    // --- 4. Grid Quantity Controller ---
     function updateQty(productId, change) {
         const qtyElement = document.getElementById(`qty-${productId}`);
         const sizeSelect = document.querySelector(`select[data-id="${productId}"]`);
@@ -423,7 +437,30 @@
         qtyElement.innerText = newQty;
     }
 
-    // --- 5. Add to Cart ---
+    // --- 5. Modal Quantity Controller ---
+    function updateModalQty(change) {
+        const addBtn = document.getElementById('modal-add-btn');
+        const productId = addBtn.getAttribute('data-id');
+        const selectedSize = addBtn.getAttribute('data-size');
+        
+        const product = currentProducts.find(p => p._id === productId);
+        if (!product) return;
+
+        const variant = product.variants.find(v => v.size === selectedSize);
+        const maxStock = variant ? variant.stock : 0;
+
+        let newQty = modalQty + change;
+        if (newQty < 1) newQty = 1;
+        else if (newQty > maxStock) {
+            newQty = maxStock;
+            showNotification(`Only ${maxStock} available`);
+        }
+
+        modalQty = newQty;
+        document.getElementById('modal-qty').innerText = modalQty;
+    }
+
+    // --- 6. Add to Cart (From Grid) ---
     async function handleAddToCart(productId) {
         const p = currentProducts.find(prod => prod._id === productId);
         const qtyElement = document.getElementById(`qty-${productId}`);
@@ -448,20 +485,7 @@
                 showNotification(`Only ${stockAvailable} left`);
                 btn.innerText = "Add to Cart";
             } else {
-                const cartItem = {
-                    id: p._id,
-                    name: p.name,
-                    price: Number(selectedPrice),
-                    size: selectedSize,
-                    image: p.imageUrl,
-                    quantity: qtyRequested
-                };
-                const existingIdx = cart.findIndex(item => item.id === productId && item.size === selectedSize);
-                if (existingIdx > -1) cart[existingIdx].quantity += qtyRequested;
-                else cart.push(cartItem);
-
-                localStorage.setItem('tmb_cart', JSON.stringify(cart));
-                updateCartBadge();
+                addToCartData(p, selectedSize, selectedPrice, qtyRequested);
                 showNotification(`${p.name} added to cart`);
                 btn.innerText = "Add to Cart";
                 qtyElement.innerText = "1"; 
@@ -472,7 +496,40 @@
         } finally { btn.disabled = false; }
     }
 
-    // --- 6. UI Interactions ---
+    // --- 7. Add to Cart (From Modal) ---
+    function handleModalAddToCart() {
+        const addBtn = document.getElementById('modal-add-btn');
+        const productId = addBtn.getAttribute('data-id');
+        const size = addBtn.getAttribute('data-size');
+        const price = addBtn.getAttribute('data-price');
+        const product = currentProducts.find(p => p._id === productId);
+
+        if (!product) return;
+
+        addToCartData(product, size, price, modalQty);
+        showNotification(`${product.name} added to cart`);
+        closeModal();
+    }
+
+    // Helper to sync with LocalStorage
+    function addToCartData(product, size, price, quantity) {
+        const cartItem = {
+            id: product._id,
+            name: product.name,
+            price: Number(price),
+            size: size,
+            image: product.imageUrl,
+            quantity: quantity
+        };
+        const existingIdx = cart.findIndex(item => item.id === product._id && item.size === size);
+        if (existingIdx > -1) cart[existingIdx].quantity += quantity;
+        else cart.push(cartItem);
+
+        localStorage.setItem('tmb_cart', JSON.stringify(cart));
+        updateCartBadge();
+    }
+
+    // --- 8. UI Interactions ---
     function toggleSidebar(open) {
         const sidebar = document.getElementById('sidebar');
         const overlay = document.getElementById('sidebar-overlay');
@@ -486,12 +543,10 @@
     }
     function openCart() { window.location.href = 'cart.html'; }
 
-    // --- 7. New: Combo Toggle Logic ---
     function toggleComboDetails(event, productId) {
-        event.stopPropagation(); // Prevents opening modal by accident
+        event.stopPropagation();
         const details = document.getElementById(`details-${productId}`);
         const icon = document.getElementById(`icon-${productId}`);
-        
         if (details.classList.contains('hidden')) {
             details.classList.remove('hidden');
             icon.style.transform = 'rotate(180deg)';
@@ -501,20 +556,26 @@
         }
     }
 
-    // --- 8. Modal Logic ---
+    // --- 9. Modal Logic ---
     function openModal(productId) {
         const p = currentProducts.find(prod => prod._id === productId);
         if (!p) return;
+        
+        modalQty = 1; // Reset modal qty state
         const availableVariants = (p.variants || []).filter(v => v.stock > 0);
         const isTotallyOutOfStock = availableVariants.length === 0;
 
         document.getElementById('modal-img').src = p.imageUrl;
         document.getElementById('modal-name').innerText = p.name;
         document.getElementById('modal-cat').innerText = (p.category || "General") + " Collection";
+        document.getElementById('modal-qty').innerText = modalQty;
         
         const sizeContainer = document.getElementById('modal-sizes');
         const addBtn = document.getElementById('modal-add-btn');
         const priceDisplay = document.getElementById('modal-price');
+
+        // Set action for the modal button
+        addBtn.onclick = handleModalAddToCart;
 
         if (isTotallyOutOfStock) {
             priceDisplay.innerText = "OUT OF STOCK";
@@ -524,9 +585,13 @@
         } else {
             addBtn.disabled = false;
             addBtn.innerText = "ADD TO CART";
-            let selectedModalSize = availableVariants[0].size;
-            let selectedModalPrice = availableVariants[0].price;
-            priceDisplay.innerText = `₦${Number(selectedModalPrice).toLocaleString()}`;
+            
+            // Initial data setup
+            const firstVariant = availableVariants[0];
+            priceDisplay.innerText = `₦${Number(firstVariant.price).toLocaleString()}`;
+            addBtn.setAttribute('data-id', productId);
+            addBtn.setAttribute('data-size', firstVariant.size);
+            addBtn.setAttribute('data-price', firstVariant.price);
 
             sizeContainer.innerHTML = availableVariants.map((v, i) => `
                 <button onclick="updateModalSelection('${v.price}', '${v.size}', this)" 
@@ -537,6 +602,12 @@
 
             window.updateModalSelection = (price, size, btn) => {
                 priceDisplay.innerText = `₦${Number(price).toLocaleString()}`;
+                addBtn.setAttribute('data-size', size);
+                addBtn.setAttribute('data-price', price);
+                
+                modalQty = 1; // Reset qty when size changes
+                document.getElementById('modal-qty').innerText = modalQty;
+
                 document.querySelectorAll('.size-btn').forEach(b => b.classList.remove('border-brandPink', 'bg-brandPink/5'));
                 btn.classList.add('border-brandPink', 'bg-brandPink/5');
             };
@@ -552,94 +623,90 @@
         document.body.style.overflow = '';
     }
 
-  async function loadProducts() {
-    try {
-        const response = await fetch('/api/products');
-        const data = await response.json();
-        currentProducts = Array.isArray(data) ? data : [];
+    // --- 10. Load Products ---
+    async function loadProducts() {
+        try {
+            const response = await fetch('/api/products');
+            const data = await response.json();
+            currentProducts = Array.isArray(data) ? data : [];
 
-        const renderCard = (p) => {
-            const availableVariants = (p.variants || []).filter(v => v.stock > 0);
-            const isOutOfStock = availableVariants.length === 0;
-            const displayPrice = isOutOfStock ? (p.variants?.[0]?.price || 0) : availableVariants[0].price;
+            const renderCard = (p) => {
+                const availableVariants = (p.variants || []).filter(v => v.stock > 0);
+                const isOutOfStock = availableVariants.length === 0;
+                const displayPrice = isOutOfStock ? (p.variants?.[0]?.price || 0) : availableVariants[0].price;
+                const typeLabel = p.type ? `<p class="text-[7px] text-brandPinkDark font-bold uppercase tracking-tighter mb-1">${p.type}</p>` : "";
 
-            // NEW: Handle Type label (Deodorant/Antiperspirant)
-            const typeLabel = p.type ? `<p class="text-[7px] text-brandPinkDark font-bold uppercase tracking-tighter mb-1">${p.type}</p>` : "";
+                let comboDropdown = "";
+                if (p.category?.toLowerCase() === 'combo' && p.description) {
+                    const items = p.description.split(/[|\-]+/).map(i => i.trim()).filter(i => i !== "");
+                    comboDropdown = `
+                        <div class="mt-2 mb-2 text-left">
+                            <button onclick="toggleComboDetails(event, '${p._id}')" class="flex items-center justify-between w-full text-[7px] font-bold text-orange-600 uppercase tracking-tighter border-b border-orange-50 pb-1">
+                                <span>Package Contents</span>
+                                <svg id="icon-${p._id}" class="w-2 h-2 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7" stroke-width="4"/></svg>
+                            </button>
+                            <div id="details-${p._id}" class="hidden py-2">
+                                <ul class="text-[7px] text-gray-500 space-y-1">
+                                    ${items.map(item => `<li class="truncate">• ${item}</li>`).join('')}
+                                </ul>
+                            </div>
+                        </div>`;
+                }
 
-            // Combo Dropdown Logic
-            let comboDropdown = "";
-            if (p.category?.toLowerCase() === 'combo' && p.description) {
-                const items = p.description.split(/[|\-]+/).map(i => i.trim()).filter(i => i !== "");
-                comboDropdown = `
-                    <div class="mt-2 mb-2 text-left">
-                        <button onclick="toggleComboDetails(event, '${p._id}')" class="flex items-center justify-between w-full text-[7px] font-bold text-orange-600 uppercase tracking-tighter border-b border-orange-50 pb-1">
-                            <span>Package Contents</span>
-                            <svg id="icon-${p._id}" class="w-2 h-2 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7" stroke-width="4"/></svg>
-                        </button>
-                        <div id="details-${p._id}" class="hidden py-2">
-                            <ul class="text-[7px] text-gray-500 space-y-1">
-                                ${items.map(item => `<li class="truncate">• ${item}</li>`).join('')}
-                            </ul>
-                        </div>
-                    </div>`;
-            }
-
-            return `
-            <div class="product-card bg-white p-3 group relative flex flex-col h-full border border-transparent hover:border-gray-50">
-                ${isOutOfStock ? `<div class="absolute inset-0 z-10 bg-white/60 flex items-center justify-center"><span class="bg-black text-white text-[9px] px-4 py-2 uppercase">Sold Out</span></div>` : ''}
-                <div onclick="openModal('${p._id}')" class="aspect-[4/5] overflow-hidden mb-3 bg-gray-50 cursor-pointer">
-                    <img id="img-${p._id}" src="${p.imageUrl}" onerror="refreshBrokenImage('${p._id}', this)" class="w-full h-full object-cover transition duration-700 group-hover:scale-110">
-                </div>
-                <div class="text-center flex-grow">
-                    ${typeLabel}
-                    <h3 class="uppercase font-bold text-[8px] tracking-widest mb-1 truncate">${p.name}</h3>
-                    ${comboDropdown}
-                    <p id="price-${p._id}" class="text-brandPinkDark font-medium text-[10px] mb-2">₦${Number(displayPrice).toLocaleString()}</p>
-                    <select data-id="${p._id}" onchange="handleSizeChange(this, '${p._id}')" ${isOutOfStock ? 'disabled' : ''} class="w-full border border-gray-100 text-[8px] uppercase py-1.5 px-2 mb-2 bg-white">
-                        ${availableVariants.map(v => `<option value="${v.size}" data-price="${v.price}">${v.size}</option>`).join('')}
-                    </select>
-                    <div class="flex items-center justify-between border border-gray-100 mb-3">
-                        <button onclick="updateQty('${p._id}', -1)" class="px-3 py-1">-</button>
-                        <span id="qty-${p._id}" class="text-[10px] font-bold">1</span>
-                        <button onclick="updateQty('${p._id}', 1)" class="px-3 py-1">+</button>
+                return `
+                <div class="product-card bg-white p-3 group relative flex flex-col h-full border border-transparent hover:border-gray-50">
+                    ${isOutOfStock ? `<div class="absolute inset-0 z-10 bg-white/60 flex items-center justify-center"><span class="bg-black text-white text-[9px] px-4 py-2 uppercase">Sold Out</span></div>` : ''}
+                    <div onclick="openModal('${p._id}')" class="aspect-[4/5] overflow-hidden mb-3 bg-gray-50 cursor-pointer">
+                        <img id="img-${p._id}" src="${p.imageUrl}" onerror="refreshBrokenImage('${p._id}', this)" class="w-full h-full object-cover transition duration-700 group-hover:scale-110">
                     </div>
-                    <button onclick="handleAddToCart('${p._id}')" id="btn-${p._id}" ${isOutOfStock ? 'disabled' : ''} class="w-full ${isOutOfStock ? 'bg-gray-200' : 'bg-brandBlack text-brandPink'} text-[8px] py-2.5 uppercase tracking-widest">
-                        ${isOutOfStock ? 'Out of Stock' : 'Add to Cart'}
-                    </button>
-                </div>
-            </div>`;
-        };
+                    <div class="text-center flex-grow">
+                        ${typeLabel}
+                        <h3 class="uppercase font-bold text-[8px] tracking-widest mb-1 truncate">${p.name}</h3>
+                        ${comboDropdown}
+                        <p id="price-${p._id}" class="text-brandPinkDark font-medium text-[10px] mb-2">₦${Number(displayPrice).toLocaleString()}</p>
+                        <select data-id="${p._id}" onchange="handleSizeChange(this, '${p._id}')" ${isOutOfStock ? 'disabled' : ''} class="w-full border border-gray-100 text-[8px] uppercase py-1.5 px-2 mb-2 bg-white">
+                            ${availableVariants.map(v => `<option value="${v.size}" data-price="${v.price}">${v.size}</option>`).join('')}
+                        </select>
+                        <div class="flex items-center justify-between border border-gray-100 mb-3">
+                            <button onclick="updateQty('${p._id}', -1)" class="px-3 py-1">-</button>
+                            <span id="qty-${p._id}" class="text-[10px] font-bold">1</span>
+                            <button onclick="updateQty('${p._id}', 1)" class="px-3 py-1">+</button>
+                        </div>
+                        <button onclick="handleAddToCart('${p._id}')" id="btn-${p._id}" ${isOutOfStock ? 'disabled' : ''} class="w-full ${isOutOfStock ? 'bg-gray-200' : 'bg-brandBlack text-brandPink'} text-[8px] py-2.5 uppercase tracking-widest">
+                            ${isOutOfStock ? 'Out of Stock' : 'Add to Cart'}
+                        </button>
+                    </div>
+                </div>`;
+            };
 
-        const populateGrid = (cat, elementId) => {
-            const gridEl = document.getElementById(elementId);
-            if (!gridEl) return;
-            // Filter products where category strictly matches or matches "deodorant"
-            const filtered = currentProducts.filter(p => p.category?.toLowerCase().trim() === cat.toLowerCase()).slice(0, 5);
-            gridEl.innerHTML = filtered.length > 0 ? filtered.map(renderCard).join('') : `<div class="col-span-full py-10 text-[10px] text-gray-400 text-center uppercase">Coming Soon...</div>`;
-        };
+            const populateGrid = (cat, elementId) => {
+                const gridEl = document.getElementById(elementId);
+                if (!gridEl) return;
+                const filtered = currentProducts.filter(p => p.category?.toLowerCase().trim() === cat.toLowerCase()).slice(0, 5);
+                gridEl.innerHTML = filtered.length > 0 ? filtered.map(renderCard).join('') : `<div class="col-span-full py-10 text-[10px] text-gray-400 text-center uppercase">Coming Soon...</div>`;
+            };
 
-        // Populate all grids
-        populateGrid('women', 'women-grid');
-        populateGrid('men', 'men-grid');
-        populateGrid('kids', 'kids-grid');
-        populateGrid('combo', 'combo-grid');
-        populateGrid('deodorant', 'deodorant-grid'); // NEW CALL
+            populateGrid('women', 'women-grid');
+            populateGrid('men', 'men-grid');
+            populateGrid('kids', 'kids-grid');
+            populateGrid('combo', 'combo-grid');
+            populateGrid('deodorant', 'deodorant-grid');
 
-        // Mist Grid Logic
-        const mistGrid = document.getElementById('mist-grid');
-        if (mistGrid) {
-            const mists = currentProducts.filter(p => p.category?.toLowerCase().includes('mist')).slice(0, 6);
-            mistGrid.innerHTML = mists.map(renderCard).join('');
-        }
-    } catch (err) { console.error("Load Error:", err); }
-}
+            const mistGrid = document.getElementById('mist-grid');
+            if (mistGrid) {
+                const mists = currentProducts.filter(p => p.category?.toLowerCase().includes('mist')).slice(0, 6);
+                mistGrid.innerHTML = mists.map(renderCard).join('');
+            }
+        } catch (err) { console.error("Load Error:", err); }
+    }
+
     function handleSizeChange(select, productId) {
         const price = select.options[select.selectedIndex].getAttribute('data-price');
         document.getElementById(`price-${productId}`).innerText = `₦${Number(price).toLocaleString()}`;
         document.getElementById(`qty-${productId}`).innerText = "1";
     }
 
-    // --- 10. Slider & Load ---
+    // --- 11. Slider ---
     let currentSlide = 1;
     setInterval(() => {
         const s1 = document.getElementById(`slide-group-1`);
