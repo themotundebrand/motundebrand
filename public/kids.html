@@ -421,36 +421,67 @@ return `
         } catch (err) { console.error("Error loading kids collection:", err); }
     }
 
-    function updatePrice(sel, id) {
-        const price = sel.options[sel.selectedIndex].dataset.price;
-        const priceEl = document.getElementById(`price-${id}`);
-        if (priceEl) priceEl.innerText = `₦${Number(price).toLocaleString()}`;
+ function updatePrice(sel, id) {
+    const price = sel.options[sel.selectedIndex].dataset.price;
+    const priceEl = document.getElementById(`price-${id}`);
+    if (priceEl) priceEl.innerText = `₦${Number(price).toLocaleString()}`;
+    
+    // Reset the quantity counter to 1 when size changes to prevent over-stock errors
+    const qtyEl = document.getElementById(`qty-${id}`);
+    if (qtyEl) qtyEl.innerText = "1";
+}
+
+function updateGridQty(id, change) {
+    const qtyEl = document.getElementById(`qty-${id}`);
+    const sel = document.querySelector(`select[data-id="${id}"]`);
+    const p = currentProducts.find(x => x._id === id);
+    
+    if (!p || !sel) return;
+
+    // Find the stock for the currently selected size
+    const selectedSize = sel.value;
+    const variant = p.variants.find(v => v.size === selectedSize);
+    const maxStock = variant ? variant.stock : 0;
+
+    let currentQty = parseInt(qtyEl.innerText);
+    let nextQty = currentQty + change;
+
+    if (nextQty < 1) {
+        nextQty = 1;
+    } else if (nextQty > maxStock) {
+        nextQty = maxStock;
+        showNotification(`Only ${maxStock} items available in ${selectedSize}`);
     }
 
-  function updateGridQty(id, change) {
-    const qtyEl = document.getElementById(`qty-${id}`);
-    let currentQty = parseInt(qtyEl.innerText);
-    currentQty += change;
-    if (currentQty < 1) currentQty = 1;
-    qtyEl.innerText = currentQty;
+    qtyEl.innerText = nextQty;
 }
 
 // Updated Add to Cart to grab that quantity
 function handleGridAddToCart(id) {
     const p = currentProducts.find(x => x._id === id);
     const sel = document.querySelector(`select[data-id="${id}"]`);
-    const qty = parseInt(document.getElementById(`qty-${id}`).innerText);
+    const qtyEl = document.getElementById(`qty-${id}`);
+    const qtyToAdd = parseInt(qtyEl.innerText);
     
     if (!p || !sel) return;
 
     const price = sel.options[sel.selectedIndex].dataset.price;
     const size = sel.value;
-
-    syncCart(p, size, price, qty);
     
-    // Reset quantity back to 1 after adding
-    document.getElementById(`qty-${id}`).innerText = "1";
+    // Check if adding this will exceed database stock
+    const variant = p.variants.find(v => v.size === size);
+    const existingInCart = cart.find(item => item.id === id && item.size === size);
+    const currentCartQty = existingInCart ? existingInCart.quantity : 0;
+
+    if (currentCartQty + qtyToAdd > variant.stock) {
+        showNotification(`Cannot add more. You already have ${currentCartQty} in cart and max stock is ${variant.stock}.`);
+        return;
+    }
+
+    syncCart(p, size, price, qtyToAdd);
+    qtyEl.innerText = "1"; // Reset display
 }
+
     // --- 7. Initialization ---
     window.onload = () => {
         loadKidsCollection();
