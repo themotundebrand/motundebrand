@@ -20,103 +20,84 @@
             }
         }
     </script>
-    <style>
-        html { scroll-behavior: smooth; }
-        ::-webkit-scrollbar { height: 3px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #F7C8D0; }
+   <style>
+    html { scroll-behavior: smooth; }
+    ::-webkit-scrollbar { height: 3px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #F7C8D0; }
 
-        .slide-fade { transition: opacity 1.2s ease-in-out; position: absolute; inset: 0; width: 100%; height: 100%; }
-        .slide-hidden { opacity: 0; pointer-events: none; }
-        .slide-active { opacity: 1; pointer-events: auto; }
-        .glass-overlay { background: rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px); border: 1px solid rgba(247, 200, 208, 0.1); }
-
-        #sidebar { transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
-        .sidebar-open { transform: translateX(0); }
-        .sidebar-closed { transform: translateX(-100%); }
-
-        #product-modal { transition: opacity 0.3s ease-out; }
-        .modal-content { transition: transform 0.3s ease-out; }
-
-        .collection-grid {
-            display: grid;
-            grid-auto-flow: column;
-            grid-auto-columns: 48%;
-            gap: 1rem;
-            overflow-x: auto;
-            scroll-snap-type: x mandatory;
-            scrollbar-width: none;
-            padding-bottom: 1rem;
-        }
-        .collection-grid::-webkit-scrollbar { display: none; }
-        /* Custom Notification Toast */
-        #custom-toast {
-        transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-        transform: translateY(100px);
-      opacity: 0;
-        }
-        #custom-toast.show {
-    transform: translateY(0);
-    opacity: 1;
+    /* New Floral/Perfume Background Overlay */
+    body {
+        background-color: #ffffff;
+        background-image: url('https://www.transparenttextures.com/patterns/cubes.png'); /* Placeholder: Replace with your specific floral/perfume pattern URL */
+        background-attachment: fixed;
     }
-    /* 3D Depth for Cards */
-.product-card {
-    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    box-shadow: 0 10px 20px rgba(0,0,0,0.05);
-}
-.product-card:hover {
-    transform: translateY(-10px) scale(1.02);
-    box-shadow: 0 20px 40px rgba(0,0,0,0.15);
-}
 
-/* 3D Glassmorphism for Buttons */
-.btn-3d {
-    box-shadow: inset 0 1px 0 rgba(255,255,255,0.2), 0 4px 6px rgba(0,0,0,0.2);
-    text-shadow: 0 1px 2px rgba(0,0,0,0.3);
-}
-.btn-3d:active {
-    transform: translateY(2px);
-    box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
-}
+    /* Transparent Floral Overlay Layer */
+    .bg-floral-overlay {
+        position: fixed;
+        inset: 0;
+        z-index: -1;
+        opacity: 0.05; /* Keeps it very subtle/transparent */
+        background-image: url('https://i.imgur.com/Wp0HCu8.jpeg'); /* Using your hero image as a subtle texture */
+        background-size: cover;
+        background-position: center;
+        filter: grayscale(100%);
+        pointer-events: none;
+    }
 
-/* Force Bold Bold Typography */
-h1, h2, h3, h4, .font-bold {
-    font-weight: 900 !important; /* Maximum weight for impact */
-    letter-spacing: 0.05em;
-}
-        
-        @media (min-width: 768px) {
-            .collection-grid { grid-auto-columns: calc(20% - 1rem); }
-        }
+    /* REMOVED 3D EFFECTS - Clean Minimalist Cards */
+    .product-card {
+        transition: all 0.3s ease;
+        box-shadow: none; /* Removed 3D Depth */
+        border: 1px solid #f3f4f6;
+    }
+    .product-card:hover {
+        transform: translateY(-4px); /* Simplified lift */
+        border-color: #F7C8D0;
+    }
 
-        .product-card { scroll-snap-align: start; transition: all 0.4s ease; border: 1px solid #f3f4f6; }
-        .product-card:hover { border-color: #F7C8D0; transform: translateY(-2px); }
-        
-        .size-select { 
-            appearance: none; 
-            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e"); 
-            background-repeat: no-repeat; 
-            background-position: right 0.5rem center; 
-            background-size: 0.6em; 
-        }
+    /* Clean Buttons (No 3D/Glassmorphism) */
+    .btn-action {
+        transition: all 0.2s ease;
+        box-shadow: none !important;
+        text-shadow: none !important;
+    }
+    .btn-action:active {
+        transform: scale(0.98);
+    }
 
-        @keyframes pulse-border {
-            0% { transform: scale(1); opacity: 0.8; }
-            100% { transform: scale(1.4); opacity: 0; }
-        }
-        .whatsapp-pulse::before {
-            content: '';
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            background-color: #25D366;
-            border-radius: 50%;
-            z-index: -1;
-            animation: pulse-border 2s infinite;
-        }
-    </style>
+    /* Typography Update - Bold but Flat */
+    h1, h2, h3, h4, .font-bold {
+        font-weight: 800 !important;
+        letter-spacing: 0.05em;
+    }
+
+    /* Sidebar & Modal Logic */
+    #sidebar { transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+    .sidebar-open { transform: translateX(0); }
+    .sidebar-closed { transform: translateX(-100%); }
+    #product-modal { transition: opacity 0.3s ease-out; }
+    .modal-content { transition: opacity 0.3s ease; transform: none !important; }
+
+    /* Grid Layouts */
+    .collection-grid {
+        display: grid;
+        grid-auto-flow: column;
+        grid-auto-columns: 48%;
+        gap: 1rem;
+        overflow-x: auto;
+        scrollbar-width: none;
+        padding-bottom: 1rem;
+    }
+    .collection-grid::-webkit-scrollbar { display: none; }
+    @media (min-width: 768px) {
+        .collection-grid { grid-auto-columns: calc(20% - 1rem); }
+    }
+</style>
 </head>
-<body class="bg-white font-sans antialiased overflow-x-hidden">
+<body class="bg-white font-sans antialiased overflow-x-hidden relative">
+    <div class="bg-floral-overlay"></div>
 
     <a href="https://wa.me/2349025291629?text=Hi%20The%20Motunde%20Brand!%20My%20name%20is%20..." 
        target="_blank" 
@@ -126,8 +107,8 @@ h1, h2, h3, h4, .font-bold {
         </svg>
     </a>
 
-   <nav class="fixed w-full z-[150] bg-black/20 backdrop-blur-md px-4 md:px-8 py-4 flex justify-between items-center transition-all duration-300 border-b border-white/5">
-    <div class="flex items-center gap-4">
+<nav class="fixed w-full z-[150] bg-black/10 backdrop-blur-md px-4 md:px-8 py-4 flex justify-between items-center border-b border-black/5">
+        <div class="flex items-center gap-4">
         <button onclick="toggleSidebar(true)" class="md:hidden text-brandPink">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 8h16M4 16h16" stroke-width="2"></path></svg>
         </button>
@@ -355,42 +336,44 @@ h1, h2, h3, h4, .font-bold {
     </div>
 </footer>
 
-  <div id="product-modal" class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/95 opacity-0 invisible pointer-events-none transition-all duration-500 backdrop-blur-sm">
-    <div class="modal-content bg-white w-full max-w-5xl relative flex flex-col md:flex-row scale-95 shadow-[0_40px_100px_rgba(0,0,0,0.7)] transition-all duration-500 rounded-sm">
-        <button onclick="closeModal()" class="absolute -top-12 md:top-6 right-0 md:right-6 z-10 text-white md:text-brandBlack hover:scale-110 transition-transform">
-            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" stroke-width="3"/></svg>
-        </button>
-
-        <div class="w-full md:w-1/2 bg-gray-50 aspect-square overflow-hidden shadow-inner">
-            <img id="modal-img" src="" class="w-full h-full object-cover transform hover:scale-105 transition-transform duration-1000">
-        </div>
-
-        <div class="w-full md:w-1/2 p-8 md:p-14 flex flex-col justify-center bg-white">
-            <p id="modal-cat" class="text-[11px] font-black uppercase tracking-[0.4em] text-brandPinkDark mb-4">COLLECTION</p>
-            <h2 id="modal-name" class="text-3xl md:text-4xl font-black uppercase tracking-tighter mb-6 text-brandBlack leading-none">PRODUCT NAME</h2>
+ <div id="product-modal" class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/80 opacity-0 invisible pointer-events-none transition-all duration-300 backdrop-blur-sm">
+        <div class="modal-content bg-white w-full max-w-5xl relative flex flex-col md:flex-row shadow-2xl rounded-none">
             
-            <p id="modal-desc" class="text-[13px] font-bold text-gray-500 leading-relaxed mb-8 border-l-4 border-brandPink pl-5 italic"></p>
+            <button onclick="closeModal()" class="absolute -top-10 md:top-6 right-0 md:right-6 z-10 text-white md:text-brandBlack">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" stroke-width="2"/></svg>
+            </button>
 
-            <p id="modal-price" class="text-3xl font-black mb-10 text-brandBlack drop-shadow-sm">₦0</p>
-            
-            <div class="mb-8">
-                <label class="block text-[11px] font-black uppercase tracking-widest mb-4">Select Size</label>
-                <div id="modal-sizes" class="flex flex-wrap gap-3"></div>
+            <div class="w-full md:w-1/2 bg-gray-50 aspect-square">
+                <img id="modal-img" src="" class="w-full h-full object-cover">
             </div>
 
-            <div class="flex flex-col md:flex-row gap-4">
-                <div class="flex items-center w-full md:w-32 border-2 border-brandBlack shadow-[4px_4px_0px_rgba(0,0,0,0.1)]">
-                    <button onclick="updateModalQty(-1)" class="flex-1 py-3 font-black hover:bg-gray-100">-</button>
-                    <span id="modal-qty" class="flex-1 text-center font-black text-sm">1</span>
-                    <button onclick="updateModalQty(1)" class="flex-1 py-3 font-black hover:bg-gray-100">+</button>
+            <div class="w-full md:w-1/2 p-8 md:p-14 flex flex-col justify-center bg-white">
+                <p id="modal-cat" class="text-[10px] font-bold uppercase tracking-[0.3em] text-brandPinkDark mb-2">COLLECTION</p>
+                <h2 id="modal-name" class="text-2xl md:text-3xl font-extrabold uppercase mb-4 text-brandBlack">PRODUCT NAME</h2>
+                
+                <p id="modal-desc" class="text-[12px] text-gray-500 leading-relaxed mb-6"></p>
+
+                <p id="modal-price" class="text-2xl font-bold mb-8 text-brandBlack">₦0</p>
+                
+                <div class="mb-6">
+                    <label class="block text-[10px] font-bold uppercase tracking-widest mb-3">Select Size</label>
+                    <div id="modal-sizes" class="flex flex-wrap gap-2"></div>
                 </div>
-                <button id="modal-add-btn" class="flex-grow bg-brandBlack text-brandPink py-4 font-black uppercase tracking-[0.3em] text-[11px] hover:bg-brandPink hover:text-brandBlack transition-all shadow-[6px_6px_0px_rgba(247,200,208,0.2)] active:translate-y-1 active:shadow-none">
-                    ADD TO CART
-                </button>
+
+                <div class="flex flex-col md:flex-row gap-3">
+                    <div class="flex items-center w-full md:w-32 border border-black">
+                        <button onclick="updateModalQty(-1)" class="flex-1 py-3 hover:bg-gray-100">-</button>
+                        <span id="modal-qty" class="flex-1 text-center font-bold">1</span>
+                        <button onclick="updateModalQty(1)" class="flex-1 py-3 hover:bg-gray-100">+</button>
+                    </div>
+                    <button id="modal-add-btn" class="btn-action flex-grow bg-brandBlack text-white py-4 font-bold uppercase tracking-widest text-[10px] hover:bg-brandPink hover:text-brandBlack">
+                        ADD TO CART
+                    </button>
+                </div>
             </div>
         </div>
     </div>
-</div>
+</body>
 
   <script>
     // --- 1. Initialize Cart & Global State ---
