@@ -461,6 +461,10 @@
             </video>
         </a>
 
+        <button onclick="toggleMute(event)" class="absolute bottom-28 right-6 bg-black/50 text-white p-3 rounded-full border border-white/20 z-[1020] hover:bg-brandPink transition-all">
+            <span id="muteIcon">🔇</span>
+        </button>
+
         <button id="skipBtn" onclick="closeAd()" class="absolute top-6 right-6 bg-black/60 text-white px-4 py-2 rounded-full text-[10px] font-bold uppercase tracking-widest border border-white/20 hidden hover:bg-white hover:text-black transition-all">
             Skip Ad
         </button>
@@ -865,55 +869,59 @@ function rotateSlides() {
         document.getElementById(`slide-${currentIdx + 1}`).classList.replace('slide-hidden', 'slide-active');
     }
 }
-
-// --- OUTFLICKZ SOUND & SKIP SYSTEM ---
+// --- OUTFLICKZ SOUND SYSTEM ---
 document.addEventListener('DOMContentLoaded', () => {
     const overlay = document.getElementById('videoAdOverlay');
     const video = document.getElementById('adVideo');
     const skipBtn = document.getElementById('skipBtn');
 
-    const hasSeenAd = sessionStorage.getItem('tmb_ad_seen');
-
-    if (!hasSeenAd && overlay && video) {
-        // Wait 5 seconds to show the ad
+    if (!sessionStorage.getItem('tmb_ad_seen') && overlay && video) {
         setTimeout(() => {
             overlay.classList.remove('hidden');
             overlay.classList.add('flex');
             
-            // Unmute the video for sound
-            video.muted = false; 
-            
-            // Attempt to play with sound
-            let playPromise = video.play();
+            // Start muted to guarantee it plays, then try to unmute
+            video.muted = true;
+            video.play();
 
-            if (playPromise !== undefined) {
-                playPromise.catch(error => {
-                    // Browser blocked audio! Play muted so the ad at least shows up.
-                    console.log("Audio was blocked by browser. Playing muted.");
-                    video.muted = true;
-                    video.play();
-                });
-            }
+            // Attempt to unmute automatically (only works if user clicked the site already)
+            video.muted = false;
+            video.play().catch(() => {
+                // If it fails, we keep it muted so the ad doesn't break
+                video.muted = true;
+                document.getElementById('muteIcon').innerText = "🔇";
+            });
 
-            // Show Skip button after 6 seconds of playing
             setTimeout(() => {
                 if(skipBtn) skipBtn.classList.remove('hidden');
             }, 6000); 
-
         }, 5000); 
     }
 });
 
+function toggleMute(event) {
+    event.preventDefault(); // Stop the link from opening
+    event.stopPropagation(); // Stop the video click from firing
+    const video = document.getElementById('adVideo');
+    const icon = document.getElementById('muteIcon');
+    
+    if (video.muted) {
+        video.muted = false;
+        icon.innerText = "🔊";
+    } else {
+        video.muted = true;
+        icon.innerText = "🔇";
+    }
+}
+
 function closeAd() {
     const overlay = document.getElementById('videoAdOverlay');
     const video = document.getElementById('adVideo');
-    if (overlay && video) {
-        video.pause();
-        overlay.classList.add('hidden');
-        overlay.classList.remove('flex');
-        sessionStorage.setItem('tmb_ad_seen', 'true');
-    }
+    video.pause();
+    overlay.classList.add('hidden');
+    sessionStorage.setItem('tmb_ad_seen', 'true');
 }
+
 // Run every 10 seconds
 setInterval(rotateSlides, 10000);
 
