@@ -20,46 +20,54 @@
             }
         }
     </script>
- <style>
+<style>
     html { scroll-behavior: smooth; }
     ::-webkit-scrollbar { height: 3px; }
     ::-webkit-scrollbar-track { background: transparent; }
     ::-webkit-scrollbar-thumb { background: #F7C8D0; }
 
-    /* 1. Main Pink Background with Hex Pattern */
+    /* Main Body Configuration */
     body {
-        background-color: #F7C8D0; /* Your brand pink */
-        background-image: url('https://www.transparenttextures.com/patterns/hexellence.png'); 
-        background-attachment: fixed;
+        background-color: #F7C8D0; /* Your brand pink base */
         position: relative;
+        min-height: 100vh;
     }
 
-    /* 2. White Floral/Perfume Watermark (Updated for the White-on-Pink look) */
-    .bg-floral-overlay {
+    /* 1. Transparent Perfume Pattern Overlay */
+    body::before {
+        content: "";
         position: fixed;
-        inset: 0;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        /* Using the perfume pattern image */
+        background-image: url('https://i.imgur.com/HRdpQvW.jpeg'); 
+        background-repeat: repeat;
+        background-size: 300px; /* Adjust size for desktop */
+        /* This creates the transparency effect */
+        opacity: 0.08; 
         z-index: -1;
-        opacity: 0.15; /* Adjust this to make the white lines more or less visible */
-        background-image: url('https://i.imgur.com/Wp0HCu8.jpeg'); 
-        background-size: cover;
-        background-position: center;
-        /* 'screen' makes the dark parts disappear and light parts remain white */
-        background-blend-mode: screen; 
-        /* These filters force the image lines to appear as clean white watermarks */
-        filter: brightness(1.5) contrast(1.2) invert(0); 
         pointer-events: none;
     }
 
-    /* 3. Snappy Notification (Fix for "Hanging" issue) */
+    /* 2. Responsive adjustments for Mobile */
+    @media (max-width: 768px) {
+        body::before {
+            background-size: 180px; /* Smaller pattern for mobile screens */
+            opacity: 0.1; /* Slightly higher opacity for smaller screens */
+        }
+    }
+
+    /* 3. Toast Style Improvements */
     #custom-toast {
         position: fixed;
-        bottom: 5.5rem; /* Raised to stay clear of the WhatsApp button */
+        bottom: 5.5rem;
         left: 50%;
         transform: translateX(-50%) translateY(20px);
         z-index: 9999; 
         opacity: 0;
         pointer-events: none;
-        /* Fast transition to ensure it disappears instantly when the class is removed */
         transition: transform 0.2s ease-out, opacity 0.15s ease-out;
     }
 
@@ -69,37 +77,21 @@
         pointer-events: auto;
     }
 
-    /* Solid Toast Style - High Contrast Black & Pink */
-    #custom-toast > div {
-        background-color: #000000 !important;
-        color: #F7C8D0 !important;
-        padding: 0.75rem 1.5rem;
-        border: 1px solid rgba(247, 200, 208, 0.4);
-        box-shadow: 0 15px 35px rgba(0,0,0,0.4);
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        min-width: 250px;
-        font-weight: 900;
-        text-transform: uppercase;
-        font-size: 10px;
-        letter-spacing: 0.1em;
-    }
-
-    /* 4. Product Cards */
+    /* 4. Glassmorphism for Product Cards to look good over the pattern */
     .product-card {
         transition: all 0.3s ease;
-        box-shadow: none;
+        background: rgba(255, 255, 255, 0.7); 
+        backdrop-filter: blur(8px);
         border: 1px solid rgba(255, 255, 255, 0.3);
-        background: rgba(255, 255, 255, 0.9); /* Slight transparency to see pink through card */
-        backdrop-filter: blur(5px);
     }
+    
     .product-card:hover {
         transform: translateY(-4px);
+        background: rgba(255, 255, 255, 0.9);
         border-color: #000000;
     }
 
-    /* Sidebar & Grid Logic */
+    /* Sidebar Logic */
     #sidebar { transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
     .sidebar-open { transform: translateX(0); }
     .sidebar-closed { transform: translateX(-100%); }
@@ -111,17 +103,15 @@
         gap: 1rem;
         overflow-x: auto;
         scrollbar-width: none;
+        padding-bottom: 10px;
     }
-    .collection-grid::-webkit-scrollbar { display: none; }
     @media (min-width: 768px) {
         .collection-grid { grid-auto-columns: calc(20% - 1rem); }
     }
 </style>
 </head>
-<body class="bg-[#F7C8D0] font-sans antialiased overflow-x-hidden relative">
+<body class="bg-white font-sans antialiased overflow-x-hidden relative">
     <div class="bg-floral-overlay"></div>
-
-    </body>
 
     <a href="https://wa.me/2349025291629?text=Hi%20The%20Motunde%20Brand!%20My%20name%20is%20..." 
        target="_blank" 
@@ -363,10 +353,8 @@
  <div id="product-modal" class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/80 opacity-0 invisible pointer-events-none transition-all duration-300 backdrop-blur-sm">
         <div class="modal-content bg-white w-full max-w-5xl relative flex flex-col md:flex-row shadow-2xl rounded-none">
             
-            <button onclick="closeModal()" class="absolute -top-12 md:top-6 right-0 md:right-6 z-[210] text-white md:text-brandBlack hover:scale-110 transition-transform">
-                <svg class="w-10 h-10 md:w-8 md:h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path d="M6 18L18 6M6 6l12 12" stroke-width="2.5"/>
-                </svg>
+            <button onclick="closeModal()" class="absolute -top-10 md:top-6 right-0 md:right-6 z-10 text-white md:text-brandBlack">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" stroke-width="2"/></svg>
             </button>
 
             <div class="w-full md:w-1/2 bg-gray-50 aspect-square">
@@ -376,7 +364,9 @@
             <div class="w-full md:w-1/2 p-8 md:p-14 flex flex-col justify-center bg-white">
                 <p id="modal-cat" class="text-[10px] font-bold uppercase tracking-[0.3em] text-brandPinkDark mb-2">COLLECTION</p>
                 <h2 id="modal-name" class="text-2xl md:text-3xl font-extrabold uppercase mb-4 text-brandBlack">PRODUCT NAME</h2>
+                
                 <p id="modal-desc" class="text-[12px] text-gray-500 leading-relaxed mb-6"></p>
+
                 <p id="modal-price" class="text-2xl font-bold mb-8 text-brandBlack">₦0</p>
                 
                 <div class="mb-6">
