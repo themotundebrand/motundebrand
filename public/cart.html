@@ -206,21 +206,24 @@
     </div>
 </div>
 
-                        <div class="border-t border-gray-200 pt-6 space-y-3">
-                            <div class="flex justify-between text-[10px] uppercase text-gray-500">
-                                <span>Subtotal</span>
-                                <span id="subtotal">₦0</span>
-                            </div>
-                            <div class="flex justify-between text-[10px] uppercase text-gray-500">
-                                <span>Flat Shipping Fee</span>
-                                <span id="shipping-fee">₦0</span>
-                            </div>
-                            <div class="flex justify-between text-xs font-bold uppercase text-brandBlack pt-2">
-                                <span>Total</span>
-                                <span id="total-price">₦0</span>
-                            </div>
-                        </div>
-
+<div class="border-t border-gray-200 pt-6 space-y-3">
+    <div class="flex justify-between text-[10px] uppercase text-gray-500">
+        <span>Subtotal</span>
+        <span id="subtotal">₦0</span>
+    </div>
+    <div class="flex justify-between text-[10px] uppercase text-gray-500">
+        <span>Estimated Tax (7.5%)</span>
+        <span id="tax-amount">₦0</span>
+    </div>
+    <div class="flex justify-between text-[10px] uppercase text-gray-500">
+        <span>Flat Shipping Fee</span>
+        <span id="shipping-fee">₦0</span>
+    </div>
+    <div class="flex justify-between text-xs font-bold uppercase text-brandBlack pt-2">
+        <span>Total</span>
+        <span id="total-price">₦0</span>
+    </div>
+</div>
                         <button onclick="handleCheckout()" class="w-full bg-brandBlack text-brandPink py-4 uppercase tracking-[0.3em] text-[10px] font-bold hover:bg-brandPink hover:text-brandBlack transition-all">
                             Place Order
                         </button>
@@ -301,6 +304,7 @@
 <script>
     let cart = JSON.parse(localStorage.getItem('tmb_cart')) || [];
     const FLAT_SHIPPING_FEE = 0.00;
+    const TAX_RATE = 0.075; // 7.5% Tax
 
     // --- SIDEBAR LOGIC ---
     function toggleSidebar(open) {
@@ -449,14 +453,19 @@
         updateTotals();
     }
 
-    function updateTotals() {
-        const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-        const shipping = cart.length > 0 ? FLAT_SHIPPING_FEE : 0;
-        document.getElementById('subtotal').innerText = `₦${subtotal.toLocaleString()}`;
-        document.getElementById('shipping-fee').innerText = `₦${shipping.toLocaleString()}`;
-        document.getElementById('total-price').innerText = `₦${(subtotal + shipping).toLocaleString()}`;
-    }
+   function updateTotals() {
+    const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    const shipping = cart.length > 0 ? FLAT_SHIPPING_FEE : 0;
+    
+    // Calculate Tax
+    const tax = subtotal * TAX_RATE;
+    const finalTotal = subtotal + shipping + tax;
 
+    document.getElementById('subtotal').innerText = `₦${subtotal.toLocaleString()}`;
+    document.getElementById('tax-amount').innerText = `₦${tax.toLocaleString()}`; // New display
+    document.getElementById('shipping-fee').innerText = `₦${shipping.toLocaleString()}`;
+    document.getElementById('total-price').innerText = `₦${finalTotal.toLocaleString()}`;
+}
     // --- CHECKOUT LOGIC ---
    async function handleCheckout() {
         if (cart.length === 0) return showAlert("Empty Bag", "Please add items before checking out.");
@@ -498,8 +507,10 @@
             const userRaw = localStorage.getItem('motunde_user');
             const userData = userRaw ? JSON.parse(userRaw) : null;
 
-            const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-            
+const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+const tax = subtotal * TAX_RATE;
+const calculatedTotal = subtotal + FLAT_SHIPPING_FEE + tax;
+
             let receiptBase64 = null;
             let receiptFileName = "";
 
@@ -536,7 +547,7 @@
                     city, 
                     state 
                 },
-                totalPrice: subtotal + FLAT_SHIPPING_FEE,
+                totalPrice: calculatedTotal,
                 paymentMethod: method,
                 receiptBase64,
                 receiptFileName,
