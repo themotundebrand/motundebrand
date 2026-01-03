@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Combo Deals | The Motunde Brand</title>
+    <title>Kids' Collection | The Motunde Brand</title>
     <link rel="icon" type="image/png" href="https://i.imgur.com/CVKXV7R.png">
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -28,6 +28,7 @@
 
         body { background-color: #F7C8D0; position: relative; min-height: 100vh; }
         
+        /* Transparent Perfume Pattern Overlay */
         body::before {
             content: "";
             position: fixed;
@@ -65,7 +66,7 @@
 </head>
 <body class="bg-white font-sans antialiased overflow-x-hidden">
 
-    <a href="https://wa.me/2349025291629?text=Hi%20The%20Motunde%20Brand!%20I%20am%20interested%20in%20your%20Combo%20Deals..." 
+    <a href="https://wa.me/2349025291629?text=Hi%20The%20Motunde%20Brand!%20I%20am%20interested%20in%20the%20Kids%20Collection..." 
        target="_blank" 
        class="fixed bottom-6 right-6 z-[150] bg-[#25D366] p-3.5 rounded-full shadow-2xl transition-transform hover:scale-110 active:scale-95">
         <svg class="w-7 h-7 text-white" fill="currentColor" viewBox="0 0 24 24">
@@ -85,9 +86,9 @@
             <a href="womens.html" class="hover:text-brandPink transition">Women</a>
             <a href="mens.html" class="hover:text-brandPink transition">Men</a>
             <a href="kids.html" class="text-brandPink font-bold underline underline-offset-4">Kids</a>
-            <a href="mist.html" class="hover:text-brandPink transition">Mist</a>
             <a href="combo.html" class="hover:text-brandPink transition">Combo</a>
-             <a href="orderhistory.html" class="hover:text-brandPink">Order History</a>
+           <a href="mist.html" class="hover:text-brandPink transition">Mist</a>
+            <a href="orderhistory.html" class="hover:text-brandPink transition">Order History</a>
 
         </div>
         <div class="flex items-center gap-5 text-brandPink">
@@ -104,7 +105,7 @@
     <aside id="sidebar" class="fixed top-0 left-0 h-full w-64 bg-brandBlack z-[120] sidebar-closed p-6 flex flex-col">
         <button onclick="toggleSidebar(false)" class="self-end text-brandPink mb-10"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" stroke-width="2"></path></svg></button>
         <div class="flex flex-col space-y-6 text-[10px] tracking-[0.25em] uppercase text-brandPink/80">
-            <a href="shop.html" class="hover:text-brandPink transition">Shop</a>
+          <a href="shop.html" class="hover:text-brandPink transition">Shop</a>
             <a href="womens.html" class="text-brandPink">Women</a>
             <a href="mens.html" class="hover:text-brandPink transition">Men</a>
             <a href="kids.html" class="hover:text-brandPink transition">Kids</a>
@@ -114,14 +115,15 @@
         </div>
     </aside>
 
-    <header class="pt-32 pb-12 px-6 text-center bg-brandBlack">
-        <p class="text-brandPinkDark text-[10px] font-bold tracking-[0.4em] uppercase mb-2">Curated Sets</p>
-        <h2 class="text-brandPink text-3xl md:text-5xl font-black uppercase tracking-widest">Combo Collection</h2>
-        <div class="w-20 h-1 bg-brandPink mx-auto mt-6"></div>
-    </header>
 
-    <main class="py-12 md:py-20 px-4 md:px-12">
-        <div id="combo-grid" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6">
+      <main class="pt-28 pb-12 px-4 md:px-12">
+        <header class="text-center mb-12">
+            <p class="text-[10px] uppercase tracking-[0.5em] text-brandDark font-bold mb-2">Playful $ Premium</p>
+            <h3 class="text-brandBlack text-2xl md:text-4xl font-light uppercase tracking-widest italic">Kid's Collection</h3>
+            <div class="w-20 h-[2px] bg-brandBlack mx-auto mt-4"></div>
+        </header>
+
+        <div id="kids-grid" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6">
             </div>
     </main>
 
@@ -153,7 +155,8 @@
             </div>
         </div>
     </div>
- <footer class="bg-brandBlack pt-16 pb-10 px-6 md:px-12 border-t border-brandPink/5">
+
+    <footer class="bg-brandBlack pt-16 pb-10 px-6 md:px-12 border-t border-brandPink/5">
     <div class="max-w-7xl mx-auto mb-16">
         <div class="grid grid-cols-1 md:grid-cols-4 gap-12">
             <div class="col-span-1">
@@ -198,17 +201,17 @@
         </p>
         <div class="flex flex-wrap justify-center gap-5 md:gap-6 order-1 md:order-2">
             <a href="#" class="text-brandPink/40 hover:text-brandPink transition uppercase text-[8px] tracking-widest">Instagram</a>
-            <a href="#" class="text-brandPink/40 hover:text-brandPink transition uppercase text-[8px] tracking-widest">TikTok</a>
+            <a href="" class="text-brandPink/40 hover:text-brandPink transition uppercase text-[8px] tracking-widest">TikTok</a>
             <a href="#" class="text-brandPink/40 hover:text-brandPink transition uppercase text-[8px] tracking-widest">Facebook</a>
         </div>
     </div>
 </footer>
 
-<script>
+    <script>
     let currentProducts = [];
     let cart = JSON.parse(localStorage.getItem('tmb_cart')) || [];
     let modalQty = 1;
-    let modalMaxStock = 0; 
+    let modalMaxStock = 0; // Tracks stock for the variant selected in the modal
     let toastTimer;
 
     // --- NAVIGATION & UI ---
@@ -231,64 +234,25 @@
         if(badge) badge.innerText = count;
     }
 
-    function toggleSidebar(open) {
-        const s = document.getElementById('sidebar');
-        const o = document.getElementById('sidebar-overlay');
-        if(open) { s.classList.replace('sidebar-closed', 'sidebar-open'); o.classList.remove('hidden'); }
-        else { s.classList.replace('sidebar-open', 'sidebar-closed'); o.classList.add('hidden'); }
-    }
-
-    // Toggle for the "Package Contents" dropdown in the grid
-    function toggleComboDetails(event, productId) {
-        event.stopPropagation();
-        const details = document.getElementById(`details-${productId}`);
-        const icon = document.getElementById(`icon-${productId}`);
-        if (details.classList.contains('hidden')) {
-            details.classList.remove('hidden');
-            icon.style.transform = 'rotate(180deg)';
-        } else {
-            details.classList.add('hidden');
-            icon.style.transform = 'rotate(0deg)';
-        }
-    }
-
     // --- COLLECTION LOADING ---
-    async function loadComboCollection() {
+    async function loadKidsCollection() {
         try {
             const response = await fetch('/api/products');
             const data = await response.json();
             currentProducts = Array.isArray(data) ? data : [];
             
-            const combos = currentProducts.filter(p => p.category?.toLowerCase() === 'combo');
-            const grid = document.getElementById('combo-grid');
+            const kidsProducts = currentProducts.filter(p => p.category?.toLowerCase() === 'kids');
+            const grid = document.getElementById('kids-grid');
             
-            if (combos.length === 0) {
-                grid.innerHTML = `<div class="col-span-full py-20 text-center uppercase tracking-widest text-[10px] text-gray-500">Exquisite Combo Deals are currently being curated.</div>`;
+            if (kidsProducts.length === 0) {
+                grid.innerHTML = `<div class="col-span-full py-20 text-center uppercase tracking-widest text-[10px] text-gray-500">The Kids' Collection is coming soon.</div>`;
                 return;
             }
 
-            grid.innerHTML = combos.map(p => {
+            grid.innerHTML = kidsProducts.map(p => {
                 const availableVariants = (p.variants || []).filter(v => v.stock > 0);
                 const isSoldOut = availableVariants.length === 0;
                 const firstV = isSoldOut ? (p.variants?.[0] || {price:0, stock:0}) : availableVariants[0];
-
-                // Parse description for package contents dropdown
-                let comboDropdown = "";
-                if (p.description) {
-                    const items = p.description.split(/[|\-]+/).map(i => i.trim()).filter(i => i !== "");
-                    comboDropdown = `
-                        <div class="mt-2 mb-2 text-left">
-                            <button onclick="toggleComboDetails(event, '${p._id}')" class="flex items-center justify-between w-full text-[7px] font-bold text-brandBlack uppercase tracking-tighter border-b border-black/10 pb-1">
-                                <span>Package Contents</span>
-                                <svg id="icon-${p._id}" class="w-2 h-2 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7" stroke-width="4"/></svg>
-                            </button>
-                            <div id="details-${p._id}" class="hidden py-2">
-                                <ul class="text-[7px] text-gray-600 space-y-1">
-                                    ${items.map(item => `<li class="truncate">• ${item}</li>`).join('')}
-                                </ul>
-                            </div>
-                        </div>`;
-                }
 
                 return `
                 <div class="product-card p-3 group relative flex flex-col h-full rounded-lg">
@@ -300,7 +264,6 @@
 
                     <div class="text-center flex-grow">
                         <h3 class="uppercase font-bold text-[9px] tracking-widest mb-1 truncate text-brandBlack">${p.name}</h3>
-                        ${comboDropdown}
                         <p id="price-${p._id}" class="text-brandBlack font-black text-[11px] mb-2">₦${Number(firstV.price).toLocaleString()}</p>
                         
                         <select data-id="${p._id}" onchange="handleSizeChange(this, '${p._id}')" ${isSoldOut ? 'disabled' : ''} class="w-full border border-black/10 text-[8px] uppercase py-1.5 px-2 mb-2 bg-white/80 rounded font-bold">
@@ -320,7 +283,7 @@
                     </div>
                 </div>`;
             }).join('');
-        } catch (err) { console.error("Combo collection fetch error:", err); }
+        } catch (err) { console.error("Kids collection fetch error:", err); }
     }
 
     // --- QUANTITY & SIZE SELECTION ---
@@ -334,7 +297,7 @@
         
         if (newVal < 1) newVal = 1;
         if (newVal > maxStock) {
-            showNotification(`Only ${maxStock} available`);
+            showNotification(`Stock limit reached: ${maxStock} available`);
             newVal = maxStock;
         }
         qtyEl.innerText = newVal;
@@ -343,7 +306,7 @@
     function handleSizeChange(select, productId) {
         const price = select.options[select.selectedIndex].getAttribute('data-price');
         document.getElementById(`price-${productId}`).innerText = `₦${Number(price).toLocaleString()}`;
-        document.getElementById(`qty-${productId}`).innerText = "1"; 
+        document.getElementById(`qty-${productId}`).innerText = "1"; // Reset qty for new size
     }
 
     // --- MODAL FUNCTIONALITY ---
@@ -354,8 +317,8 @@
         modalQty = 1;
         document.getElementById('modal-img').src = p.imageUrl;
         document.getElementById('modal-name').innerText = p.name;
-        document.getElementById('modal-desc').innerText = p.description || "The perfect curated selection for the ultimate luxury experience.";
-        document.getElementById('modal-cat').innerText = "COMBO DEALS";
+        document.getElementById('modal-desc').innerText = p.description || "Gentle and playful fragrances for the little ones.";
+        document.getElementById('modal-cat').innerText = "KIDS COLLECTION";
         document.getElementById('modal-qty').innerText = modalQty;
 
         const sizeContainer = document.getElementById('modal-sizes');
@@ -366,7 +329,7 @@
         
         if (variants.length === 0) {
             priceDisplay.innerText = "SOLD OUT";
-            sizeContainer.innerHTML = `<span class="text-gray-400 text-[10px] uppercase font-bold tracking-widest">Out of Stock</span>`;
+            sizeContainer.innerHTML = `<span class="text-gray-400 text-[10px] uppercase font-bold tracking-widest">No stock available</span>`;
             addBtn.disabled = true;
             modalMaxStock = 0;
         } else {
@@ -386,7 +349,7 @@
                 const size = activeBtn.innerText.trim();
                 const price = priceDisplay.innerText.replace('₦', '').replace(/,/g, '');
                 addToCartData(p, size, price, modalQty);
-                showNotification("Combo Added to Cart");
+                showNotification("Added to Cart");
                 closeModal();
             };
         }
@@ -413,7 +376,7 @@
         let newVal = modalQty + delta;
         if (newVal < 1) newVal = 1;
         if (newVal > modalMaxStock) {
-            showNotification(`Stock limit: ${modalMaxStock}`);
+            showNotification(`Only ${modalMaxStock} left in this size`);
             newVal = modalMaxStock;
         }
         modalQty = newVal;
@@ -447,8 +410,15 @@
         updateCartBadge();
     }
 
+    function toggleSidebar(open) {
+        const s = document.getElementById('sidebar');
+        const o = document.getElementById('sidebar-overlay');
+        if(open) { s.classList.replace('sidebar-closed', 'sidebar-open'); o.classList.remove('hidden'); }
+        else { s.classList.replace('sidebar-open', 'sidebar-closed'); o.classList.add('hidden'); }
+    }
+
     window.onload = () => {
-        loadComboCollection();
+        loadKidsCollection();
         updateCartBadge();
     };
 </script>

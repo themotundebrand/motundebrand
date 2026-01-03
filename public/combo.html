@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Combo Collections | The Motunde Brand</title>
+    <title>Combo Deals | The Motunde Brand</title>
     <link rel="icon" type="image/png" href="https://i.imgur.com/CVKXV7R.png">
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -14,7 +14,6 @@
                         brandBlack: '#000000',
                         brandPink: '#F7C8D0',
                         brandPinkDark: '#E2A9B3',
-                        brandOrange: '#EA580C'
                     },
                     letterSpacing: { luxury: '0.4em', refined: '0.15em' }
                 }
@@ -23,65 +22,76 @@
     </script>
     <style>
         html { scroll-behavior: smooth; }
-        ::-webkit-scrollbar { width: 5px; }
-        ::-webkit-scrollbar-track { background: #fdfdfd; }
-        ::-webkit-scrollbar-thumb { background: #000; }
+        ::-webkit-scrollbar { height: 3px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #F7C8D0; }
+
+        body { background-color: #F7C8D0; position: relative; min-height: 100vh; }
         
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background-image: url('https://i.imgur.com/gk9Gv9D.png'); 
+            background-repeat: repeat;
+            background-size: 300px;
+            opacity: 0.08; 
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .product-card {
+            background-color: #E2A9B3 !important; 
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(5px);
+        }
+        .product-card:hover {
+            transform: translateY(-4px);
+            background: rgba(255, 255, 255, 0.9) !important;
+            border-color: #000000;
+        }
+
         #sidebar { transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
         .sidebar-open { transform: translateX(0); }
         .sidebar-closed { transform: translateX(-100%); }
 
-        .product-card { transition: all 0.4s ease; background: #fff; border: 1px solid #f9f9f9; }
-        .product-card:hover { border-color: #F7C8D0; transform: translateY(-5px); }
-        
-        #custom-toast {
-            transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-            transform: translateY(100px);
-            opacity: 0;
-        }
-        #custom-toast.show { transform: translateY(0); opacity: 1; }
-
-        @keyframes pulse-border {
-            0% { transform: scale(1); opacity: 0.8; }
-            100% { transform: scale(1.4); opacity: 0; }
-        }
-        .whatsapp-pulse::before {
-            content: ''; position: absolute; width: 100%; height: 100%;
-            background-color: #25D366; border-radius: 50%; z-index: -1;
-            animation: pulse-border 2s infinite;
+        @media (max-width: 768px) {
+            #product-modal .modal-content { max-height: 92vh; overflow-y: auto; border-radius: 20px; width: 95%; }
+            #modal-img { max-height: 350px; object-fit: contain !important; }
         }
     </style>
 </head>
-<body class="bg-white font-sans antialiased">
+<body class="bg-white font-sans antialiased overflow-x-hidden">
 
-    <a href="https://wa.me/2349025291629?text=Hi%20Motunde%20Brand!%20I'm%20interested%20in%20your%20Combo%20Packages..." 
+    <a href="https://wa.me/2349025291629?text=Hi%20The%20Motunde%20Brand!%20I%20am%20interested%20in%20your%20Combo%20Deals..." 
        target="_blank" 
-       class="fixed bottom-6 right-6 z-[150] bg-[#25D366] p-3.5 rounded-full shadow-2xl transition-transform hover:scale-110 whatsapp-pulse">
+       class="fixed bottom-6 right-6 z-[150] bg-[#25D366] p-3.5 rounded-full shadow-2xl transition-transform hover:scale-110 active:scale-95">
         <svg class="w-7 h-7 text-white" fill="currentColor" viewBox="0 0 24 24">
             <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
         </svg>
     </a>
 
-    <nav class="fixed w-full z-[150] bg-brandBlack px-4 md:px-8 py-4 flex justify-between items-center border-b border-white/10">
+     <nav class="fixed w-full z-[150] bg-brandBlack/90 backdrop-blur-md px-4 md:px-8 py-4 flex justify-between items-center border-b border-brandPink/10">
         <div class="flex items-center gap-4">
             <button onclick="toggleSidebar(true)" class="md:hidden text-brandPink">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 8h16M4 16h16" stroke-width="2"></path></svg>
             </button>
             <h1 class="text-brandPink text-xs md:text-lg font-black tracking-luxury uppercase cursor-pointer" onclick="window.location.href='index.html'">The Motunde Brand</h1>
         </div>
-        <div class="hidden md:flex space-x-8 text-[10px] tracking-widest uppercase text-white/80">
+        <div class="hidden md:flex space-x-8 text-[10px] tracking-widest uppercase text-white/90">
             <a href="shop.html" class="hover:text-brandPink transition">Shop</a>
             <a href="womens.html" class="hover:text-brandPink transition">Women</a>
             <a href="mens.html" class="hover:text-brandPink transition">Men</a>
-            <a href="kids.html" class="text-brandPink">Kids</a>
-            <a href="combo.html" class="text-brandPink">Combo</a>
-            <a href="mist.html" class="text-brandPink">Mist</a>
-            <a href="orderhistory.html" class="hover:text-brandPink transition">Order History</a>
+            <a href="kids.html" class="hover:text-brandPink transition">Kids</a>
+            <a href="combo.html" class="text-brandPink font-bold underline underline-offset-4">Combo</a>
+             <a href="mist.html" class="hover:text-brandPink transition">Mist</a>
+             <a href="orderhistory.html" class="hover:text-brandPink transition">Order History</a>
+            
         </div>
         <div class="flex items-center gap-5 text-brandPink">
-            <button onclick="handleAccountClick()" class="hover:text-white transition">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" stroke-width="1.5"></path></svg>
-            </button>
+            <button onclick="handleAccountClick()" class="hover:text-white transition"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" stroke-width="1.5"></path></svg></button>
             <button onclick="window.location.href='cart.html'" class="relative hover:text-white transition">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" stroke-width="1.5"></path></svg>
                 <span id="cart-count" class="absolute -top-2 -right-2 bg-brandPink text-brandBlack text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center">0</span>
@@ -90,59 +100,61 @@
     </nav>
 
     <div id="sidebar-overlay" onclick="toggleSidebar(false)" class="fixed inset-0 bg-black/60 z-[110] hidden backdrop-blur-sm"></div>
+    
     <aside id="sidebar" class="fixed top-0 left-0 h-full w-64 bg-brandBlack z-[120] sidebar-closed p-6 flex flex-col">
-        <button onclick="toggleSidebar(false)" class="self-end text-brandPink mb-10">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" stroke-width="2"></path></svg>
-        </button>
-         <div class="flex flex-col space-y-6 text-[10px] tracking-[0.25em] uppercase text-brandPink/80">
-            <a href="shop.html">Shop</a>
+        <button onclick="toggleSidebar(false)" class="self-end text-brandPink mb-10"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" stroke-width="2"></path></svg></button>
+        <div class="flex flex-col space-y-6 text-[10px] tracking-[0.25em] uppercase text-brandPink/80">
+            <a href="shop.html" class="hover:text-brandPink transition">Shop</a>
             <a href="womens.html" class="text-brandPink">Women</a>
-            <a href="mens.html">Men</a>
-            <a href="kids.html">Kids</a>
-            <a href="combo.html">Combo</a>
-            <a href="mist.html">Mist</a>
-            <div class="pt-6 border-t border-brandPink/10 mt-4">
-                <a href="account.html" class="opacity-50">My Account</a>
-            </div>
+            <a href="mens.html" class="hover:text-brandPink transition">Men</a>
+            <a href="kids.html" class="hover:text-brandPink transition">Kids</a>
+            <a href="mist.html" class="hover:text-brandPink transition">Mist</a>
+            <a href="combo.html" class="hover:text-brandPink transition">Combo</a>
+            <a href="orderhistory.html" class="hover:text-brandPink">Order History</a>
+        </div>
     </aside>
 
-    <header class="pt-32 pb-16 bg-gray-50 text-center border-b border-gray-100 px-6">
-        <h2 class="text-3xl md:text-5xl font-black uppercase tracking-[0.3em] text-brandBlack">Combo Sets</h2>
-        <p class="text-[9px] md:text-[11px] uppercase tracking-[0.5em] text-gray-500 mt-5">Perfectly Paired Luxuries</p>
-    </header>
+      <main class="pt-28 pb-12 px-4 md:px-12">
+        <header class="text-center mb-12">
+            <p class="text-[10px] uppercase tracking-[0.5em] text-brandDark font-bold mb-2">Curated Sets</p>
+            <h3 class="text-brandBlack text-2xl md:text-4xl font-light uppercase tracking-widest italic">Combo Collection</h3>
+            <div class="w-20 h-[2px] bg-brandBlack mx-auto mt-4"></div>
+        </header>
 
-    <main class="max-w-7xl mx-auto px-6 md:px-12 py-16">
-        <div id="combo-full-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 md:gap-12">
-            <div class="col-span-full py-24 text-center">
-                <p class="text-[10px] uppercase tracking-widest text-gray-300">Loading limited edition bundles...</p>
-            </div>
-        </div>
+        <div id="combo-grid" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6"></div>
     </main>
 
-    <div id="custom-toast" class="fixed bottom-10 left-1/2 -translate-x-1/2 z-[300] pointer-events-none">
-        <div class="bg-brandBlack text-brandPink px-10 py-4 shadow-2xl flex items-center border border-brandPink/20">
-            <span id="toast-message" class="text-[9px] uppercase tracking-widest font-black">Added to Cart</span>
+    <div id="custom-toast" class="fixed bottom-10 left-1/2 -translate-x-1/2 z-[300] pointer-events-none transition-all duration-300 opacity-0">
+        <div class="bg-brandBlack text-brandPink px-8 py-4 shadow-2xl border border-brandPink/20 flex items-center gap-4">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7" stroke-width="2"/></svg>
+            <span id="toast-message" class="text-[10px] uppercase tracking-[0.2em] font-bold"></span>
         </div>
     </div>
 
-    <div id="product-modal" class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/95 opacity-0 invisible pointer-events-none transition-all duration-300">
-        <div class="bg-white w-full max-w-4xl relative flex flex-col md:flex-row overflow-hidden">
-            <button onclick="closeModal()" class="absolute top-4 right-4 z-10 text-brandBlack hover:text-brandPink transition">
-                <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" stroke-width="2"/></svg>
-            </button>
-            <div class="w-full md:w-1/2 bg-gray-100">
-                <img id="modal-img" src="" class="w-full h-full object-cover">
-            </div>
-            <div class="w-full md:w-1/2 p-10 flex flex-col justify-center">
-                <h2 id="modal-name" class="text-2xl font-black uppercase tracking-widest mb-4">Combo Set</h2>
-                <p id="modal-price" class="text-xl text-brandPinkDark font-bold mb-8">₦0</p>
-                <div id="modal-sizes" class="flex flex-wrap gap-2 mb-10"></div>
-                <button id="modal-add-btn" class="w-full bg-brandBlack text-brandPink py-5 uppercase tracking-[0.3em] text-[10px] font-bold hover:bg-brandPink hover:text-brandBlack transition-all">Add to Cart</button>
+    <div id="product-modal" class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/90 opacity-0 invisible pointer-events-none transition-all duration-300 backdrop-blur-md">
+        <div class="modal-content bg-white w-full max-w-5xl relative flex flex-col md:flex-row shadow-2xl rounded-xl overflow-hidden">
+            <button onclick="closeModal()" class="absolute top-4 right-4 z-[210] text-brandBlack hover:scale-110"><svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" stroke-width="2.5"/></svg></button>
+            <div id="modal-img-container" class="w-full md:w-1/2 bg-gray-50"><img id="modal-img" src="" class="w-full h-full object-cover"></div>
+            <div class="w-full md:w-1/2 p-6 md:p-14 flex flex-col justify-center bg-white">
+                <p id="modal-cat" class="text-[10px] font-bold uppercase tracking-[0.3em] text-brandPinkDark mb-2"></p>
+                <h2 id="modal-name" class="text-xl md:text-3xl font-black uppercase mb-4 text-brandBlack"></h2>
+                <p id="modal-desc" class="text-[12px] text-gray-500 leading-relaxed mb-6"></p>
+                <p id="modal-price" class="text-2xl font-black mb-8 text-brandBlack"></p>
+                <div class="mb-6"><label class="block text-[10px] font-bold uppercase tracking-widest mb-3">Select Size</label><div id="modal-sizes" class="flex flex-wrap gap-2"></div></div>
+                <div class="flex flex-col md:flex-row gap-3">
+                    <div class="flex items-center w-full md:w-32 border-2 border-brandBlack rounded">
+                        <button onclick="updateModalQty(-1)" class="flex-1 py-3 hover:bg-gray-100 font-bold">-</button>
+                        <span id="modal-qty" class="flex-1 text-center font-black">1</span>
+                        <button onclick="updateModalQty(1)" class="flex-1 py-3 hover:bg-gray-100 font-bold">+</button>
+                    </div>
+                    <button id="modal-add-btn" class="flex-grow bg-brandBlack text-[#F7C8D0] py-4 rounded font-bold uppercase tracking-widest text-[10px] hover:bg-brandPinkDark hover:text-black transition-colors">ADD TO CART</button>
+                </div>
             </div>
         </div>
     </div>
 
-   <footer class="bg-brandBlack pt-16 pb-10 px-6 md:px-12 border-t border-brandPink/5">
+  
+    <footer class="bg-brandBlack pt-16 pb-10 px-6 md:px-12 border-t border-brandPink/5">
     <div class="max-w-7xl mx-auto mb-16">
         <div class="grid grid-cols-1 md:grid-cols-4 gap-12">
             <div class="col-span-1">
@@ -187,33 +199,13 @@
         </p>
         <div class="flex flex-wrap justify-center gap-5 md:gap-6 order-1 md:order-2">
             <a href="#" class="text-brandPink/40 hover:text-brandPink transition uppercase text-[8px] tracking-widest">Instagram</a>
-            <a href="#" class="text-brandPink/40 hover:text-brandPink transition uppercase text-[8px] tracking-widest">TikTok</a>
+            <a href="" class="text-brandPink/40 hover:text-brandPink transition uppercase text-[8px] tracking-widest">TikTok</a>
             <a href="#" class="text-brandPink/40 hover:text-brandPink transition uppercase text-[8px] tracking-widest">Facebook</a>
         </div>
     </div>
 </footer>
-  <div id="product-modal" class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/90 opacity-0 invisible pointer-events-none">
-        <div class="modal-content bg-white w-full max-w-4xl relative flex flex-col md:flex-row scale-95 shadow-2xl">
-            <button onclick="closeModal()" class="absolute top-4 right-4 z-10 text-brandBlack hover:text-brandPink">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" stroke-width="2"/></svg>
-            </button>
-            <div class="w-full md:w-1/2 bg-gray-100 aspect-square">
-                <img id="modal-img" src="" class="w-full h-full object-cover">
-            </div>
-            <div class="w-full md:w-1/2 p-8 md:p-12 flex flex-col justify-center">
-                <p id="modal-cat" class="text-[10px] uppercase tracking-widest text-brandPinkDark mb-2">Collection</p>
-                <h2 id="modal-name" class="text-2xl font-light uppercase tracking-[0.2em] mb-4">Product Name</h2>
-                <p id="modal-price" class="text-xl font-medium mb-8">₦0</p>
-                <div class="mb-8">
-                    <label class="block text-[10px] uppercase tracking-widest mb-3">Select Size</label>
-                    <div id="modal-sizes" class="flex flex-wrap gap-2"></div>
-                </div>
-                <button id="modal-add-btn" class="w-full bg-brandBlack text-brandPink py-4 uppercase tracking-[0.3em] text-xs hover:bg-brandPink hover:text-brandBlack transition-all">Add to cart</button>
-            </div>
-        </div>
-    </div>
 
-   <script>
+    <script>
     let currentProducts = [];
     let cart = JSON.parse(localStorage.getItem('tmb_cart')) || [];
     let modalQty = 1;
