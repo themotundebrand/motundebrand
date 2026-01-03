@@ -443,39 +443,49 @@ body { background-color: #ffffff; position: relative; min-height: 100vh; }
         else { s.classList.remove('sidebar-open'); s.classList.add('sidebar-closed'); o.classList.add('hidden'); }
     }
 
-    // --- TWICE-DAILY RANDOMIZED AD LOGIC WITH REDIRECT ---
+   // --- TWICE-DAILY RANDOMIZED AD WITH 4-HOUR GAP ---
 document.addEventListener('DOMContentLoaded', () => {
     const overlay = document.getElementById('videoAdOverlay');
     const video = document.getElementById('adVideo');
     const skipBtn = document.getElementById('skipBtn');
     const muteIcon = document.getElementById('muteIcon');
 
-    // 1. Get today's date (formatted as YYYY-MM-DD)
     const today = new Date().toISOString().split('T')[0];
+    const now = Date.now(); 
     
-    // 2. Load stored data from localStorage
-    let adData = JSON.parse(localStorage.getItem('outflickz_ad_tracker')) || { date: today, count: 0 };
+    // UPDATED GAP SETTING: 4 hours (14,400,000 milliseconds)
+    const minGap = 4 * 60 * 60 * 1000; 
 
-    // 3. If it's a new day, reset the count
+    // 1. Load tracker from localStorage
+    let adData = JSON.parse(localStorage.getItem('outflickz_ad_tracker')) || { 
+        date: today, 
+        count: 0, 
+        lastSeenTime: 0 
+    };
+
+    // 2. Reset if it's a new day
     if (adData.date !== today) {
-        adData = { date: today, count: 0 };
+        adData = { date: today, count: 0, lastSeenTime: 0 };
     }
 
-    // 4. Set Probability (0.5 = 50% chance it shows up on any load)
-    const randomChance = Math.random() > 0.5;
+    // 3. Logic Check
+    const timeSinceLastAd = now - adData.lastSeenTime;
+    const randomChance = Math.random() > 0.5; // 50% chance to trigger
 
-    // 5. Check if they have views remaining today
-    if (adData.count < 2 && randomChance && overlay && video) {
-        // Show after a tiny delay for a smooth entrance
+    if (adData.count < 2 && timeSinceLastAd > minGap && randomChance && overlay && video) {
+        
+        // 4. 10 SECOND DELAY BEFORE SHOWING
         setTimeout(() => {
+            if(!overlay) return;
+
             overlay.classList.remove('hidden');
             overlay.classList.add('flex');
             
-            // Increment count and save
+            // 5. Save the state IMMEDIATELY when shown
             adData.count += 1;
+            adData.lastSeenTime = Date.now();
             localStorage.setItem('outflickz_ad_tracker', JSON.stringify(adData));
 
-            // Try playing with sound
             video.muted = false;
             let playPromise = video.play();
 
@@ -487,18 +497,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
             }
 
-            // AUTO-REDIRECT WHEN VIDEO FINISHES
+            // REDIRECT TO SHOP WHEN FINISHED
             video.onended = function() {
-                console.log("Ad finished. Redirecting...");
                 window.location.href = 'mens.html'; 
             };
 
-            // Show Skip button after 6 seconds
+            // Show Skip button after 6 seconds of playback
             setTimeout(() => {
                 if(skipBtn) skipBtn.classList.remove('hidden');
             }, 6000); 
 
-        }, 2000); // 2 second delay for premium feel
+        }, 10000); // 10 seconds
     }
 });
 

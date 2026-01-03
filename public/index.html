@@ -25,37 +25,31 @@
             }
         }
     </script>
-    <style>
+   <style>
         .fade-slide {
             transition: opacity 1.5s cubic-bezier(0.4, 0, 0.2, 1);
-            /* CHANGE: Neutral background color instead of pure black */
-            background-color: #1a1a1a; 
+            /* THE FIX: Use a color that matches the image background (Warm Charcoal/Greige) */
+            background-color: #1a1817; 
         }
 
         .optimized-img {
             width: 100%;
             height: 100%;
-            /* CHANGE: 'cover' on mobile ensures no black bars; 'contain' on desktop for quality */
-            object-fit: cover; 
+            /* THE FIX: 'contain' ensures the WHOLE image shows without being cut off */
+            object-fit: contain; 
             object-position: center;
             transition: transform 6s ease-out;
+            /* Remove any default padding that might cause gaps */
+            padding: 0;
         }
 
-        @media (min-width: 1024px) {
-            .optimized-img {
-                object-fit: contain;
-                padding: 40px;
-            }
-        }
-
+        /* Responsive Title scaling */
         .brand-title {
-            /* CHANGE: Reduced mobile size (from 0.8rem to 0.65rem start) */
-            font-size: clamp(0.65rem, 7vw, 4rem); 
-            line-height: 1.2;
-            width: 85%;
+            font-size: clamp(0.7rem, 8vw, 4.5rem); 
+            line-height: 1.1;
+            width: 90%;
             margin: 0 auto;
-            text-shadow: 0 4px 20px rgba(0,0,0,0.6);
-            /* CHANGE: Added responsive tracking for mobile */
+            text-shadow: 0 0 30px rgba(0,0,0,0.8);
             letter-spacing: 0.2em;
         }
 
@@ -65,11 +59,15 @@
             }
         }
 
-        /* Progress Bar Animation */
         .timer-bar {
             animation: progress 9.5s linear forwards;
         }
         @keyframes progress { from { width: 0%; } to { width: 100%; } }
+
+        .dot {
+            background-color: rgba(255, 255, 255, 0.2);
+            width: 15px;
+        }
     </style>
 </head>
 <body class="bg-brandBlack text-brandWhite overflow-hidden antialiased">
@@ -79,33 +77,27 @@
     <header class="relative h-screen flex items-center justify-center bg-brandBlack">
         <div id="slider-container" class="absolute inset-0 z-0">
             <div class="slider-image absolute inset-0 opacity-100 fade-slide flex items-center justify-center">
-                <div class="absolute inset-0 bg-black/20 z-10 pointer-events-none"></div>
+                <div class="absolute inset-0 bg-black/10 z-10 pointer-events-none"></div>
                 <img src="https://i.imgur.com/KQ2leiY.jpeg" class="optimized-img" alt="Luxury Scent 1">
             </div>
             <div class="slider-image absolute inset-0 opacity-0 fade-slide flex items-center justify-center">
-                <div class="absolute inset-0 bg-black/20 z-10 pointer-events-none"></div>
+                <div class="absolute inset-0 bg-black/10 z-10 pointer-events-none"></div>
                 <img src="https://i.imgur.com/Wp0HCu8.jpeg" class="optimized-img" alt="Luxury Scent 2">
             </div>
             <div class="slider-image absolute inset-0 opacity-0 fade-slide flex items-center justify-center">
-                <div class="absolute inset-0 bg-black/20 z-10 pointer-events-none"></div>
+                <div class="absolute inset-0 bg-black/10 z-10 pointer-events-none"></div>
                 <img src="https://i.imgur.com/BRl8AVs.jpeg" class="optimized-img" alt="Luxury Scent 3">
             </div>
         </div>
 
-        <div class="relative z-30 flex flex-col justify-center items-center text-center px-4 pointer-events-none">
-            <h1 class="brand-title font-bold uppercase mb-2">
+        <div class="relative z-30 flex flex-col justify-center items-center text-center px-6 pointer-events-none">
+            <h1 class="brand-title font-bold uppercase mb-4">
                 The Motunde Brand
             </h1>
-            <div class="w-8 h-[1px] bg-brandPink/60 mb-4"></div>
-            <p class="text-[8px] md:text-xs tracking-[0.5em] md:tracking-[0.8em] uppercase text-brandPinkDark font-bold">
+            <div class="w-12 h-[1px] bg-brandPink/60 mb-6"></div>
+            <p class="text-[9px] md:text-xs tracking-[0.5em] md:tracking-[0.8em] uppercase text-brandPink font-light">
                 Essence of Timeless Luxury
             </p>
-        </div>
-
-        <div class="absolute bottom-12 left-1/2 -translate-x-1/2 z-40 flex items-center space-x-3">
-            <div class="dot h-[1px] transition-all duration-700" id="dot-0"></div>
-            <div class="dot h-[1px] transition-all duration-700" id="dot-1"></div>
-            <div class="dot h-[1px] transition-all duration-700" id="dot-2"></div>
         </div>
     </header>
     <script>
