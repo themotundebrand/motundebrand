@@ -461,16 +461,16 @@
             </video>
         </a>
 
-        <button onclick="toggleMute(event)" class="absolute bottom-28 right-6 bg-black/50 text-white p-3 rounded-full border border-white/20 z-[1020] hover:bg-brandPink transition-all">
+        <button onclick="toggleMute(event)" class="absolute bottom-28 right-6 bg-black/50 text-white p-3 rounded-full border border-white/20 z-[1020]">
             <span id="muteIcon">🔇</span>
         </button>
 
-        <button id="skipBtn" onclick="closeAd()" class="absolute top-6 right-6 bg-black/60 text-white px-4 py-2 rounded-full text-[10px] font-bold uppercase tracking-widest border border-white/20 hidden hover:bg-white hover:text-black transition-all">
+        <button id="skipBtn" onclick="closeAd()" class="absolute top-6 right-6 bg-black/60 text-white px-4 py-2 rounded-full text-[10px] font-bold uppercase tracking-widest border border-white/20 hidden">
             Skip Ad
         </button>
 
         <div class="absolute bottom-10 left-0 right-0 px-8">
-            <a href="https://www.outflickz.com" class="block w-full bg-white text-black py-4 rounded-full text-center text-[11px] font-black uppercase tracking-widest shadow-xl hover:scale-105 transition-transform">
+            <a href="https://www.outflickz.com" class="block w-full bg-white text-black py-4 rounded-full text-center text-[11px] font-black uppercase tracking-widest shadow-xl">
                 Visit outflickz.com
             </a>
         </div>
@@ -869,39 +869,49 @@ function rotateSlides() {
         document.getElementById(`slide-${currentIdx + 1}`).classList.replace('slide-hidden', 'slide-active');
     }
 }
-// --- OUTFLICKZ SOUND SYSTEM ---
+// --- FINALIZED OUTFLICKZ AD LOGIC ---
 document.addEventListener('DOMContentLoaded', () => {
     const overlay = document.getElementById('videoAdOverlay');
     const video = document.getElementById('adVideo');
     const skipBtn = document.getElementById('skipBtn');
+    const muteIcon = document.getElementById('muteIcon');
 
-    if (!sessionStorage.getItem('tmb_ad_seen') && overlay && video) {
+    // Check session storage to prevent annoying returning users
+    const hasSeenAd = sessionStorage.getItem('tmb_ad_seen');
+
+    if (!hasSeenAd && overlay && video) {
+        // EXACTLY 5 SECONDS AFTER PAGE LOAD
         setTimeout(() => {
             overlay.classList.remove('hidden');
             overlay.classList.add('flex');
             
-            // Start muted to guarantee it plays, then try to unmute
-            video.muted = true;
-            video.play();
-
-            // Attempt to unmute automatically (only works if user clicked the site already)
+            // Try playing with sound initially
             video.muted = false;
-            video.play().catch(() => {
-                // If it fails, we keep it muted so the ad doesn't break
-                video.muted = true;
-                document.getElementById('muteIcon').innerText = "🔇";
-            });
+            
+            let playPromise = video.play();
 
+            if (playPromise !== undefined) {
+                playPromise.catch(() => {
+                    // If browser blocks sound, play muted so the ad still displays
+                    video.muted = true;
+                    if(muteIcon) muteIcon.innerText = "🔇";
+                    video.play();
+                });
+            }
+
+            // WAIT 6 SECONDS FOR SKIP BUTTON
             setTimeout(() => {
                 if(skipBtn) skipBtn.classList.remove('hidden');
             }, 6000); 
-        }, 5000); 
+
+        }, 5000); // 5000ms = 5 seconds
     }
 });
 
+// Sound Control Function
 function toggleMute(event) {
-    event.preventDefault(); // Stop the link from opening
-    event.stopPropagation(); // Stop the video click from firing
+    event.preventDefault();
+    event.stopPropagation();
     const video = document.getElementById('adVideo');
     const icon = document.getElementById('muteIcon');
     
@@ -914,11 +924,15 @@ function toggleMute(event) {
     }
 }
 
+// Close Ad Function
 function closeAd() {
     const overlay = document.getElementById('videoAdOverlay');
     const video = document.getElementById('adVideo');
-    video.pause();
-    overlay.classList.add('hidden');
+    if(video) video.pause();
+    if(overlay) {
+        overlay.classList.add('hidden');
+        overlay.classList.remove('flex');
+    }
     sessionStorage.setItem('tmb_ad_seen', 'true');
 }
 
