@@ -95,7 +95,6 @@
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" stroke-width="2"></path></svg>
         </button>
          <div class="flex flex-col space-y-6 text-[10px] tracking-[0.25em] uppercase text-brandPink/80">
-            <a href="index.html">Home</a>
             <a href="shop.html">Shop</a>
             <a href="womens.html" class="text-brandPink">Women</a>
             <a href="mens.html">Men</a>
@@ -211,142 +210,253 @@
         </div>
     </div>
 
-    <script>
-        let currentProducts = [];
-        let cart = JSON.parse(localStorage.getItem('tmb_cart')) || [];
+   <script>
+    let currentProducts = [];
+    let cart = JSON.parse(localStorage.getItem('tmb_cart')) || [];
+    let modalQty = 1;
+    let modalMaxStock = 0; 
+    let toastTimer;
 
-        function toggleSidebar(open) {
-            const sb = document.getElementById('sidebar');
-            const ov = document.getElementById('sidebar-overlay');
-            sb.classList.toggle('sidebar-open', open);
-            sb.classList.toggle('sidebar-closed', !open);
-            ov.classList.toggle('hidden', !open);
+    // --- NAVIGATION & UI ---
+    function handleAccountClick() {
+        const token = localStorage.getItem('motunde_token');
+        window.location.href = token ? 'membership.html' : 'account.html';
+    }
+
+    function showNotification(message) {
+        const toast = document.getElementById('custom-toast');
+        document.getElementById('toast-message').innerText = message;
+        clearTimeout(toastTimer);
+        toast.classList.add('opacity-100');
+        toastTimer = setTimeout(() => toast.classList.remove('opacity-100'), 2500);
+    }
+
+    function updateCartBadge() {
+        const count = cart.reduce((sum, item) => sum + item.quantity, 0);
+        const badge = document.getElementById('cart-count');
+        if(badge) badge.innerText = count;
+    }
+
+    function toggleSidebar(open) {
+        const s = document.getElementById('sidebar');
+        const o = document.getElementById('sidebar-overlay');
+        if(open) { s.classList.replace('sidebar-closed', 'sidebar-open'); o.classList.remove('hidden'); }
+        else { s.classList.replace('sidebar-open', 'sidebar-closed'); o.classList.add('hidden'); }
+    }
+
+    // Toggle for the "Package Contents" dropdown in the grid
+    function toggleComboDetails(event, productId) {
+        event.stopPropagation();
+        const details = document.getElementById(`details-${productId}`);
+        const icon = document.getElementById(`icon-${productId}`);
+        if (details.classList.contains('hidden')) {
+            details.classList.remove('hidden');
+            icon.style.transform = 'rotate(180deg)';
+        } else {
+            details.classList.add('hidden');
+            icon.style.transform = 'rotate(0deg)';
         }
+    }
 
-        function toggleComboDetails(event, id) {
-            event.stopPropagation();
-            const el = document.getElementById(`details-${id}`);
-            const icon = document.getElementById(`icon-${id}`);
-            el.classList.toggle('hidden');
-            icon.style.transform = el.classList.contains('hidden') ? 'rotate(0deg)' : 'rotate(180deg)';
-        }
+    // --- COLLECTION LOADING ---
+    async function loadComboCollection() {
+        try {
+            const response = await fetch('/api/products');
+            const data = await response.json();
+            currentProducts = Array.isArray(data) ? data : [];
+            
+            const combos = currentProducts.filter(p => p.category?.toLowerCase() === 'combo');
+            const grid = document.getElementById('combo-grid');
+            
+            if (combos.length === 0) {
+                grid.innerHTML = `<div class="col-span-full py-20 text-center uppercase tracking-widest text-[10px] text-gray-500">Exquisite Combo Deals are currently being curated.</div>`;
+                return;
+            }
 
-        function handleAccountClick() {
-            window.location.href = localStorage.getItem('motunde_token') ? 'membership.html' : 'account.html';
-        }
+            grid.innerHTML = combos.map(p => {
+                const availableVariants = (p.variants || []).filter(v => v.stock > 0);
+                const isSoldOut = availableVariants.length === 0;
+                const firstV = isSoldOut ? (p.variants?.[0] || {price:0, stock:0}) : availableVariants[0];
 
-        function showNotification(msg) {
-            const t = document.getElementById('custom-toast');
-            document.getElementById('toast-message').innerText = msg;
-            t.classList.add('show');
-            setTimeout(() => t.classList.remove('show'), 3000);
-        }
-
-        function updateCartBadge() {
-            document.getElementById('cart-count').innerText = cart.reduce((total, item) => total + item.quantity, 0);
-        }
-
-        async function loadComboCollection() {
-            try {
-                const res = await fetch('/api/products');
-                const data = await res.json();
-                
-                // Filter for 'combo' category
-                currentProducts = data.filter(p => p.category?.toLowerCase().trim() === 'combo');
-                
-                const grid = document.getElementById('combo-full-grid');
-                if (currentProducts.length === 0) {
-                    grid.innerHTML = `<div class="col-span-full py-24 text-center text-gray-400 uppercase tracking-widest text-[10px]">New Bundles Loading Soon...</div>`;
-                    return;
+                // Parse description for package contents dropdown
+                let comboDropdown = "";
+                if (p.description) {
+                    const items = p.description.split(/[|\-]+/).map(i => i.trim()).filter(i => i !== "");
+                    comboDropdown = `
+                        <div class="mt-2 mb-2 text-left">
+                            <button onclick="toggleComboDetails(event, '${p._id}')" class="flex items-center justify-between w-full text-[7px] font-bold text-brandBlack uppercase tracking-tighter border-b border-black/10 pb-1">
+                                <span>Package Contents</span>
+                                <svg id="icon-${p._id}" class="w-2 h-2 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7" stroke-width="4"/></svg>
+                            </button>
+                            <div id="details-${p._id}" class="hidden py-2">
+                                <ul class="text-[7px] text-gray-600 space-y-1">
+                                    ${items.map(item => `<li class="truncate">• ${item}</li>`).join('')}
+                                </ul>
+                            </div>
+                        </div>`;
                 }
 
-                grid.innerHTML = currentProducts.map(p => {
-                    const variants = p.variants || [];
-                    const inStock = variants.some(v => v.stock > 0);
-                    const firstPrice = variants[0]?.price || 0;
+                return `
+                <div class="product-card p-3 group relative flex flex-col h-full rounded-lg">
+                    ${isSoldOut ? `<div class="absolute inset-0 z-10 bg-white/40 flex items-center justify-center backdrop-blur-[1px] rounded-lg"><span class="bg-black text-white text-[9px] px-4 py-2 uppercase font-black">Sold Out</span></div>` : ''}
                     
-                    // Logic to parse package items from description (split by | or -)
-                    const items = p.description ? p.description.split(/[|\-]+/).map(i => i.trim()).filter(i => i !== "") : [];
+                    <div onclick="openModal('${p._id}')" class="aspect-[4/5] overflow-hidden mb-3 bg-white/50 rounded-md cursor-pointer">
+                        <img src="${p.imageUrl}" class="w-full h-full object-cover transition duration-700 group-hover:scale-110">
+                    </div>
 
-                    return `
-                    <div class="product-card flex flex-col group relative p-3">
-                        ${!inStock ? `<div class="absolute inset-0 z-10 bg-white/60 flex items-center justify-center font-bold text-[9px] uppercase">Sold Out</div>` : ''}
-                        <div onclick="openModal('${p._id}')" class="aspect-[4/5] overflow-hidden mb-5 bg-gray-50 cursor-pointer">
-                            <img src="${p.imageUrl}" class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105">
+                    <div class="text-center flex-grow">
+                        <h3 class="uppercase font-bold text-[9px] tracking-widest mb-1 truncate text-brandBlack">${p.name}</h3>
+                        ${comboDropdown}
+                        <p id="price-${p._id}" class="text-brandBlack font-black text-[11px] mb-2">₦${Number(firstV.price).toLocaleString()}</p>
+                        
+                        <select data-id="${p._id}" onchange="handleSizeChange(this, '${p._id}')" ${isSoldOut ? 'disabled' : ''} class="w-full border border-black/10 text-[8px] uppercase py-1.5 px-2 mb-2 bg-white/80 rounded font-bold">
+                            ${availableVariants.map(v => `<option value="${v.size}" data-price="${v.price}" data-stock="${v.stock}">${v.size}</option>`).join('')}
+                            ${isSoldOut ? `<option>Sold Out</option>` : ''}
+                        </select>
+
+                        <div class="flex items-center justify-between border border-black/10 mb-3 bg-white/80 rounded overflow-hidden">
+                            <button onclick="updateQty('${p._id}', -1)" class="px-3 py-1 font-bold hover:bg-brandPink/30 transition-colors">-</button>
+                            <span id="qty-${p._id}" class="text-[10px] font-bold">1</span>
+                            <button onclick="updateQty('${p._id}', 1)" class="px-3 py-1 font-bold hover:bg-brandPink/30 transition-colors">+</button>
                         </div>
-                        <div class="text-center flex-grow flex flex-col">
-                            <h3 class="uppercase font-black text-[9px] tracking-widest mb-2">${p.name}</h3>
-                            
-                            <div class="mb-4 text-left">
-                                <button onclick="toggleComboDetails(event, '${p._id}')" class="flex items-center justify-between w-full text-[7px] font-bold text-brandOrange uppercase tracking-tighter border-b border-orange-50 pb-1">
-                                    <span>What's inside</span>
-                                    <svg id="icon-${p._id}" class="w-2 h-2 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7" stroke-width="4"/></svg>
-                                </button>
-                                <div id="details-${p._id}" class="hidden py-2 bg-gray-50/50 mt-1 px-1">
-                                    <ul class="text-[7px] text-gray-500 space-y-1">
-                                        ${items.map(item => `<li class="truncate">• ${item}</li>`).join('')}
-                                    </ul>
-                                </div>
-                            </div>
 
-                            <p id="price-${p._id}" class="text-brandBlack font-black text-[11px] mb-5">₦${Number(firstPrice).toLocaleString()}</p>
-                            
-                            <select data-id="${p._id}" onchange="updatePrice(this, '${p._id}')" class="w-full border border-gray-100 text-[8px] uppercase py-3 px-2 mb-4 bg-white outline-none">
-                                ${variants.map(v => `<option value="${v.size}" data-price="${v.price}">${v.size}</option>`).join('')}
-                            </select>
+                        <button onclick="handleAddToCart('${p._id}')" id="btn-${p._id}" ${isSoldOut ? 'disabled' : ''} class="w-full ${isSoldOut ? 'bg-gray-400 cursor-not-allowed' : 'bg-brandBlack text-[#F7C8D0] hover:bg-black/90'} text-[8px] py-3 rounded font-bold uppercase tracking-widest transition-all">
+                            ${isSoldOut ? 'Sold Out' : 'Add to Cart'}
+                        </button>
+                    </div>
+                </div>`;
+            }).join('');
+        } catch (err) { console.error("Combo collection fetch error:", err); }
+    }
 
-                            <button onclick="addToBag('${p._id}')" ${!inStock ? 'disabled' : ''} class="mt-auto w-full ${!inStock ? 'bg-gray-100 text-gray-300' : 'bg-brandBlack text-brandPink'} text-[9px] py-4 uppercase font-bold tracking-[0.2em] transition-all">
-                                ${!inStock ? 'Unavailable' : 'Add to Cart'}
-                            </button>
-                        </div>
-                    </div>`;
-                }).join('');
-            } catch (err) { console.error("Error:", err); }
+    // --- QUANTITY & SIZE SELECTION ---
+    function updateQty(id, delta) {
+        const qtyEl = document.getElementById(`qty-${id}`);
+        const select = document.querySelector(`select[data-id="${id}"]`);
+        const selectedOption = select.options[select.selectedIndex];
+        
+        const maxStock = parseInt(selectedOption?.getAttribute('data-stock') || 0);
+        let newVal = parseInt(qtyEl.innerText) + delta;
+        
+        if (newVal < 1) newVal = 1;
+        if (newVal > maxStock) {
+            showNotification(`Only ${maxStock} available`);
+            newVal = maxStock;
         }
+        qtyEl.innerText = newVal;
+    }
 
-        function updatePrice(sel, id) {
-            const price = sel.options[sel.selectedIndex].dataset.price;
-            document.getElementById(`price-${id}`).innerText = `₦${Number(price).toLocaleString()}`;
-        }
+    function handleSizeChange(select, productId) {
+        const price = select.options[select.selectedIndex].getAttribute('data-price');
+        document.getElementById(`price-${productId}`).innerText = `₦${Number(price).toLocaleString()}`;
+        document.getElementById(`qty-${productId}`).innerText = "1"; 
+    }
 
-        function addToBag(id) {
-            const p = currentProducts.find(x => x._id === id);
-            const sel = document.querySelector(`select[data-id="${id}"]`);
-            const price = sel.options[sel.selectedIndex].dataset.price;
-            const size = sel.value;
+    // --- MODAL FUNCTIONALITY ---
+    function openModal(id) {
+        const p = currentProducts.find(prod => prod._id === id);
+        if(!p) return;
 
-            const item = { id: p._id, name: p.name, price: Number(price), size, image: p.imageUrl, quantity: 1 };
-            const idx = cart.findIndex(x => x.id === id && x.size === size);
+        modalQty = 1;
+        document.getElementById('modal-img').src = p.imageUrl;
+        document.getElementById('modal-name').innerText = p.name;
+        document.getElementById('modal-desc').innerText = p.description || "The perfect curated selection for the ultimate luxury experience.";
+        document.getElementById('modal-cat').innerText = "COMBO DEALS";
+        document.getElementById('modal-qty').innerText = modalQty;
+
+        const sizeContainer = document.getElementById('modal-sizes');
+        const priceDisplay = document.getElementById('modal-price');
+        const addBtn = document.getElementById('modal-add-btn');
+
+        const variants = (p.variants || []).filter(v => v.stock > 0);
+        
+        if (variants.length === 0) {
+            priceDisplay.innerText = "SOLD OUT";
+            sizeContainer.innerHTML = `<span class="text-gray-400 text-[10px] uppercase font-bold tracking-widest">Out of Stock</span>`;
+            addBtn.disabled = true;
+            modalMaxStock = 0;
+        } else {
+            addBtn.disabled = false;
+            priceDisplay.innerText = `₦${Number(variants[0].price).toLocaleString()}`;
+            modalMaxStock = variants[0].stock;
             
-            if (idx > -1) cart[idx].quantity += 1;
-            else cart.push(item);
+            sizeContainer.innerHTML = variants.map((v, i) => `
+                <button onclick="updateModalSelection('${v.price}', '${v.size}', ${v.stock}, this)" 
+                    class="modal-size-btn px-4 py-2 border-2 text-[10px] font-bold transition-all ${i === 0 ? 'border-brandBlack bg-brandBlack text-brandPink' : 'border-gray-100 text-brandBlack hover:border-brandPink'}">
+                    ${v.size}
+                </button>
+            `).join('');
 
-            localStorage.setItem('tmb_cart', JSON.stringify(cart));
-            updateCartBadge();
-            showNotification(`Added to Cart`);
+            addBtn.onclick = () => {
+                const activeBtn = document.querySelector('.modal-size-btn.bg-brandBlack');
+                const size = activeBtn.innerText.trim();
+                const price = priceDisplay.innerText.replace('₦', '').replace(/,/g, '');
+                addToCartData(p, size, price, modalQty);
+                showNotification("Combo Added to Cart");
+                closeModal();
+            };
         }
 
-        function openModal(id) {
-            const p = currentProducts.find(x => x._id === id);
-            if(!p) return;
-            document.getElementById('modal-img').src = p.imageUrl;
-            document.getElementById('modal-name').innerText = p.name;
-            document.getElementById('modal-price').innerText = `₦${Number(p.variants[0].price).toLocaleString()}`;
-            
-            const modal = document.getElementById('product-modal');
-            modal.classList.remove('invisible', 'opacity-0', 'pointer-events-none');
-            document.body.style.overflow = 'hidden';
-        }
+        document.getElementById('product-modal').classList.remove('invisible', 'opacity-0', 'pointer-events-none');
+        document.body.style.overflow = 'hidden';
+    }
 
-        function closeModal() {
-            document.getElementById('product-modal').classList.add('invisible', 'opacity-0', 'pointer-events-none');
-            document.body.style.overflow = '';
-        }
+    window.updateModalSelection = (price, size, stock, btn) => {
+        document.getElementById('modal-price').innerText = `₦${Number(price).toLocaleString()}`;
+        modalMaxStock = parseInt(stock);
+        modalQty = 1;
+        document.getElementById('modal-qty').innerText = modalQty;
 
-        window.onload = () => {
-            loadComboCollection();
-            updateCartBadge();
-        };
-    </script>
+        document.querySelectorAll('.modal-size-btn').forEach(b => {
+            b.classList.remove('border-brandBlack', 'bg-brandBlack', 'text-brandPink');
+            b.classList.add('border-gray-100', 'text-brandBlack');
+        });
+        btn.classList.replace('border-gray-100', 'border-brandBlack');
+        btn.classList.add('bg-brandBlack', 'text-brandPink');
+    };
+
+    function updateModalQty(delta) {
+        let newVal = modalQty + delta;
+        if (newVal < 1) newVal = 1;
+        if (newVal > modalMaxStock) {
+            showNotification(`Stock limit: ${modalMaxStock}`);
+            newVal = modalMaxStock;
+        }
+        modalQty = newVal;
+        document.getElementById('modal-qty').innerText = modalQty;
+    }
+
+    function closeModal() {
+        const modal = document.getElementById('product-modal');
+        modal.classList.add('invisible', 'opacity-0', 'pointer-events-none');
+        document.body.style.overflow = '';
+    }
+
+    // --- CART LOGIC ---
+    function handleAddToCart(productId) {
+        const p = currentProducts.find(prod => prod._id === productId);
+        const select = document.querySelector(`select[data-id="${productId}"]`);
+        const qty = parseInt(document.getElementById(`qty-${productId}`).innerText);
+        const size = select.value;
+        const price = select.options[select.selectedIndex].getAttribute('data-price');
+        
+        addToCartData(p, size, price, qty);
+        showNotification(`${p.name} added to cart`);
+    }
+
+    function addToCartData(product, size, price, quantity) {
+        const cartItem = { id: product._id, name: product.name, price: Number(price), size: size, image: product.imageUrl, quantity: quantity };
+        const idx = cart.findIndex(item => item.id === product._id && item.size === size);
+        if (idx > -1) cart[idx].quantity += quantity;
+        else cart.push(cartItem);
+        localStorage.setItem('tmb_cart', JSON.stringify(cart));
+        updateCartBadge();
+    }
+
+    window.onload = () => {
+        loadComboCollection();
+        updateCartBadge();
+    };
+</script>
 </body>
 </html>
