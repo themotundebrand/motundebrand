@@ -217,7 +217,7 @@
     // --- 1. Global State ---
     let currentProducts = [];
     let cart = JSON.parse(localStorage.getItem('tmb_cart')) || [];
-    let modalQty = 1; // Tracks quantity specifically for the pop-up modal
+    let modalQty = 1; 
 
     // --- 2. Sidebar & Account UI ---
     function toggleSidebar(open) {
@@ -253,7 +253,7 @@
 
     // --- 4. Core Cart Synchronizer ---
     function syncCart(product, size, price, quantity) {
-        // Validation: Ensure quantity is a clean number and at least 1
+        // Strict validation: Ensure quantity is a clean number and at least 1
         const cleanQty = Math.max(1, parseInt(quantity) || 1);
 
         const item = { 
@@ -294,6 +294,9 @@
         const sizeContainer = document.getElementById('modal-sizes');
         const addBtn = document.getElementById('modal-add-btn');
         const priceDisplay = document.getElementById('modal-price');
+
+        // FIX: Explicitly re-bind the function so it never fails to trigger
+        addBtn.onclick = handleModalAddToCart;
 
         if (isOutOfStock) {
             priceDisplay.innerText = "OUT OF STOCK";
@@ -341,7 +344,7 @@
         
         if (!product) return;
         const variant = product.variants.find(v => v.size === size);
-        const maxStock = variant ? variant.stock : 0;
+        const maxStock = variant ? variant.stock : 99;
 
         let nextQty = modalQty + change;
         if (nextQty < 1) nextQty = 1;
@@ -362,7 +365,8 @@
         const product = currentProducts.find(p => p._id === pId);
 
         if (!product) return;
-        // Correctly using the current modalQty
+        
+        // Use the validated modalQty variable
         syncCart(product, size, price, modalQty);
         closeModal();
     }
@@ -372,31 +376,36 @@
         document.body.style.overflow = '';
     }
 
-    // --- 6. Grid Controllers (Fixed Jump Issue) ---
-
+    // --- 6. Grid Controllers (FIXED 1 TO 0 JUMP) ---
     function updateQty(id, change) {
         const qtyEl = document.getElementById(`qty-${id}`);
         const sel = document.querySelector(`select[data-id="${id}"]`);
         const p = currentProducts.find(x => x._id === id);
         
-        if (!p || !sel || !qtyEl) return;
+        if (!qtyEl) return;
 
-        // Force reading as Integer and trim any whitespace
+        // Force cleanup of the text content to ensure it's strictly a number
         let currentQty = parseInt(qtyEl.innerText.trim());
-        if (isNaN(currentQty)) currentQty = 1;
+        
+        // Safeguard: If the UI has a space/error resulting in NaN, reset to 1
+        if (isNaN(currentQty) || currentQty < 1) {
+            currentQty = 1;
+        }
 
-        const selectedSize = sel.value;
-        const variant = p.variants.find(v => v.size === selectedSize);
-        const maxStock = variant ? variant.stock : 0;
+        let maxStock = 99;
+        if (p && sel) {
+            const variant = p.variants.find(v => v.size === sel.value);
+            if (variant) maxStock = variant.stock;
+        }
 
         let nextQty = currentQty + change;
 
-        // Lock between 1 and max stock
+        // Safety lock: Never go below 1, never above max stock
         if (nextQty < 1) {
             nextQty = 1;
         } else if (nextQty > maxStock) {
             nextQty = maxStock;
-            showNotification(`Only ${maxStock} items in ${selectedSize}`);
+            showNotification(`Only ${maxStock} available`);
         }
 
         qtyEl.innerText = nextQty;
@@ -407,7 +416,7 @@
         const priceEl = document.getElementById(`price-${id}`);
         if (priceEl) priceEl.innerText = `₦${Number(price).toLocaleString()}`;
         
-        // Anti-zero: Always reset to 1 when user switches sizes
+        // Anti-zero: Always reset UI to "1" when user switches sizes
         const qtyEl = document.getElementById(`qty-${id}`);
         if (qtyEl) qtyEl.innerText = "1";
     }
@@ -419,7 +428,8 @@
         
         if (!p || !sel || !qtyEl) return;
 
-        const qtyToAdd = parseInt(qtyEl.innerText) || 1;
+        // Use .trim() to ensure no spaces mess up the number
+        const qtyToAdd = parseInt(qtyEl.innerText.trim()) || 1;
         const price = sel.options[sel.selectedIndex].dataset.price;
         const size = sel.value;
         const btn = document.querySelector(`button[onclick="handleGridAddToCart('${id}')"]`);
@@ -434,14 +444,14 @@
             const stockAvailable = variant ? variant.stock : 0;
 
             if (stockAvailable < qtyToAdd) {
-                showNotification(`Stock error: Only ${stockAvailable} available`);
+                showNotification(`Only ${stockAvailable} available`);
                 qtyEl.innerText = stockAvailable > 0 ? stockAvailable : 1;
             } else {
                 syncCart(p, size, price, qtyToAdd);
                 qtyEl.innerText = "1"; 
             }
         } catch (err) {
-            showNotification("Error connecting to server.");
+            showNotification("Connection error.");
         } finally {
             btn.innerText = "Add to Cart";
             btn.disabled = false;
