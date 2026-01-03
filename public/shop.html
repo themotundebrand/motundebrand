@@ -452,21 +452,22 @@
         </div>
     </div>
 </div>
-<div id="videoAdOverlay" class="fixed inset-0 z-[1000] bg-black/90 hidden flex items-center justify-center p-4 backdrop-blur-sm">
-    <div class="relative w-full max-w-[400px] bg-black rounded-lg overflow-hidden shadow-2xl border border-white/10">
+<div id="videoAdOverlay" class="fixed inset-0 z-[1000] bg-black/95 hidden items-center justify-center p-0 md:p-4 backdrop-blur-md">
+    <div class="relative w-full h-full md:h-auto md:max-w-[400px] bg-black md:rounded-xl overflow-hidden shadow-2xl">
         
-        <button onclick="closeAd()" class="absolute top-4 right-4 text-white hover:scale-110 transition-all z-[1010]">
-            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" stroke-width="2"/></svg>
-        </button>
-        
-        <video id="adVideo" class="w-full h-auto" playsinline muted autoplay loop>
-            <source src="outflickz-ads.mp4" type="video/mp4">
-            Your browser does not support the video tag.
-        </video>
+        <a href="https://www.outflickz.com" target="_blank" class="block w-full h-full cursor-pointer">
+            <video id="adVideo" class="w-full h-full md:h-auto object-cover md:object-contain" playsinline autoplay loop>
+                <source src="outflickz-ads.mp4" type="video/mp4">
+            </video>
+        </a>
 
-        <div class="absolute bottom-6 left-0 right-0 px-6">
-            <a href="https://www.outflickz.com" class="block w-full bg-white text-black py-3 rounded-full text-center text-[10px] font-black uppercase tracking-widest hover:bg-brandPink transition">
-                Shop Outflickz
+        <button id="skipBtn" onclick="closeAd()" class="absolute top-6 right-6 bg-black/60 text-white px-4 py-2 rounded-full text-[10px] font-bold uppercase tracking-widest border border-white/20 hidden hover:bg-white hover:text-black transition-all">
+            Skip Ad
+        </button>
+
+        <div class="absolute bottom-10 left-0 right-0 px-8">
+            <a href="https://www.outflickz.com" class="block w-full bg-white text-black py-4 rounded-full text-center text-[11px] font-black uppercase tracking-widest shadow-xl hover:scale-105 transition-transform">
+                Visit outflickz.com
             </a>
         </div>
     </div>
@@ -865,25 +866,40 @@ function rotateSlides() {
     }
 }
 
-// --- VIDEO AD SYSTEM (UPDATED TO 5 SECONDS) ---
+// --- OUTFLICKZ SOUND & SKIP SYSTEM ---
 document.addEventListener('DOMContentLoaded', () => {
     const overlay = document.getElementById('videoAdOverlay');
     const video = document.getElementById('adVideo');
+    const skipBtn = document.getElementById('skipBtn');
 
-    // Check if the user has already seen the ad in this browsing session
     const hasSeenAd = sessionStorage.getItem('tmb_ad_seen');
 
     if (!hasSeenAd && overlay && video) {
-        // Delay changed to 5000ms (5 seconds)
+        // Wait 5 seconds to show the ad
         setTimeout(() => {
             overlay.classList.remove('hidden');
             overlay.classList.add('flex');
             
-            // Start video
-            video.currentTime = 0; // Ensure it starts from the beginning
-            video.play().catch(error => {
-                console.log("Autoplay blocked. This is normal for some browsers until the user clicks.");
-            });
+            // Unmute the video for sound
+            video.muted = false; 
+            
+            // Attempt to play with sound
+            let playPromise = video.play();
+
+            if (playPromise !== undefined) {
+                playPromise.catch(error => {
+                    // Browser blocked audio! Play muted so the ad at least shows up.
+                    console.log("Audio was blocked by browser. Playing muted.");
+                    video.muted = true;
+                    video.play();
+                });
+            }
+
+            // Show Skip button after 6 seconds of playing
+            setTimeout(() => {
+                if(skipBtn) skipBtn.classList.remove('hidden');
+            }, 6000); 
+
         }, 5000); 
     }
 });
@@ -891,13 +907,10 @@ document.addEventListener('DOMContentLoaded', () => {
 function closeAd() {
     const overlay = document.getElementById('videoAdOverlay');
     const video = document.getElementById('adVideo');
-    
     if (overlay && video) {
         video.pause();
         overlay.classList.add('hidden');
         overlay.classList.remove('flex');
-        
-        // Mark as seen so it doesn't pop up again during this session
         sessionStorage.setItem('tmb_ad_seen', 'true');
     }
 }
