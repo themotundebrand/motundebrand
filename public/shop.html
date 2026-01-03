@@ -51,6 +51,22 @@
         pointer-events: none;
     }
 
+    .slide-fade {
+    position: absolute;
+    inset: 0;
+    transition: opacity 1.5s ease-in-out; /* This creates the smooth transit */
+}
+
+.slide-active {
+    opacity: 1;
+    z-index: 10;
+}
+
+.slide-hidden {
+    opacity: 0;
+    z-index: 0;
+}
+
     /* 2. Responsive adjustments for Mobile */
     @media (max-width: 768px) {
         body::before {
@@ -803,21 +819,22 @@ return `
     }
 
     // --- 11. Slider ---
-    let currentSlide = 1;
-    setInterval(() => {
-        const s1 = document.getElementById(`slide-group-1`);
-        const s2 = document.getElementById(`slide-group-2`);
-        if (!s1 || !s2) return;
-        if (currentSlide === 1) {
-            s1.classList.replace('slide-active', 'slide-hidden');
-            s2.classList.replace('slide-hidden', 'slide-active');
-            currentSlide = 2;
-        } else {
-            s2.classList.replace('slide-active', 'slide-hidden');
-            s1.classList.replace('slide-hidden', 'slide-active');
-            currentSlide = 1;
-        }
-    }, 5000);
+  let currentSlide = 1;
+setInterval(() => {
+    const s1 = document.getElementById(`slide-group-1`);
+    const s2 = document.getElementById(`slide-group-2`);
+    if (!s1 || !s2) return;
+
+    if (currentSlide === 1) {
+        s1.classList.replace('slide-active', 'slide-hidden');
+        s2.classList.replace('slide-hidden', 'slide-active');
+        currentSlide = 2;
+    } else {
+        s2.classList.replace('slide-active', 'slide-hidden');
+        s1.classList.replace('slide-hidden', 'slide-active');
+        currentSlide = 1;
+    }
+}, 3000); // Changed from 5000 to 3000 for a 3-second transit
 
     loadProducts();
 </script>
