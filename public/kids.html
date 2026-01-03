@@ -26,8 +26,7 @@
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #F7C8D0; }
 
-        body { background-color: #F7C8D0; position: relative; min-height: 100vh; }
-        
+        body { background-color: #ffffff; position: relative; min-height: 100vh; }          
         /* Transparent Perfume Pattern Overlay */
         body::before {
             content: "";
@@ -42,12 +41,12 @@
             pointer-events: none;
         }
 
-        .product-card {
-            background-color: #E2A9B3 !important; 
-            transition: all 0.3s ease;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            backdrop-filter: blur(5px);
-        }
+       .product-card {
+    background-color: #ffffff !important; /* Changed from #E2A9B3 */
+    transition: all 0.3s ease;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    backdrop-filter: blur(5px);
+}
         .product-card:hover {
             transform: translateY(-4px);
             background: rgba(255, 255, 255, 0.9) !important;
@@ -235,56 +234,56 @@
     }
 
     // --- COLLECTION LOADING ---
-    async function loadKidsCollection() {
-        try {
-            const response = await fetch('/api/products');
-            const data = await response.json();
-            currentProducts = Array.isArray(data) ? data : [];
-            
-            const kidsProducts = currentProducts.filter(p => p.category?.toLowerCase() === 'kids');
-            const grid = document.getElementById('kids-grid');
-            
-            if (kidsProducts.length === 0) {
-                grid.innerHTML = `<div class="col-span-full py-20 text-center uppercase tracking-widest text-[10px] text-gray-500">The Kids' Collection is coming soon.</div>`;
-                return;
-            }
+  async function loadKidsCollection() {
+    try {
+        const response = await fetch('/api/products');
+        const data = await response.json();
+        currentProducts = Array.isArray(data) ? data : [];
+        
+        // Matches the Women's standardized filtering and trimming
+        const kidsProducts = currentProducts.filter(p => p.category?.toLowerCase().trim() === 'kids');
+        const gridEl = document.getElementById('kids-grid');
 
-            grid.innerHTML = kidsProducts.map(p => {
+        if (kidsProducts.length > 0) {
+            gridEl.innerHTML = kidsProducts.map(p => {
                 const availableVariants = (p.variants || []).filter(v => v.stock > 0);
-                const isSoldOut = availableVariants.length === 0;
-                const firstV = isSoldOut ? (p.variants?.[0] || {price:0, stock:0}) : availableVariants[0];
+                const isOutOfStock = availableVariants.length === 0;
+                const firstVariant = isOutOfStock ? (p.variants?.[0] || {price: 0, size: 'N/A', stock: 0}) : availableVariants[0];
 
                 return `
-                    <div class="product-card p-3 group relative flex flex-col h-full rounded-lg shadow-sm">
-                        ${isOutOfStock ? `<div class="absolute inset-0 z-10 bg-white/60 flex items-center justify-center rounded-lg backdrop-blur-[1px]"><span class="bg-black text-white text-[10px] font-black px-6 py-2 uppercase tracking-widest">Sold Out</span></div>` : ''}
+                <div class="product-card p-3 group relative flex flex-col h-full rounded-lg shadow-sm bg-white">
+                    ${isOutOfStock ? `<div class="absolute inset-0 z-10 bg-white/60 flex items-center justify-center rounded-lg backdrop-blur-[1px]"><span class="bg-black text-white text-[10px] font-black px-6 py-2 uppercase tracking-widest">Sold Out</span></div>` : ''}
+                    
+                    <div onclick="openModal('${p._id}')" class="aspect-[4/5] overflow-hidden mb-3 bg-gray-50 rounded-md cursor-pointer">
+                        <img src="${p.imageUrl}" class="w-full h-full object-cover transition duration-700 group-hover:scale-110">
+                    </div>
+
+                    <div class="text-center flex-grow">
+                        <h3 class="uppercase font-bold text-[9px] tracking-widest mb-1 truncate text-brandBlack">${p.name}</h3>
+                        <p id="price-${p._id}" class="text-brandBlack font-black text-[11px] mb-2">₦${Number(firstVariant.price).toLocaleString()}</p>
                         
-                        <div onclick="openModal('${p._id}')" class="aspect-[4/5] overflow-hidden mb-3 bg-white/50 rounded-md cursor-pointer">
-                            <img src="${p.imageUrl}" class="w-full h-full object-cover transition duration-700 group-hover:scale-110">
+                        <select data-id="${p._id}" onchange="handleSizeChange(this, '${p._id}')" ${isOutOfStock ? 'disabled' : ''} class="w-full border border-black/10 text-[8px] uppercase py-1.5 px-2 mb-2 bg-white/80 rounded font-bold">
+                            ${availableVariants.map(v => `<option value="${v.size}" data-price="${v.price}" data-stock="${v.stock}">${v.size}</option>`).join('')}
+                            ${isOutOfStock ? `<option>Unavailable</option>` : ''}
+                        </select>
+
+                        <div class="flex items-center justify-between border border-black/10 mb-3 bg-white/80 rounded overflow-hidden">
+                            <button onclick="updateQty('${p._id}', -1)" class="px-3 py-1 font-bold hover:bg-gray-100 transition-colors">-</button>
+                            <span id="qty-${p._id}" class="text-[10px] font-bold">1</span>
+                            <button onclick="updateQty('${p._id}', 1)" class="px-3 py-1 font-bold hover:bg-gray-100 transition-colors">+</button>
                         </div>
 
-                        <div class="text-center flex-grow">
-                            <h3 class="uppercase font-bold text-[9px] tracking-widest mb-1 truncate text-brandBlack">${p.name}</h3>
-                            <p id="price-${p._id}" class="text-brandBlack font-black text-[11px] mb-2">₦${Number(firstVariant.price).toLocaleString()}</p>
-                            
-                            <select data-id="${p._id}" onchange="handleSizeChange(this, '${p._id}')" ${isOutOfStock ? 'disabled' : ''} class="w-full border border-black/10 text-[8px] uppercase py-1.5 px-2 mb-2 bg-white/80 rounded font-bold">
-                                ${availableVariants.map(v => `<option value="${v.size}" data-price="${v.price}" data-stock="${v.stock}">${v.size}</option>`).join('')}
-                                ${isOutOfStock ? `<option>Unavailable</option>` : ''}
-                            </select>
-
-                            <div class="flex items-center justify-between border border-black/10 mb-3 bg-white/80 rounded overflow-hidden">
-                                <button onclick="updateQty('${p._id}', -1)" class="px-3 py-1 font-bold hover:bg-brandPink/20">-</button>
-                                <span id="qty-${p._id}" class="text-[10px] font-bold">1</span>
-                                <button onclick="updateQty('${p._id}', 1)" class="px-3 py-1 font-bold hover:bg-brandPink/20">+</button>
-                            </div>
-
-                            <button onclick="handleAddToCart('${p._id}')" id="btn-${p._id}" ${isOutOfStock ? 'disabled' : ''} class="w-full ${isOutOfStock ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-brandBlack text-brandPink hover:bg-black/90'} text-[8px] py-3 rounded font-bold uppercase tracking-widest transition-all">
-                                ${isOutOfStock ? 'Sold Out' : 'Add to Cart'}
-                            </button>
-                        </div>
-                    </div>`;
-                }).join('');
-        } catch (err) { console.error("Kids collection fetch error:", err); }
-    }
+                        <button onclick="handleAddToCart('${p._id}')" id="btn-${p._id}" ${isOutOfStock ? 'disabled' : ''} class="w-full ${isOutOfStock ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-brandBlack text-brandPink hover:bg-black/90'} text-[8px] py-3 rounded font-bold uppercase tracking-widest transition-all">
+                            ${isOutOfStock ? 'Sold Out' : 'Add to Cart'}
+                        </button>
+                    </div>
+                </div>`;
+            }).join('');
+        } else {
+            gridEl.innerHTML = `<div class="col-span-full py-20 text-center uppercase tracking-widest text-gray-500 text-[10px]">The Kids' Collection is coming soon.</div>`;
+        }
+    } catch (err) { console.error("Kids collection fetch error:", err); }
+}
 
     // --- QUANTITY & SIZE SELECTION ---
     function updateQty(id, delta) {
