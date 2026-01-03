@@ -456,13 +456,13 @@
     <div class="relative w-full h-full md:h-auto md:max-w-[400px] bg-black md:rounded-xl overflow-hidden shadow-2xl">
         
         <a href="https://www.outflickz.com" target="_blank" class="block w-full h-full cursor-pointer">
-            <video id="adVideo" class="w-full h-full md:h-auto object-cover md:object-contain" playsinline autoplay loop>
+            <video id="adVideo" class="w-full h-full md:h-auto object-cover md:object-contain" playsinline autoplay>
                 <source src="outflickz-ads.mp4" type="video/mp4">
             </video>
         </a>
 
-        <button onclick="toggleMute(event)" class="absolute bottom-28 right-6 bg-black/50 text-white p-3 rounded-full border border-white/20 z-[1020]">
-            <span id="muteIcon">🔇</span>
+        <button onclick="toggleMute(event)" class="absolute top-6 left-6 bg-black/60 text-white p-2 rounded-full border border-white/20 z-[1020] flex items-center justify-center">
+            <span id="muteIcon" class="text-lg">🔇</span>
         </button>
 
         <button id="skipBtn" onclick="closeAd()" class="absolute top-6 right-6 bg-black/60 text-white px-4 py-2 rounded-full text-[10px] font-bold uppercase tracking-widest border border-white/20 hidden">
@@ -869,52 +869,53 @@ function rotateSlides() {
         document.getElementById(`slide-${currentIdx + 1}`).classList.replace('slide-hidden', 'slide-active');
     }
 }
-// --- FINALIZED OUTFLICKZ AD LOGIC ---
+
+// --- FINALIZED OUTFLICKZ AD LOGIC WITH REDIRECT ---
 document.addEventListener('DOMContentLoaded', () => {
     const overlay = document.getElementById('videoAdOverlay');
     const video = document.getElementById('adVideo');
     const skipBtn = document.getElementById('skipBtn');
     const muteIcon = document.getElementById('muteIcon');
 
-    // Check session storage to prevent annoying returning users
     const hasSeenAd = sessionStorage.getItem('tmb_ad_seen');
 
     if (!hasSeenAd && overlay && video) {
-        // EXACTLY 5 SECONDS AFTER PAGE LOAD
         setTimeout(() => {
             overlay.classList.remove('hidden');
             overlay.classList.add('flex');
             
-            // Try playing with sound initially
             video.muted = false;
-            
             let playPromise = video.play();
 
             if (playPromise !== undefined) {
                 playPromise.catch(() => {
-                    // If browser blocks sound, play muted so the ad still displays
                     video.muted = true;
                     if(muteIcon) muteIcon.innerText = "🔇";
                     video.play();
                 });
             }
 
-            // WAIT 6 SECONDS FOR SKIP BUTTON
+            // AUTO-REDIRECT WHEN VIDEO FINISHES
+            video.onended = function() {
+                console.log("Video finished. Redirecting to home...");
+                sessionStorage.setItem('tmb_ad_seen', 'true');
+                window.location.href = 'shop.html'; // Directs to your welcome page
+            };
+
+            // Show Skip button after 6 seconds
             setTimeout(() => {
                 if(skipBtn) skipBtn.classList.remove('hidden');
             }, 6000); 
 
-        }, 5000); // 5000ms = 5 seconds
+        }, 5000); 
     }
 });
 
-// Sound Control Function
 function toggleMute(event) {
     event.preventDefault();
     event.stopPropagation();
     const video = document.getElementById('adVideo');
     const icon = document.getElementById('muteIcon');
-    
     if (video.muted) {
         video.muted = false;
         icon.innerText = "🔊";
@@ -924,7 +925,6 @@ function toggleMute(event) {
     }
 }
 
-// Close Ad Function
 function closeAd() {
     const overlay = document.getElementById('videoAdOverlay');
     const video = document.getElementById('adVideo');
