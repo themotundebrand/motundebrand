@@ -122,26 +122,37 @@
         </div>
     </div>
 
-     <div id="product-modal" class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/90 opacity-0 invisible pointer-events-none">
-        <div class="modal-content bg-white w-full max-w-4xl relative flex flex-col md:flex-row scale-95 shadow-2xl">
-            <button onclick="closeModal()" class="absolute top-4 right-4 z-10 text-brandBlack hover:text-brandPink">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" stroke-width="2"/></svg>
-            </button>
-            <div class="w-full md:w-1/2 bg-gray-100 aspect-square">
-                <img id="modal-img" src="" class="w-full h-full object-cover">
+       <div id="product-modal" class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/90 opacity-0 invisible pointer-events-none">
+    <div class="modal-content bg-white w-full max-w-4xl relative flex flex-col md:flex-row scale-95 shadow-2xl">
+        <button onclick="closeModal()" class="absolute top-4 right-4 z-10 text-brandBlack hover:text-brandPink">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" stroke-width="2"/></svg>
+        </button>
+        <div class="w-full md:w-1/2 bg-gray-100 aspect-square">
+            <img id="modal-img" src="" class="w-full h-full object-cover">
+        </div>
+        <div class="w-full md:w-1/2 p-8 md:p-12 flex flex-col justify-center">
+            <p id="modal-cat" class="text-[10px] uppercase tracking-widest text-brandPinkDark mb-2">Collection</p>
+            <h2 id="modal-name" class="text-2xl font-light uppercase tracking-[0.2em] mb-4">Product Name</h2>
+            <p id="modal-price" class="text-xl font-medium mb-6">₦0</p>
+            
+            <div class="mb-6">
+                <label class="block text-[10px] uppercase tracking-widest mb-3">Select Size</label>
+                <div id="modal-sizes" class="flex flex-wrap gap-2"></div>
             </div>
-            <div class="w-full md:w-1/2 p-8 md:p-12 flex flex-col justify-center">
-                <p id="modal-cat" class="text-[10px] uppercase tracking-widest text-brandPinkDark mb-2">Collection</p>
-                <h2 id="modal-name" class="text-2xl font-light uppercase tracking-[0.2em] mb-4">Product Name</h2>
-                <p id="modal-price" class="text-xl font-medium mb-8">₦0</p>
-                <div class="mb-8">
-                    <label class="block text-[10px] uppercase tracking-widest mb-3">Select Size</label>
-                    <div id="modal-sizes" class="flex flex-wrap gap-2"></div>
+
+            <div class="mb-8">
+                <label class="block text-[10px] uppercase tracking-widest mb-3">Quantity</label>
+                <div class="flex items-center w-32 border border-gray-200">
+                    <button onclick="updateModalQty(-1)" class="flex-1 py-2 hover:bg-gray-50">-</button>
+                    <span id="modal-qty" class="flex-1 text-center font-bold text-sm">1</span>
+                    <button onclick="updateModalQty(1)" class="flex-1 py-2 hover:bg-gray-50">+</button>
                 </div>
-                <button id="modal-add-btn" class="w-full bg-brandBlack text-brandPink py-4 uppercase tracking-[0.3em] text-xs hover:bg-brandPink hover:text-brandBlack transition-all">Add to cart</button>
             </div>
+
+            <button id="modal-add-btn" class="w-full bg-brandBlack text-brandPink py-4 uppercase tracking-[0.3em] text-xs hover:bg-brandPink hover:text-brandBlack transition-all">Add to cart</button>
         </div>
     </div>
+</div>
 
    <footer class="bg-brandBlack pt-16 pb-10 px-6 md:px-12 border-t border-brandPink/5">
     <div class="max-w-7xl mx-auto mb-16">
@@ -190,116 +201,220 @@
         </div>
     </div>
 </footer>
+   
 
-    <script>
-        let currentProducts = [];
-        let cart = JSON.parse(localStorage.getItem('tmb_cart')) || [];
+<script>
+    // --- 1. Global State ---
+    let currentProducts = [];
+    let cart = JSON.parse(localStorage.getItem('tmb_cart')) || [];
+    let modalQty = 1; // Tracks quantity specifically for the modal
 
-        function toggleSidebar(open) {
-            const sb = document.getElementById('sidebar');
-            const ov = document.getElementById('sidebar-overlay');
-            sb.className = `fixed top-0 left-0 h-full w-64 bg-brandBlack z-[120] p-6 flex flex-col ${open ? 'sidebar-open' : 'sidebar-closed'}`;
-            ov.classList.toggle('hidden', !open);
-        }
+    // --- 2. UI Helpers ---
+    function toggleSidebar(open) {
+        const sb = document.getElementById('sidebar');
+        const ov = document.getElementById('sidebar-overlay');
+        sb.className = `fixed top-0 left-0 h-full w-64 bg-brandBlack z-[120] p-6 flex flex-col ${open ? 'sidebar-open' : 'sidebar-closed'}`;
+        ov.classList.toggle('hidden', !open);
+    }
 
-        function handleAccountClick() {
-            window.location.href = localStorage.getItem('motunde_token') ? 'membership.html' : 'account.html';
-        }
+    function handleAccountClick() {
+        window.location.href = localStorage.getItem('motunde_token') ? 'membership.html' : 'account.html';
+    }
 
-        function showNotification(msg) {
-            const t = document.getElementById('custom-toast');
-            document.getElementById('toast-message').innerText = msg;
-            t.classList.add('show');
-            setTimeout(() => t.classList.remove('show'), 3000);
-        }
+    function showNotification(msg) {
+        const t = document.getElementById('custom-toast');
+        const msgEl = document.getElementById('toast-message');
+        if (!t || !msgEl) return;
+        msgEl.innerText = msg;
+        t.classList.add('show');
+        setTimeout(() => t.classList.remove('show'), 3000);
+    }
 
-        function updateCartBadge() {
-            document.getElementById('cart-count').innerText = cart.reduce((a, b) => a + b.quantity, 0);
-        }
+    function updateCartBadge() {
+        const badge = document.getElementById('cart-count');
+        if (badge) badge.innerText = cart.reduce((a, b) => a + b.quantity, 0);
+    }
 
-        async function loadMenProducts() {
-            try {
-                const res = await fetch('/api/products');
-                const data = await res.json();
-                currentProducts = data.filter(p => p.category?.toLowerCase().trim() === 'men');
-                
-                const grid = document.getElementById('men-full-grid');
-                if (currentProducts.length === 0) {
-                    grid.innerHTML = `<div class="col-span-full py-20 text-center text-gray-400 uppercase tracking-widest">No products found.</div>`;
-                    return;
-                }
+    // --- 3. Core Cart Helper ---
+    function syncCart(product, size, price, quantity) {
+        const item = { 
+            id: product._id, 
+            name: product.name, 
+            price: Number(price), 
+            size: size, 
+            image: product.imageUrl, 
+            quantity: quantity 
+        };
 
-                grid.innerHTML = currentProducts.map(p => {
-                    const variants = p.variants || [];
-                    const inStock = variants.some(v => v.stock > 0);
-                    const price = variants[0]?.price || 0;
+        const idx = cart.findIndex(x => x.id === product._id && x.size === size);
+        if (idx > -1) cart[idx].quantity += quantity;
+        else cart.push(item);
 
-                    return `
-                    <div class="product-card bg-white p-2 flex flex-col relative group">
-                        ${!inStock ? `<div class="absolute inset-0 z-10 bg-white/40 flex items-center justify-center font-bold text-[10px] uppercase">Sold Out</div>` : ''}
-                        <div onclick="openModal('${p._id}')" class="aspect-[3/4] overflow-hidden mb-4 bg-gray-50 cursor-pointer">
-                            <img src="${p.imageUrl}" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110">
-                        </div>
-                        <div class="text-center px-2 pb-4">
-                            <h3 class="uppercase font-bold text-[10px] tracking-widest mb-2 truncate">${p.name}</h3>
-                            <p id="price-${p._id}" class="text-gray-900 font-bold text-[11px] mb-4">₦${Number(price).toLocaleString()}</p>
-                            
-                            <select data-id="${p._id}" onchange="updatePrice(this, '${p._id}')" class="w-full border border-gray-200 text-[9px] uppercase py-2 px-2 mb-4 bg-white focus:outline-none">
-                                ${variants.map(v => `<option value="${v.size}" data-price="${v.price}">${v.size}</option>`).join('')}
-                            </select>
-
-                            <button onclick="addToBag('${p._id}')" ${!inStock ? 'disabled' : ''} class="w-full ${!inStock ? 'bg-gray-100 text-gray-400' : 'bg-black text-white'} text-[9px] py-3 uppercase tracking-[0.2em] hover:bg-brandPink hover:text-black transition-all">
-                                ${!inStock ? 'Unavailable' : 'Add to Cart'}
-                            </button>
-                        </div>
-                    </div>`;
-                }).join('');
-            } catch (err) { console.error(err); }
-        }
-
-        function updatePrice(sel, id) {
-            const p = sel.options[sel.selectedIndex].dataset.price;
-            document.getElementById(`price-${id}`).innerText = `₦${Number(p).toLocaleString()}`;
-        }
-
-        function addToBag(id) {
-            const p = currentProducts.find(x => x._id === id);
-            const sel = document.querySelector(`select[data-id="${id}"]`);
-            const price = sel.options[sel.selectedIndex].dataset.price;
-            const size = sel.value;
-
-            const item = { id: p._id, name: p.name, price: Number(price), size, image: p.imageUrl, quantity: 1 };
-            const idx = cart.findIndex(x => x.id === id && x.size === size);
-            
-            if (idx > -1) cart[idx].quantity += 1;
-            else cart.push(item);
-
-            localStorage.setItem('tmb_cart', JSON.stringify(cart));
-            updateCartBadge();
-            
-            // NOTIFICATION ALERT UPDATED HERE
-            showNotification(`Added to Cart`);
-        }
-
-        function openModal(id) {
-            const p = currentProducts.find(x => x._id === id);
-            if(!p) return;
-            document.getElementById('modal-img').src = p.imageUrl;
-            document.getElementById('modal-name').innerText = p.name;
-            document.getElementById('modal-price').innerText = `₦${Number(p.variants[0].price).toLocaleString()}`;
-            
-            const m = document.getElementById('product-modal');
-            m.classList.remove('invisible', 'opacity-0', 'pointer-events-none');
-            document.body.style.overflow = 'hidden';
-        }
-
-        function closeModal() {
-            document.getElementById('product-modal').classList.add('invisible', 'opacity-0', 'pointer-events-none');
-            document.body.style.overflow = '';
-        }
-
-        loadMenProducts();
+        localStorage.setItem('tmb_cart', JSON.stringify(cart));
         updateCartBadge();
-    </script>
+        showNotification(`${product.name} added to cart`);
+    }
+
+    // --- 4. Modal Logic & Quantity ---
+    function openModal(id) {
+        const p = currentProducts.find(x => x._id === id);
+        if (!p) return;
+
+        modalQty = 1; // Reset qty
+        const availableVariants = (p.variants || []).filter(v => v.stock > 0);
+        const isOutOfStock = availableVariants.length === 0;
+
+        document.getElementById('modal-img').src = p.imageUrl;
+        document.getElementById('modal-name').innerText = p.name;
+        document.getElementById('modal-qty').innerText = modalQty;
+
+        const sizeContainer = document.getElementById('modal-sizes');
+        const addBtn = document.getElementById('modal-add-btn');
+        const priceDisplay = document.getElementById('modal-price');
+
+        if (isOutOfStock) {
+            priceDisplay.innerText = "OUT OF STOCK";
+            sizeContainer.innerHTML = `<p class="text-red-500 text-[10px] font-bold uppercase">Unavailable</p>`;
+            addBtn.disabled = true;
+            addBtn.innerText = "SOLD OUT";
+        } else {
+            addBtn.disabled = false;
+            addBtn.innerText = "ADD TO CART";
+            
+            // Default Selection
+            const firstV = availableVariants[0];
+            priceDisplay.innerText = `₦${Number(firstV.price).toLocaleString()}`;
+            addBtn.setAttribute('data-id', id);
+            addBtn.setAttribute('data-size', firstV.size);
+            addBtn.setAttribute('data-price', firstV.price);
+
+            sizeContainer.innerHTML = availableVariants.map((v, i) => `
+                <button onclick="updateModalSelection('${v.price}', '${v.size}', this)" 
+                    class="modal-size-btn px-4 py-2 border ${i === 0 ? 'border-brandPink bg-brandPink/5' : 'border-gray-200'} text-[10px] uppercase">
+                    ${v.size}
+                </button>
+            `).join('');
+
+            window.updateModalSelection = (price, size, btn) => {
+                priceDisplay.innerText = `₦${Number(price).toLocaleString()}`;
+                addBtn.setAttribute('data-size', size);
+                addBtn.setAttribute('data-price', price);
+                
+                modalQty = 1; // Reset qty on size change
+                document.getElementById('modal-qty').innerText = modalQty;
+
+                document.querySelectorAll('.modal-size-btn').forEach(b => b.classList.remove('border-brandPink', 'bg-brandPink/5'));
+                btn.classList.add('border-brandPink', 'bg-brandPink/5');
+            };
+        }
+
+        const m = document.getElementById('product-modal');
+        m.classList.remove('invisible', 'opacity-0', 'pointer-events-none');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function updateModalQty(change) {
+        const addBtn = document.getElementById('modal-add-btn');
+        const pId = addBtn.getAttribute('data-id');
+        const size = addBtn.getAttribute('data-size');
+        const product = currentProducts.find(p => p._id === pId);
+        
+        if (!product) return;
+        const variant = product.variants.find(v => v.size === size);
+        const max = variant ? variant.stock : 0;
+
+        let nextQty = modalQty + change;
+        if (nextQty < 1) nextQty = 1;
+        else if (nextQty > max) {
+            nextQty = max;
+            showNotification(`Only ${max} available`);
+        }
+
+        modalQty = nextQty;
+        document.getElementById('modal-qty').innerText = modalQty;
+    }
+
+    function handleModalAddToCart() {
+        const addBtn = document.getElementById('modal-add-btn');
+        const pId = addBtn.getAttribute('data-id');
+        const size = addBtn.getAttribute('data-size');
+        const price = addBtn.getAttribute('data-price');
+        const product = currentProducts.find(p => p._id === pId);
+
+        if (!product) return;
+        syncCart(product, size, price, modalQty);
+        closeModal();
+    }
+
+    function closeModal() {
+        document.getElementById('product-modal').classList.add('invisible', 'opacity-0', 'pointer-events-none');
+        document.body.style.overflow = '';
+    }
+
+    // --- 5. Grid Logic ---
+    async function loadMenProducts() {
+        try {
+            const res = await fetch('/api/products');
+            const data = await res.json();
+            currentProducts = data.filter(p => p.category?.toLowerCase().trim() === 'men');
+            
+            const grid = document.getElementById('men-full-grid');
+            if (!grid) return;
+
+            if (currentProducts.length === 0) {
+                grid.innerHTML = `<div class="col-span-full py-20 text-center text-gray-400 uppercase tracking-widest">No products found.</div>`;
+                return;
+            }
+
+            grid.innerHTML = currentProducts.map(p => {
+                const variants = p.variants || [];
+                const available = variants.filter(v => v.stock > 0);
+                const inStock = available.length > 0;
+                const displayPrice = inStock ? available[0].price : variants[0]?.price || 0;
+
+                return `
+                <div class="product-card bg-white p-2 flex flex-col relative group border border-transparent hover:border-gray-50">
+                    ${!inStock ? `<div class="absolute inset-0 z-10 bg-white/40 flex items-center justify-center font-bold text-[10px] uppercase">Sold Out</div>` : ''}
+                    <div onclick="openModal('${p._id}')" class="aspect-[3/4] overflow-hidden mb-4 bg-gray-50 cursor-pointer">
+                        <img src="${p.imageUrl}" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110">
+                    </div>
+                    <div class="text-center px-2 pb-4">
+                        <h3 class="uppercase font-bold text-[10px] tracking-widest mb-2 truncate">${p.name}</h3>
+                        <p id="price-${p._id}" class="text-gray-900 font-bold text-[11px] mb-4">₦${Number(displayPrice).toLocaleString()}</p>
+                        
+                        <select data-id="${p._id}" onchange="updatePrice(this, '${p._id}')" class="w-full border border-gray-200 text-[9px] uppercase py-2 px-2 mb-4 bg-white focus:outline-none">
+                            ${available.map(v => `<option value="${v.size}" data-price="${v.price}">${v.size}</option>`).join('')}
+                        </select>
+
+                        <button onclick="handleGridAddToCart('${p._id}')" ${!inStock ? 'disabled' : ''} class="w-full ${!inStock ? 'bg-gray-100 text-gray-400' : 'bg-black text-white'} text-[9px] py-3 uppercase tracking-[0.2em] hover:bg-brandPink hover:text-black transition-all">
+                            ${!inStock ? 'Unavailable' : 'Add to Cart'}
+                        </button>
+                    </div>
+                </div>`;
+            }).join('');
+        } catch (err) { console.error("Load Error:", err); }
+    }
+
+    function updatePrice(sel, id) {
+        const p = sel.options[sel.selectedIndex].dataset.price;
+        const el = document.getElementById(`price-${id}`);
+        if (el) el.innerText = `₦${Number(p).toLocaleString()}`;
+    }
+
+    function handleGridAddToCart(id) {
+        const p = currentProducts.find(x => x._id === id);
+        const sel = document.querySelector(`select[data-id="${id}"]`);
+        if (!p || !sel) return;
+
+        const price = sel.options[sel.selectedIndex].dataset.price;
+        const size = sel.value;
+
+        syncCart(p, size, price, 1);
+    }
+
+    // --- 6. Init ---
+    loadMenProducts();
+    updateCartBadge();
+</script>
 </body>
 </html>
