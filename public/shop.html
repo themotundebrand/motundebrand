@@ -452,6 +452,24 @@
         </div>
     </div>
 </div>
+<div id="videoAdOverlay" class="fixed inset-0 z-[1000] bg-black/95 hidden flex items-center justify-center p-4">
+    <div class="relative w-full max-w-[400px] bg-black rounded-xl overflow-hidden shadow-2xl border border-white/10">
+        
+        <button onclick="closeAd()" class="absolute top-4 right-4 text-white bg-black/50 rounded-full p-1 z-[1010]">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" stroke-width="2"/></svg>
+        </button>
+        
+        <video id="adVideo" class="w-full h-auto" playsinline muted autoplay loop>
+            <source src="https://your-s3-link.com/outflickz-ad-15s.mp4" type="video/mp4">
+        </video>
+
+        <div class="absolute bottom-0 w-full p-6 bg-gradient-to-t from-black to-transparent">
+            <a href="https://www.outflickz.com" class="block w-full bg-white text-black text-center py-4 rounded-full font-bold uppercase tracking-widest text-xs hover:bg-brandPink transition">
+                SHOP OUTFLICKZ.COM
+            </a>
+        </div>
+    </div>
+</div>
 </body>
 
   <script>
@@ -845,6 +863,41 @@ function rotateSlides() {
         document.getElementById(`slide-${currentIdx}`).classList.replace('slide-hidden', 'slide-active');
         document.getElementById(`slide-${currentIdx + 1}`).classList.replace('slide-hidden', 'slide-active');
     }
+}
+
+// --- VIDEO AD SYSTEM ---
+document.addEventListener('DOMContentLoaded', () => {
+    const overlay = document.getElementById('videoAdOverlay');
+    const video = document.getElementById('adVideo');
+
+    // Check if the user has already seen the ad in this browsing session
+    const hasSeenAd = sessionStorage.getItem('tmb_ad_seen');
+
+    if (!hasSeenAd) {
+        // Delay the ad by 2.5 seconds for a premium feel
+        setTimeout(() => {
+            overlay.classList.remove('hidden');
+            overlay.classList.add('flex');
+            
+            // Start video
+            video.play().catch(error => {
+                console.log("Autoplay prevented. User interaction needed.");
+            });
+        }, 2500);
+    }
+});
+
+function closeAd() {
+    const overlay = document.getElementById('videoAdOverlay');
+    const video = document.getElementById('adVideo');
+    
+    // Stop the video and hide overlay
+    video.pause();
+    overlay.classList.add('hidden');
+    overlay.classList.remove('flex');
+    
+    // Set flag in session storage so it doesn't appear again until they refresh/re-enter
+    sessionStorage.setItem('tmb_ad_seen', 'true');
 }
 
 // Run every 10 seconds
