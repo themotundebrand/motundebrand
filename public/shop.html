@@ -452,25 +452,25 @@
         </div>
     </div>
 </div>
-<div id="videoAdOverlay" class="fixed inset-0 z-[1000] bg-black/95 hidden flex items-center justify-center p-4">
-    <div class="relative w-full max-w-[400px] bg-black rounded-xl overflow-hidden shadow-2xl border border-white/10">
+<div id="videoAdOverlay" class="fixed inset-0 z-[1000] bg-black/90 hidden flex items-center justify-center p-4 backdrop-blur-sm">
+    <div class="relative w-full max-w-[400px] bg-black rounded-lg overflow-hidden shadow-2xl border border-white/10">
         
-        <button onclick="closeAd()" class="absolute top-4 right-4 text-white bg-black/50 rounded-full p-1 z-[1010]">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" stroke-width="2"/></svg>
+        <button onclick="closeAd()" class="absolute top-4 right-4 text-white hover:scale-110 transition-all z-[1010]">
+            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" stroke-width="2"/></svg>
         </button>
         
         <video id="adVideo" class="w-full h-auto" playsinline muted autoplay loop>
-            <source src="https://your-s3-link.com/outflickz-ad-15s.mp4" type="video/mp4">
+            <source src="outflickz-ad.mp4" type="video/mp4">
+            Your browser does not support the video tag.
         </video>
 
-        <div class="absolute bottom-0 w-full p-6 bg-gradient-to-t from-black to-transparent">
-            <a href="https://www.outflickz.com" class="block w-full bg-white text-black text-center py-4 rounded-full font-bold uppercase tracking-widest text-xs hover:bg-brandPink transition">
-                SHOP OUTFLICKZ.COM
+        <div class="absolute bottom-6 left-0 right-0 px-6">
+            <a href="https://www.outflickz.com" class="block w-full bg-white text-black py-3 rounded-full text-center text-[10px] font-black uppercase tracking-widest hover:bg-brandPink transition">
+                Shop Outflickz
             </a>
         </div>
     </div>
 </div>
-</body>
 
   <script>
     // --- 1. Initialize Cart & Global State ---
@@ -865,7 +865,7 @@ function rotateSlides() {
     }
 }
 
-// --- VIDEO AD SYSTEM ---
+// --- VIDEO AD SYSTEM (UPDATED TO 5 SECONDS) ---
 document.addEventListener('DOMContentLoaded', () => {
     const overlay = document.getElementById('videoAdOverlay');
     const video = document.getElementById('adVideo');
@@ -873,17 +873,18 @@ document.addEventListener('DOMContentLoaded', () => {
     // Check if the user has already seen the ad in this browsing session
     const hasSeenAd = sessionStorage.getItem('tmb_ad_seen');
 
-    if (!hasSeenAd) {
-        // Delay the ad by 2.5 seconds for a premium feel
+    if (!hasSeenAd && overlay && video) {
+        // Delay changed to 5000ms (5 seconds)
         setTimeout(() => {
             overlay.classList.remove('hidden');
             overlay.classList.add('flex');
             
             // Start video
+            video.currentTime = 0; // Ensure it starts from the beginning
             video.play().catch(error => {
-                console.log("Autoplay prevented. User interaction needed.");
+                console.log("Autoplay blocked. This is normal for some browsers until the user clicks.");
             });
-        }, 2500);
+        }, 5000); 
     }
 });
 
@@ -891,15 +892,15 @@ function closeAd() {
     const overlay = document.getElementById('videoAdOverlay');
     const video = document.getElementById('adVideo');
     
-    // Stop the video and hide overlay
-    video.pause();
-    overlay.classList.add('hidden');
-    overlay.classList.remove('flex');
-    
-    // Set flag in session storage so it doesn't appear again until they refresh/re-enter
-    sessionStorage.setItem('tmb_ad_seen', 'true');
+    if (overlay && video) {
+        video.pause();
+        overlay.classList.add('hidden');
+        overlay.classList.remove('flex');
+        
+        // Mark as seen so it doesn't pop up again during this session
+        sessionStorage.setItem('tmb_ad_seen', 'true');
+    }
 }
-
 // Run every 10 seconds
 setInterval(rotateSlides, 10000);
 
