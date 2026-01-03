@@ -393,26 +393,30 @@
                 const available = variants.filter(v => v.stock > 0);
                 const inStock = available.length > 0;
                 const firstPrice = inStock ? available[0].price : variants[0]?.price || 0;
+return `
+<div class="product-card flex flex-col group relative">
+    ${!inStock ? `<div class="absolute inset-0 z-10 bg-white/50 flex items-center justify-center font-bold text-[9px] uppercase tracking-widest">Sold Out</div>` : ''}
+    <div onclick="openModal('${p._id}')" class="aspect-[1/1] overflow-hidden mb-5 bg-gray-50 cursor-pointer rounded-sm">
+        <img src="${p.imageUrl}" class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110">
+    </div>
+    <div class="text-center px-1">
+        <h3 class="uppercase font-black text-[9px] tracking-widest mb-2">${p.name}</h3>
+        <p id="price-${p._id}" class="text-brandPinkDark font-bold text-[11px] mb-5">₦${Number(firstPrice).toLocaleString()}</p>
+        
+        <select data-id="${p._id}" onchange="updatePrice(this, '${p._id}')" class="w-full border border-gray-100 text-[8px] uppercase py-3 px-2 mb-4 bg-white focus:outline-none">
+            ${variants.map(v => `<option value="${v.size}" data-price="${v.price}">${v.size}</option>`).join('')}
+        </select>
 
-                return `
-                <div class="product-card flex flex-col group relative">
-                    ${!inStock ? `<div class="absolute inset-0 z-10 bg-white/50 flex items-center justify-center font-bold text-[9px] uppercase tracking-widest">Coming Back Soon</div>` : ''}
-                    <div onclick="openModal('${p._id}')" class="aspect-[1/1] overflow-hidden mb-5 bg-gray-50 cursor-pointer rounded-sm">
-                        <img src="${p.imageUrl}" class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110">
-                    </div>
-                    <div class="text-center px-1">
-                        <h3 class="uppercase font-black text-[9px] tracking-widest mb-2">${p.name}</h3>
-                        <p id="price-${p._id}" class="text-brandPinkDark font-bold text-[11px] mb-5">₦${Number(firstPrice).toLocaleString()}</p>
-                        
-                        <select data-id="${p._id}" onchange="updatePrice(this, '${p._id}')" class="w-full border border-gray-100 text-[8px] uppercase py-3 px-2 mb-4 bg-white focus:outline-none focus:border-brandPink">
-                            ${available.map(v => `<option value="${v.size}" data-price="${v.price}">${v.size}</option>`).join('')}
-                        </select>
-
-                        <button onclick="handleGridAddToCart('${p._id}')" ${!inStock ? 'disabled' : ''} class="w-full ${!inStock ? 'bg-gray-100 text-gray-300' : 'bg-brandBlack text-brandPink'} text-[9px] py-4 uppercase font-bold tracking-[0.2em] hover:bg-brandPink hover:text-brandBlack transition-all">
-                            ${!inStock ? 'Sold Out' : 'Add to Cart'}
-                        </button>
-                    </div>
-                </div>`;
+        <div class="flex items-center justify-between border border-gray-100 mb-4 h-10">
+            <button onclick="updateGridQty('${p._id}', -1)" class="px-4 h-full hover:bg-gray-50 text-sm">-</button>
+            <span id="qty-${p._id}" class="text-[10px] font-bold">1</span>
+            <button onclick="updateGridQty('${p._id}', 1)" class="px-4 h-full hover:bg-gray-50 text-sm">+</button>
+        </div>
+        <button onclick="handleGridAddToCart('${p._id}')" ${!inStock ? 'disabled' : ''} class="w-full ${!inStock ? 'bg-gray-100 text-gray-300' : 'bg-brandBlack text-brandPink'} text-[9px] py-4 uppercase font-bold tracking-[0.2em] hover:bg-brandPink hover:text-brandBlack transition-all">
+            ${!inStock ? 'Sold Out' : 'Add to Cart'}
+        </button>
+    </div>
+</div>`;
             }).join('');
         } catch (err) { console.error("Error loading kids collection:", err); }
     }
@@ -423,17 +427,30 @@
         if (priceEl) priceEl.innerText = `₦${Number(price).toLocaleString()}`;
     }
 
-    function handleGridAddToCart(id) {
-        const p = currentProducts.find(x => x._id === id);
-        const sel = document.querySelector(`select[data-id="${id}"]`);
-        if (!p || !sel) return;
+  function updateGridQty(id, change) {
+    const qtyEl = document.getElementById(`qty-${id}`);
+    let currentQty = parseInt(qtyEl.innerText);
+    currentQty += change;
+    if (currentQty < 1) currentQty = 1;
+    qtyEl.innerText = currentQty;
+}
 
-        const price = sel.options[sel.selectedIndex].dataset.price;
-        const size = sel.value;
+// Updated Add to Cart to grab that quantity
+function handleGridAddToCart(id) {
+    const p = currentProducts.find(x => x._id === id);
+    const sel = document.querySelector(`select[data-id="${id}"]`);
+    const qty = parseInt(document.getElementById(`qty-${id}`).innerText);
+    
+    if (!p || !sel) return;
 
-        syncCart(p, size, price, 1);
-    }
+    const price = sel.options[sel.selectedIndex].dataset.price;
+    const size = sel.value;
 
+    syncCart(p, size, price, qty);
+    
+    // Reset quantity back to 1 after adding
+    document.getElementById(`qty-${id}`).innerText = "1";
+}
     // --- 7. Initialization ---
     window.onload = () => {
         loadKidsCollection();
