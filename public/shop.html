@@ -108,28 +108,50 @@
     @media (min-width: 768px) {
         .collection-grid { grid-auto-columns: calc(20% - 1rem); }
     }
-    /* Mobile Responsive Modal Fixes */
-    @media (max-width: 768px) {
-        #product-modal .modal-content {
-            height: 90vh;
-            overflow-y: auto;
-            margin-top: 20px;
-            display: block; /* Stack image and text vertically */
-        }
-        
-        #modal-img-container {
-            height: 300px; /* Fixed height for image on mobile */
-        }
-
-        .close-modal-btn {
-            background: #E2A9B3;
-            color: black;
-            border-radius: 50%;
-            padding: 5px;
-            top: 10px !important;
-            right: 10px !important;
-        }
+   /* Mobile Responsive Modal Fixes */
+@media (max-width: 768px) {
+    #product-modal .modal-content {
+        height: auto; /* Let it grow naturally */
+        max-height: 92vh; /* But don't let it leave the screen */
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        border-radius: 20px;
+        width: 95%; /* Better width for small screens */
     }
+    
+    #modal-img-container {
+        height: auto; /* Remove fixed height to prevent squashing */
+        width: 100%;
+        background-color: #f9f9f9; /* Neutral bg for the image borders */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 10px; /* Space for the full image to sit in */
+    }
+
+    #modal-img {
+        width: 100%;
+        max-height: 350px; /* Limits size so text is still visible below */
+        object-fit: contain !important; /* CRITICAL: Shows full image, no cut-out */
+    }
+
+    .close-modal-btn {
+        background: #E2A9B3; /* Your Brand Pink */
+        color: #000;
+        border-radius: 50%;
+        padding: 4px;
+        top: 15px !important;
+        right: 15px !important;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        border: 2px solid white;
+    }
+
+    /* Make the text content section scrollable if it's long */
+    #product-modal .w-full.md\:w-1\/2.p-6 {
+        padding: 24px 20px;
+    }
+}
 </style>
 </head>
 <body class="bg-white font-sans antialiased overflow-x-hidden relative">
