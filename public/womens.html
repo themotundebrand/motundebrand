@@ -209,7 +209,7 @@
 
 
     
-    <script>
+   <script>
     // --- 1. Global State ---
     let currentProducts = [];
     let cart = JSON.parse(localStorage.getItem('tmb_cart')) || [];
@@ -219,6 +219,7 @@
     function toggleSidebar(open) {
         const sidebar = document.getElementById('sidebar');
         const overlay = document.getElementById('sidebar-overlay');
+        if (!sidebar || !overlay) return;
         sidebar.classList.toggle('sidebar-open', open);
         sidebar.classList.toggle('sidebar-closed', !open);
         overlay.classList.toggle('hidden', !open);
@@ -245,7 +246,7 @@
     }
 
     // --- 3. Core Cart Logic ---
-    function addToCartData(product, size, price, quantity) {
+    function syncCart(product, size, price, quantity) {
         const cartItem = {
             id: product._id,
             name: product.name,
@@ -264,7 +265,7 @@
         showNotification(`${product.name} added to cart`);
     }
 
-    // --- 4. Modal Quantity & Logic ---
+    // --- 4. Modal Logic & Quantity Controller ---
     function openModal(id) {
         const p = currentProducts.find(prod => prod._id === id);
         if (!p) return;
@@ -290,7 +291,6 @@
             addBtn.disabled = false;
             addBtn.innerText = "ADD TO CART";
             
-            // Set initial modal selection
             const firstV = availableVariants[0];
             priceDisplay.innerText = `₦${Number(firstV.price).toLocaleString()}`;
             addBtn.setAttribute('data-id', id);
@@ -309,7 +309,7 @@
                 addBtn.setAttribute('data-size', size);
                 addBtn.setAttribute('data-price', price);
                 
-                modalQty = 1; // Reset qty when switching sizes
+                modalQty = 1; 
                 document.getElementById('modal-qty').innerText = modalQty;
 
                 document.querySelectorAll('.modal-size-btn').forEach(b => b.classList.remove('border-brandPink', 'bg-brandPink/5'));
@@ -351,7 +351,7 @@
         const p = currentProducts.find(prod => prod._id === productId);
 
         if (!p) return;
-        addToCartData(p, size, price, modalQty);
+        syncCart(p, size, price, modalQty);
         closeModal();
     }
 
@@ -360,12 +360,85 @@
         document.body.style.overflow = '';
     }
 
-    // --- 5. Grid Logic ---
+    // --- 5. Grid Quantity Controllers (FIXED) ---
+
+    function updateQty(id, change) {
+        const qtyEl = document.getElementById(`qty-${id}`);
+        const sel = document.querySelector(`select[data-id="${id}"]`);
+        const p = currentProducts.find(x => x._id === id);
+        
+        if (!p || !sel || !qtyEl) return;
+
+        // Force parseInt to prevent the 1 -> 0 jump
+        let currentQty = parseInt(qtyEl.innerText) || 1;
+        const selectedSize = sel.value;
+        const variant = p.variants.find(v => v.size === selectedSize);
+        const maxStock = variant ? variant.stock : 0;
+
+        let nextQty = currentQty + change;
+
+        if (nextQty < 1) {
+            nextQty = 1;
+        } else if (nextQty > maxStock) {
+            nextQty = maxStock;
+            showNotification(`Only ${maxStock} items available in ${selectedSize}`);
+        }
+
+        qtyEl.innerText = nextQty;
+    }
+
+    function handlePriceAndQtyReset(select, productId) {
+        const price = select.options[select.selectedIndex].getAttribute('data-price');
+        const priceEl = document.getElementById(`price-${productId}`);
+        if (priceEl) priceEl.innerText = `₦${Number(price).toLocaleString()}`;
+        
+        // Reset qty display to 1 when size changes
+        const qtyEl = document.getElementById(`qty-${productId}`);
+        if (qtyEl) qtyEl.innerText = "1";
+    }
+
+    async function handleGridAddToCart(productId) {
+        const p = currentProducts.find(prod => prod._id === productId);
+        const sizeSelect = document.querySelector(`select[data-id="${productId}"]`);
+        const qtyEl = document.getElementById(`qty-${productId}`);
+        
+        if (!p || !sizeSelect || !qtyEl) return;
+
+        const selectedSize = sizeSelect.value;
+        const selectedPrice = sizeSelect.options[sizeSelect.selectedIndex].dataset.price;
+        const qtyRequested = parseInt(qtyEl.innerText);
+        const btn = document.getElementById(`btn-${productId}`);
+
+        btn.innerText = "Checking...";
+        btn.disabled = true;
+
+        try {
+            // Live Stock check for Women's page
+            const res = await fetch(`/api/products/${productId}/stock`);
+            const data = await res.json();
+            const variant = data.variants.find(v => v.size === selectedSize);
+            const stockAvailable = variant ? variant.stock : 0;
+
+            if (stockAvailable < qtyRequested) {
+                showNotification(`Stock error: Only ${stockAvailable} available`);
+                qtyEl.innerText = stockAvailable > 0 ? stockAvailable : 1;
+            } else {
+                syncCart(p, selectedSize, selectedPrice, qtyRequested);
+                qtyEl.innerText = "1"; // Reset grid counter
+            }
+        } catch (err) {
+            showNotification("Error connecting to server.");
+        } finally {
+            btn.innerText = "Add to Cart";
+            btn.disabled = false;
+        }
+    }
+
+    // --- 6. Grid Rendering ---
     async function loadWomenProducts() {
         try {
             const response = await fetch('/api/products');
             const data = await response.json();
-            // Specifically filter for Women's collection
             currentProducts = data.filter(p => p.category?.toLowerCase().trim() === 'women');
             
             const grid = document.getElementById('women-full-grid');
@@ -377,13 +450,14 @@
             }
 
             grid.innerHTML = currentProducts.map(p => {
-                const availableVariants = (p.variants || []).filter(v => v.stock > 0);
-                const isOutOfStock = availableVariants.length === 0;
-                const price = isOutOfStock ? p.variants[0].price : availableVariants[0].price;
+                const variants = p.variants || [];
+                const available = variants.filter(v => v.stock > 0);
+                const inStock = available.length > 0;
+                const price = inStock ? available[0].price : variants[0]?.price || 0;
 
                 return `
                 <div class="product-card bg-white p-4 flex flex-col h-full relative border border-transparent hover:border-gray-50">
-                    ${isOutOfStock ? `<div class="absolute inset-0 z-10 bg-white/60 flex items-center justify-center"><span class="bg-black text-white text-[9px] px-4 py-2 uppercase">Sold Out</span></div>` : ''}
+                    ${!inStock ? `<div class="absolute inset-0 z-10 bg-white/60 flex items-center justify-center"><span class="bg-black text-white text-[9px] px-4 py-2 uppercase">Sold Out</span></div>` : ''}
                     <div onclick="openModal('${p._id}')" class="aspect-[4/5] overflow-hidden mb-4 bg-gray-50 cursor-pointer">
                         <img src="${p.imageUrl}" class="w-full h-full object-cover hover:scale-105 transition duration-500">
                     </div>
@@ -391,42 +465,31 @@
                         <h3 class="uppercase font-bold text-[9px] tracking-widest mb-2">${p.name}</h3>
                         <p id="price-${p._id}" class="text-brandPinkDark font-medium text-[11px] mb-4">₦${Number(price).toLocaleString()}</p>
                         
-                        <select data-id="${p._id}" onchange="handleSizeChange(this, '${p._id}')" class="w-full border border-gray-100 text-[9px] uppercase py-2 px-2 mb-3 bg-white">
-                            ${availableVariants.map(v => `<option value="${v.size}" data-price="${v.price}">${v.size}</option>`).join('')}
+                        <select data-id="${p._id}" onchange="handlePriceAndQtyReset(this, '${p._id}')" class="w-full border border-gray-100 text-[9px] uppercase py-2 px-2 mb-3 bg-white">
+                            ${variants.map(v => `<option value="${v.size}" data-price="${v.price}">${v.size}</option>`).join('')}
                         </select>
 
-                        <button onclick="handleGridAddToCart('${p._id}')" id="btn-${p._id}" ${isOutOfStock ? 'disabled' : ''} 
-                            class="w-full ${isOutOfStock ? 'bg-gray-200' : 'bg-brandBlack text-brandPink'} text-[9px] py-3 uppercase tracking-widest transition-colors hover:bg-brandPink hover:text-brandBlack">
-                            ${isOutOfStock ? 'Sold Out' : 'Add to Cart'}
+                        <div class="flex items-center justify-between border border-gray-100 mb-4 h-10">
+                            <button onclick="updateQty('${p._id}', -1)" class="px-4 h-full hover:bg-gray-50">-</button>
+                            <span id="qty-${p._id}" class="text-[10px] font-bold">1</span>
+                            <button onclick="updateQty('${p._id}', 1)" class="px-4 h-full hover:bg-gray-50">+</button>
+                        </div>
+
+                        <button onclick="handleGridAddToCart('${p._id}')" id="btn-${p._id}" ${!inStock ? 'disabled' : ''} 
+                            class="w-full ${!inStock ? 'bg-gray-200 text-gray-400' : 'bg-brandBlack text-brandPink'} text-[9px] py-4 uppercase tracking-widest transition-colors hover:bg-brandPink hover:text-brandBlack">
+                            ${!inStock ? 'Sold Out' : 'Add to Cart'}
                         </button>
                     </div>
                 </div>`;
             }).join('');
-        } catch (err) {
-            console.error("Load error:", err);
-        }
+        } catch (err) { console.error("Load error:", err); }
     }
 
-    function handleSizeChange(select, productId) {
-        const price = select.options[select.selectedIndex].getAttribute('data-price');
-        const priceEl = document.getElementById(`price-${productId}`);
-        if (priceEl) priceEl.innerText = `₦${Number(price).toLocaleString()}`;
-    }
-
-    function handleGridAddToCart(productId) {
-        const p = currentProducts.find(prod => prod._id === productId);
-        const sizeSelect = document.querySelector(`select[data-id="${productId}"]`);
-        if (!p || !sizeSelect) return;
-
-        const selectedSize = sizeSelect.value;
-        const selectedPrice = sizeSelect.options[sizeSelect.selectedIndex].dataset.price;
-
-        addToCartData(p, selectedSize, selectedPrice, 1);
-    }
-
-    // --- 6. Initialization ---
-    loadWomenProducts();
-    updateCartBadge();
+    // --- 7. Initialization ---
+    window.onload = () => {
+        loadWomenProducts();
+        updateCartBadge();
+    };
 </script>
 </body>
 </html>
