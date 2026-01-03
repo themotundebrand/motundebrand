@@ -77,12 +77,12 @@
         pointer-events: auto;
     }
 
-    /* 4. Glassmorphism for Product Cards to look good over the pattern */
+  /* Update Product Cards to use Brand Pink Background */
     .product-card {
+        background-color: #E2A9B3 !important; /* Your requested pink */
         transition: all 0.3s ease;
-        background: rgba(255, 255, 255, 0.7); 
-        backdrop-filter: blur(8px);
-        border: 1px solid rgba(255, 255, 255, 0.3);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(5px);
     }
     
     .product-card:hover {
@@ -107,6 +107,28 @@
     }
     @media (min-width: 768px) {
         .collection-grid { grid-auto-columns: calc(20% - 1rem); }
+    }
+    /* Mobile Responsive Modal Fixes */
+    @media (max-width: 768px) {
+        #product-modal .modal-content {
+            height: 90vh;
+            overflow-y: auto;
+            margin-top: 20px;
+            display: block; /* Stack image and text vertically */
+        }
+        
+        #modal-img-container {
+            height: 300px; /* Fixed height for image on mobile */
+        }
+
+        .close-modal-btn {
+            background: #E2A9B3;
+            color: black;
+            border-radius: 50%;
+            padding: 5px;
+            top: 10px !important;
+            right: 10px !important;
+        }
     }
 </style>
 </head>
@@ -350,43 +372,42 @@
     </div>
 </footer>
 
- <div id="product-modal" class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/80 opacity-0 invisible pointer-events-none transition-all duration-300 backdrop-blur-sm">
-        <div class="modal-content bg-white w-full max-w-5xl relative flex flex-col md:flex-row shadow-2xl rounded-none">
-            
-            <button onclick="closeModal()" class="absolute -top-10 md:top-6 right-0 md:right-6 z-10 text-white md:text-brandBlack">
-                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" stroke-width="2"/></svg>
-            </button>
+<div id="product-modal" class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/90 opacity-0 invisible pointer-events-none transition-all duration-300 backdrop-blur-md">
+    <div class="modal-content bg-white w-full max-w-5xl relative flex flex-col md:flex-row shadow-2xl rounded-xl overflow-hidden">
+        
+        <button onclick="closeModal()" class="close-modal-btn absolute top-4 right-4 z-[210] text-brandBlack hover:scale-110 transition-transform">
+            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path d="M6 18L18 6M6 6l12 12" stroke-width="2.5"/></svg>
+        </button>
 
-            <div class="w-full md:w-1/2 bg-gray-50 aspect-square">
-                <img id="modal-img" src="" class="w-full h-full object-cover">
+        <div id="modal-img-container" class="w-full md:w-1/2 bg-gray-50">
+            <img id="modal-img" src="" class="w-full h-full object-cover">
+        </div>
+
+        <div class="w-full md:w-1/2 p-6 md:p-14 flex flex-col justify-center bg-white">
+            <p id="modal-cat" class="text-[10px] font-bold uppercase tracking-[0.3em] text-brandPinkDark mb-2">COLLECTION</p>
+            <h2 id="modal-name" class="text-xl md:text-3xl font-black uppercase mb-4 text-brandBlack">PRODUCT NAME</h2>
+            <p id="modal-desc" class="text-[12px] text-gray-500 leading-relaxed mb-6"></p>
+            <p id="modal-price" class="text-2xl font-black mb-8 text-brandBlack">₦0</p>
+            
+            <div class="mb-6">
+                <label class="block text-[10px] font-bold uppercase tracking-widest mb-3">Select Size</label>
+                <div id="modal-sizes" class="flex flex-wrap gap-2"></div>
             </div>
 
-            <div class="w-full md:w-1/2 p-8 md:p-14 flex flex-col justify-center bg-white">
-                <p id="modal-cat" class="text-[10px] font-bold uppercase tracking-[0.3em] text-brandPinkDark mb-2">COLLECTION</p>
-                <h2 id="modal-name" class="text-2xl md:text-3xl font-extrabold uppercase mb-4 text-brandBlack">PRODUCT NAME</h2>
-                
-                <p id="modal-desc" class="text-[12px] text-gray-500 leading-relaxed mb-6"></p>
-
-                <p id="modal-price" class="text-2xl font-bold mb-8 text-brandBlack">₦0</p>
-                
-                <div class="mb-6">
-                    <label class="block text-[10px] font-bold uppercase tracking-widest mb-3">Select Size</label>
-                    <div id="modal-sizes" class="flex flex-wrap gap-2"></div>
+            <div class="flex flex-col md:flex-row gap-3">
+                <div class="flex items-center w-full md:w-32 border-2 border-brandBlack rounded">
+                    <button onclick="updateModalQty(-1)" class="flex-1 py-3 hover:bg-gray-100 font-bold">-</button>
+                    <span id="modal-qty" class="flex-1 text-center font-black">1</span>
+                    <button onclick="updateModalQty(1)" class="flex-1 py-3 hover:bg-gray-100 font-bold">+</button>
                 </div>
-
-                <div class="flex flex-col md:flex-row gap-3">
-                    <div class="flex items-center w-full md:w-32 border border-black">
-                        <button onclick="updateModalQty(-1)" class="flex-1 py-3 hover:bg-gray-100">-</button>
-                        <span id="modal-qty" class="flex-1 text-center font-bold">1</span>
-                        <button onclick="updateModalQty(1)" class="flex-1 py-3 hover:bg-gray-100">+</button>
-                    </div>
-                    <button id="modal-add-btn" class="btn-action flex-grow bg-brandBlack text-white py-4 font-bold uppercase tracking-widest text-[10px] hover:bg-brandPink hover:text-brandBlack">
-                        ADD TO CART
-                    </button>
-                </div>
+                <button id="modal-add-btn" class="flex-grow bg-brandBlack text-[#F7C8D0] py-4 rounded font-bold uppercase tracking-widest text-[10px] hover:bg-brandPinkDark hover:text-black transition-colors">
+                    ADD TO CART
+                </button>
             </div>
         </div>
     </div>
+</div>
 </body>
 
   <script>
@@ -701,31 +722,36 @@ function showNotification(message) {
                         </div>`;
                 }
 
-                return `
-                <div class="product-card bg-white p-3 group relative flex flex-col h-full border border-transparent hover:border-gray-50">
-                    ${isOutOfStock ? `<div class="absolute inset-0 z-10 bg-white/60 flex items-center justify-center"><span class="bg-black text-white text-[9px] px-4 py-2 uppercase">Sold Out</span></div>` : ''}
-                    <div onclick="openModal('${p._id}')" class="aspect-[4/5] overflow-hidden mb-3 bg-gray-50 cursor-pointer">
-                        <img id="img-${p._id}" src="${p.imageUrl}" onerror="refreshBrokenImage('${p._id}', this)" class="w-full h-full object-cover transition duration-700 group-hover:scale-110">
-                    </div>
-                    <div class="text-center flex-grow">
-                        ${typeLabel}
-                        <h3 class="uppercase font-bold text-[8px] tracking-widest mb-1 truncate">${p.name}</h3>
-                        ${comboDropdown}
-                        <p id="price-${p._id}" class="text-brandPinkDark font-medium text-[10px] mb-2">₦${Number(displayPrice).toLocaleString()}</p>
-                        <select data-id="${p._id}" onchange="handleSizeChange(this, '${p._id}')" ${isOutOfStock ? 'disabled' : ''} class="w-full border border-gray-100 text-[8px] uppercase py-1.5 px-2 mb-2 bg-white">
-                            ${availableVariants.map(v => `<option value="${v.size}" data-price="${v.price}">${v.size}</option>`).join('')}
-                        </select>
-                        <div class="flex items-center justify-between border border-gray-100 mb-3">
-                            <button onclick="updateQty('${p._id}', -1)" class="px-3 py-1">-</button>
-                            <span id="qty-${p._id}" class="text-[10px] font-bold">1</span>
-                            <button onclick="updateQty('${p._id}', 1)" class="px-3 py-1">+</button>
-                        </div>
-                        <button onclick="handleAddToCart('${p._id}')" id="btn-${p._id}" ${isOutOfStock ? 'disabled' : ''} class="w-full ${isOutOfStock ? 'bg-gray-200' : 'bg-brandBlack text-brandPink'} text-[8px] py-2.5 uppercase tracking-widest">
-                            ${isOutOfStock ? 'Out of Stock' : 'Add to Cart'}
-                        </button>
-                    </div>
-                </div>`;
-            };
+return `
+    <div class="product-card p-3 group relative flex flex-col h-full rounded-lg shadow-sm">
+        ${isOutOfStock ? `<div class="absolute inset-0 z-10 bg-white/40 flex items-center justify-center rounded-lg"><span class="bg-black text-white text-[9px] px-4 py-2 uppercase">Sold Out</span></div>` : ''}
+        
+        <div onclick="openModal('${p._id}')" class="aspect-[4/5] overflow-hidden mb-3 bg-white/50 rounded-md cursor-pointer">
+            <img id="img-${p._id}" src="${p.imageUrl}" onerror="refreshBrokenImage('${p._id}', this)" class="w-full h-full object-cover transition duration-700 group-hover:scale-110">
+        </div>
+
+        <div class="text-center flex-grow">
+            ${typeLabel}
+            <h3 class="uppercase font-bold text-[9px] tracking-widest mb-1 truncate text-brandBlack">${p.name}</h3>
+            ${comboDropdown}
+            <p id="price-${p._id}" class="text-brandBlack font-black text-[11px] mb-2">₦${Number(displayPrice).toLocaleString()}</p>
+            
+            <select data-id="${p._id}" onchange="handleSizeChange(this, '${p._id}')" ${isOutOfStock ? 'disabled' : ''} class="w-full border border-black/10 text-[8px] uppercase py-1.5 px-2 mb-2 bg-white/80 rounded">
+                ${availableVariants.map(v => `<option value="${v.size}" data-price="${v.price}">${v.size}</option>`).join('')}
+            </select>
+
+            <div class="flex items-center justify-between border border-black/10 mb-3 bg-white/80 rounded">
+                <button onclick="updateQty('${p._id}', -1)" class="px-3 py-1 font-bold">-</button>
+                <span id="qty-${p._id}" class="text-[10px] font-bold">1</span>
+                <button onclick="updateQty('${p._id}', 1)" class="px-3 py-1 font-bold">+</button>
+            </div>
+
+            <button onclick="handleAddToCart('${p._id}')" id="btn-${p._id}" ${isOutOfStock ? 'disabled' : ''} class="w-full ${isOutOfStock ? 'bg-gray-400' : 'bg-brandBlack text-[#F7C8D0]'} text-[8px] py-3 rounded font-bold uppercase tracking-widest transition-colors">
+                ${isOutOfStock ? 'Sold Out' : 'Add to Cart'}
+            </button>
+        </div>
+    </div>`;
+};
 
             const populateGrid = (cat, elementId) => {
                 const gridEl = document.getElementById(elementId);
