@@ -107,7 +107,7 @@
         </svg>
     </a>
 
-<nav class="fixed w-full z-[150] bg-black/10 backdrop-blur-md px-4 md:px-8 py-4 flex justify-between items-center border-b border-black/5">
+<nav class="fixed w-full z-[150] bg-pink/10 backdrop-blur-md px-4 md:px-8 py-4 flex justify-between items-center border-b border-black/5">
         <div class="flex items-center gap-4">
         <button onclick="toggleSidebar(true)" class="md:hidden text-brandPink">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 8h16M4 16h16" stroke-width="2"></path></svg>
@@ -397,16 +397,20 @@
     }
     checkLoginStatus();
 
-    // --- 2. Notification Helper ---
-    function showNotification(message) {
-        const toast = document.getElementById('custom-toast');
-        const toastMsg = document.getElementById('toast-message');
-        if(!toast || !toastMsg) return;
-        toastMsg.innerText = message;
-        toast.classList.add('show');
-        setTimeout(() => { toast.classList.remove('show'); }, 3000);
-    }
+  // --- 2. Notification Helper ---
+function showNotification(message) {
+    const toast = document.getElementById('custom-toast');
+    const toastMsg = document.getElementById('toast-message');
+    if(!toast || !toastMsg) return;
 
+    toastMsg.innerText = message;
+    toast.classList.add('show');
+
+    // Disappears after 1.5 seconds instead of 3
+    setTimeout(() => { 
+        toast.classList.remove('show'); 
+    }, 1500); 
+}
     // --- 3. Cart Badge Update ---
     function updateCartBadge() {
         const count = cart.reduce((sum, item) => sum + item.quantity, 0);
