@@ -37,10 +37,8 @@
     body::before {
         content: "";
         position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
+        top: 0; left: 0;
+        width: 100%; height: 100%;
         background-image: url('https://i.imgur.com/gk9Gv9D.png'); 
         background-repeat: repeat;
         background-size: 300px;
@@ -49,37 +47,40 @@
         pointer-events: none;
     }
 
-    /* --- SLIDER LOGIC START --- */
-    /* Ensure the parent container is the reference point */
-    .relative.overflow-hidden {
-        position: relative;
+    /* --- NEW SLIDER LOGIC START --- */
+    .relative.overflow-hidden { 
+        position: relative; 
     }
 
-    /* Stack both slide groups on top of each other */
-    .slide-fade {
-        position: absolute; /* This stacks Group 2 directly on top of Group 1 */
+    .slide-item {
+        position: absolute;
         top: 0;
-        left: 0;
-        width: 100%;
+        width: 100%; /* Default for Mobile: takes full width */
         height: 100%;
-        transition: opacity 1.5s ease-in-out; /* Smooth transition duration */
-        display: flex !important; /* Overrides hidden/block issues during transit */
+        transition: opacity 1.2s ease-in-out, transform 1.2s ease-in-out;
+    }
+
+    /* On Desktop: Show two images side-by-side */
+    @media (min-width: 768px) {
+        .slide-item { width: 50%; }
+        #slide-0, #slide-2 { left: 0; }
+        #slide-1, #slide-3 { left: 50%; }
     }
 
     .slide-active {
         opacity: 1;
         z-index: 20;
-        pointer-events: auto;
+        visibility: visible;
     }
 
     .slide-hidden {
         opacity: 0;
         z-index: 10;
-        pointer-events: none;
+        visibility: hidden;
     }
-    /* --- SLIDER LOGIC END --- */
+    /* --- NEW SLIDER LOGIC END --- */
 
-    /* Responsive adjustments for Pattern */
+    /* Responsive Pattern */
     @media (max-width: 768px) {
         body::before {
             background-size: 180px;
@@ -119,7 +120,7 @@
         border-color: #000000;
     }
 
-    /* Sidebar Logic */
+    /* Sidebar & Grid */
     #sidebar { transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
     .sidebar-open { transform: translateX(0); }
     .sidebar-closed { transform: translateX(-100%); }
@@ -138,7 +139,7 @@
         .collection-grid { grid-auto-columns: calc(20% - 1rem); }
     }
 
-    /* Mobile Responsive Modal Fixes */
+    /* Mobile Responsive Modal */
     @media (max-width: 768px) {
         #product-modal .modal-content {
             height: auto; 
@@ -151,8 +152,7 @@
         }
         
         #modal-img-container {
-            height: auto; 
-            width: 100%;
+            height: auto; width: 100%;
             background-color: #f9f9f9; 
             display: flex;
             align-items: center;
@@ -175,10 +175,6 @@
             right: 15px !important;
             box-shadow: 0 4px 12px rgba(0,0,0,0.2);
             border: 2px solid white;
-        }
-
-        #product-modal .w-full.md\:w-1\/2.p-6 {
-            padding: 24px 20px;
         }
     }
 </style>
@@ -246,26 +242,20 @@
     </aside>
 
 <section class="bg-brandBlack relative min-h-[500px] md:min-h-[750px]">
-    <div class="relative h-[70vh] md:h-[90vh] overflow-hidden">
-        
-        <div id="slide-group-1" class="slide-fade slide-active flex flex-row h-full">
-            <div class="w-full md:w-1/2 h-full">
-                <img src="https://i.imgur.com/Wp0HCu8.jpeg" class="w-full h-full object-cover object-top">
-            </div>
-            <div class="hidden md:block md:w-1/2 h-full">
-                <img src="https://i.imgur.com/KQ2leiY.jpeg" class="w-full h-full object-cover object-top">
-            </div>
-        </div>
-
-        <div id="slide-group-2" class="slide-fade slide-hidden flex flex-row h-full">
-            <div class="w-full md:w-1/2 h-full">
-                <img src="https://i.imgur.com/BRl8AVs.jpeg" class="w-full h-full object-cover object-top">
-            </div>
-            <div class="hidden md:block md:w-1/2 h-full">
-                <img src="https://i.imgur.com/Wp0HCu8.jpeg" class="w-full h-full object-cover object-top">
-            </div>
-        </div>
+  <div class="relative h-[70vh] md:h-[90vh] overflow-hidden bg-[#F7C8D0]">
+    <div class="slide-item slide-active" id="slide-0">
+        <img src="https://i.imgur.com/Wp0HCu8.jpeg" class="w-full h-full object-cover object-top">
     </div>
+    <div class="slide-item slide-hidden" id="slide-1">
+        <img src="https://i.imgur.com/KQ2leiY.jpeg" class="w-full h-full object-cover object-top">
+    </div>
+    <div class="slide-item slide-hidden" id="slide-2">
+        <img src="https://i.imgur.com/BRl8AVs.jpeg" class="w-full h-full object-cover object-top">
+    </div>
+    <div class="slide-item slide-hidden" id="slide-3">
+        <img src="https://i.imgur.com/Wp0HCu8.jpeg" class="w-full h-full object-cover object-top">
+    </div>
+</div>
 
  <div class="absolute inset-0 flex flex-col items-center justify-center z-10 pointer-events-none">
     <div class="glass-overlay p-3 md:p-10 rounded-full border border-brandPink/20 pointer-events-auto relative group">
@@ -831,26 +821,31 @@ return `
         document.getElementById(`qty-${productId}`).innerText = "1";
     }
 
-   let currentSlide = 1;
+ let currentIdx = 0;
+const totalSlides = 4;
 
-setInterval(() => {
-    const s1 = document.getElementById('slide-group-1');
-    const s2 = document.getElementById('slide-group-2');
+function rotateSlides() {
+    const isMobile = window.innerWidth < 768;
     
-    if (!s1 || !s2) return;
-
-    if (currentSlide === 1) {
-        // Switch to Slide Group 2
-        s1.classList.replace('slide-active', 'slide-hidden');
-        s2.classList.replace('slide-hidden', 'slide-active');
-        currentSlide = 2;
-    } else {
-        // Switch back to Slide Group 1
-        s2.classList.replace('slide-active', 'slide-hidden');
-        s1.classList.replace('slide-hidden', 'slide-active');
-        currentSlide = 1;
+    // Hide all first
+    for(let i=0; i<totalSlides; i++) {
+        document.getElementById(`slide-${i}`).classList.replace('slide-active', 'slide-hidden');
     }
-}, 5000); // 5000ms = 5 Seconds
+
+    if (isMobile) {
+        // Mobile Logic: One by one
+        currentIdx = (currentIdx + 1) % totalSlides;
+        document.getElementById(`slide-${currentIdx}`).classList.replace('slide-hidden', 'slide-active');
+    } else {
+        // Desktop Logic: Pairs (0&1 then 2&3)
+        currentIdx = (currentIdx < 2) ? 2 : 0; 
+        document.getElementById(`slide-${currentIdx}`).classList.replace('slide-hidden', 'slide-active');
+        document.getElementById(`slide-${currentIdx + 1}`).classList.replace('slide-hidden', 'slide-active');
+    }
+}
+
+// Run every 5 seconds
+setInterval(rotateSlides, 5000);
 
     loadProducts();
 </script>
