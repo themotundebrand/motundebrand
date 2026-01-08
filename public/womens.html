@@ -432,41 +432,40 @@
         document.getElementById('sidebar-overlay').classList.toggle('hidden', !open);
     }
 
-   // --- TWICE-DAILY RANDOMIZED AD WITH 4-HOUR GAP ---
+// --- TWICE-DAILY RANDOMIZED AD WITH 30s INITIAL DELAY & 4-HOUR GAP ---
 document.addEventListener('DOMContentLoaded', () => {
     const overlay = document.getElementById('videoAdOverlay');
     const video = document.getElementById('adVideo');
     const skipBtn = document.getElementById('skipBtn');
     const muteIcon = document.getElementById('muteIcon');
 
-    const today = new Date().toISOString().split('T')[0];
-    const now = Date.now(); 
-    
-    // UPDATED GAP SETTING: 4 hours (14,400,000 milliseconds)
-    const minGap = 4 * 60 * 60 * 1000; 
+    // 1. SET THE INITIAL DELAY (35 Seconds = 35000ms)
+    const initialSiteVisitDelay = 35000; 
 
-    // 1. Load tracker from localStorage
-    let adData = JSON.parse(localStorage.getItem('outflickz_ad_tracker')) || { 
-        date: today, 
-        count: 0, 
-        lastSeenTime: 0 
-    };
+    setTimeout(() => {
+        const today = new Date().toISOString().split('T')[0];
+        const now = Date.now(); 
+        const minGap = 4 * 60 * 60 * 1000; // 4 hours
 
-    // 2. Reset if it's a new day
-    if (adData.date !== today) {
-        adData = { date: today, count: 0, lastSeenTime: 0 };
-    }
+        // 2. Load tracker from localStorage
+        let adData = JSON.parse(localStorage.getItem('outflickz_ad_tracker')) || { 
+            date: today, 
+            count: 0, 
+            lastSeenTime: 0 
+        };
 
-    // 3. Logic Check
-    const timeSinceLastAd = now - adData.lastSeenTime;
-    const randomChance = Math.random() > 0.5; // 50% chance to trigger
+        // 3. Reset if it's a new day
+        if (adData.date !== today) {
+            adData = { date: today, count: 0, lastSeenTime: 0 };
+        }
 
-    if (adData.count < 2 && timeSinceLastAd > minGap && randomChance && overlay && video) {
-        
-        // 4. 10 SECOND DELAY BEFORE SHOWING
-        setTimeout(() => {
-            if(!overlay) return;
+        // 4. Logic Check (Frequency and Gap)
+        const timeSinceLastAd = now - adData.lastSeenTime;
+        const randomChance = Math.random() > 0.5; // 50% chance to trigger
 
+        // Only proceed if all luxury/frequency conditions are met
+        if (adData.count < 2 && timeSinceLastAd > minGap && randomChance && overlay && video) {
+            
             overlay.classList.remove('hidden');
             overlay.classList.add('flex');
             
@@ -488,16 +487,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // REDIRECT TO SHOP WHEN FINISHED
             video.onended = function() {
-                window.location.href = 'women.html'; 
+                window.location.href = 'shop.html'; 
             };
 
             // Show Skip button after 6 seconds of playback
             setTimeout(() => {
                 if(skipBtn) skipBtn.classList.remove('hidden');
             }, 6000); 
-
-        }, 25000); // 25 seconds
-    }
+        }
+    }, initialSiteVisitDelay); 
 });
 
 function toggleMute(event) {
