@@ -6,6 +6,7 @@
     <title>The Motunde Brand | Luxury Fragrances</title>
     
     <link rel="icon" type="image/png" href="https://i.imgur.com/CVKXV7R.png">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -16,137 +17,79 @@
                         brandWhite: '#FFFFFF',
                         brandBlack: '#000000',
                         brandPink: '#F7C8D0',
-                        brandPinkDark: '#E2A9B3',
                     },
-                    letterSpacing: {
-                        luxury: '0.4em',
+                    fontFamily: {
+                        serif: ['"Playfair Display"', 'serif'],
                     }
                 }
             }
         }
     </script>
    <style>
-        .fade-slide {
-            transition: opacity 1.5s cubic-bezier(0.4, 0, 0.2, 1);
-            /* THE FIX: Use a color that matches the image background (Warm Charcoal/Greige) */
-            background-color: #1a1817; 
+        .fade-out {
+            opacity: 0;
+            transition: opacity 0.8s ease-in-out;
         }
 
-        .optimized-img {
-            width: 100%;
-            height: 100%;
-            /* THE FIX: 'contain' ensures the WHOLE image shows without being cut off */
-            object-fit: contain; 
-            object-position: center;
-            transition: transform 6s ease-out;
-            /* Remove any default padding that might cause gaps */
-            padding: 0;
+        .brand-logo {
+            width: 60%; /* Optimized for mobile */
+            max-width: 320px; /* Optimized for desktop */
+            height: auto;
+            filter: drop-shadow(0 0 15px rgba(247, 200, 208, 0.2));
+            animation: softPulse 2s infinite ease-in-out;
         }
 
-        /* Responsive Title scaling */
-        .brand-title {
-            font-size: clamp(0.7rem, 8vw, 4.5rem); 
-            line-height: 1.1;
-            width: 90%;
-            margin: 0 auto;
-            text-shadow: 0 0 30px rgba(0,0,0,0.8);
-            letter-spacing: 0.2em;
-        }
-
-        @media (min-width: 768px) {
-            .brand-title {
-                letter-spacing: 0.4em;
-            }
+        @keyframes softPulse {
+            0%, 100% { transform: scale(1); opacity: 0.9; }
+            50% { transform: scale(1.03); opacity: 1; }
         }
 
         .timer-bar {
-            animation: progress 9.5s linear forwards;
+            animation: progress 2s linear forwards;
         }
         @keyframes progress { from { width: 0%; } to { width: 100%; } }
-
-        .dot {
-            background-color: rgba(255, 255, 255, 0.2);
-            width: 15px;
-        }
     </style>
 </head>
-<body class="bg-brandBlack text-brandWhite overflow-hidden antialiased">
+<body class="bg-brandBlack text-brandWhite overflow-hidden antialiased h-screen flex flex-col items-center justify-center">
 
     <div class="fixed top-0 left-0 h-[2px] bg-brandPink z-50 timer-bar"></div>
 
-    <header class="relative h-screen flex items-center justify-center bg-brandBlack">
-        <div id="slider-container" class="absolute inset-0 z-0">
-            <div class="slider-image absolute inset-0 opacity-100 fade-slide flex items-center justify-center">
-                <div class="absolute inset-0 bg-black/10 z-10 pointer-events-none"></div>
-                <img src="https://i.imgur.com/KQ2leiY.jpeg" class="optimized-img" alt="Luxury Scent 1">
-            </div>
-            <div class="slider-image absolute inset-0 opacity-0 fade-slide flex items-center justify-center">
-                <div class="absolute inset-0 bg-black/10 z-10 pointer-events-none"></div>
-                <img src="https://i.imgur.com/Wp0HCu8.jpeg" class="optimized-img" alt="Luxury Scent 2">
-            </div>
-            <div class="slider-image absolute inset-0 opacity-0 fade-slide flex items-center justify-center">
-                <div class="absolute inset-0 bg-black/10 z-10 pointer-events-none"></div>
-                <img src="https://i.imgur.com/BRl8AVs.jpeg" class="optimized-img" alt="Luxury Scent 3">
-            </div>
+    <main class="relative z-30 flex flex-col justify-center items-center text-center px-6">
+        <div class="mb-6">
+            <img 
+                src="https://i.imgur.com/CVKXV7R.png" 
+                alt="Logo" 
+                class="brand-logo"
+                loading="eager"
+            >
         </div>
 
-        <div class="relative z-30 flex flex-col justify-center items-center text-center px-6 pointer-events-none">
-            <h1 class="brand-title font-bold uppercase mb-4">
-                The Motunde Brand
-            </h1>
-            <div class="w-12 h-[1px] bg-brandPink/60 mb-6"></div>
-            <p class="text-[9px] md:text-xs tracking-[0.5em] md:tracking-[0.8em] uppercase text-brandPink font-light">
-                Essence of Timeless Luxury
-            </p>
-        </div>
-    </header>
+        <h1 class="font-serif text-2xl md:text-4xl lg:text-5xl font-bold uppercase tracking-[0.2em] mb-4 text-brandWhite">
+            The Motunde Brand
+        </h1>
+
+        <div class="w-16 h-[1px] bg-brandPink/40 mb-4"></div>
+        
+        <p class="text-[9px] md:text-xs tracking-[0.6em] md:tracking-[0.8em] uppercase text-brandPink font-light">
+            Essence of Timeless Luxury
+        </p>
+    </main>
+
     <script>
-        let currentIndex = 0;
-        const slides = document.querySelectorAll('.slider-image');
-        const dots = document.querySelectorAll('.dot');
-        const totalSlides = slides.length;
-        const slideInterval = 3000; 
+        // Speed optimized redirect (2 Seconds)
+        setTimeout(() => {
+            document.body.classList.add('fade-out');
+            setTimeout(() => {
+                window.location.href = 'shop.html';
+            }, 800);
+        }, 2000);
 
-        function showSlide(index) {
-            slides.forEach((slide, i) => {
-                const img = slide.querySelector('img');
-                if (i === index) {
-                    slide.style.opacity = '1';
-                    slide.style.zIndex = '10';
-                    // Subtle zoom effect that doesn't push image out of bounds
-                    img.style.transform = "scale(1.05)"; 
-                } else {
-                    slide.style.opacity = '0';
-                    slide.style.zIndex = '0';
-                    img.style.transform = "scale(1)";
-                }
-            });
-            
-            dots.forEach((dot, i) => {
-                dot.style.backgroundColor = i === index ? '#FFFFFF' : 'rgba(255,255,255,0.2)';
-                dot.style.width = i === index ? '40px' : '15px';
-            });
-        }
-
-        function nextSlide() {
-            if (currentIndex < totalSlides - 1) {
-                currentIndex++;
-                showSlide(currentIndex);
-            } else {
-                clearInterval(cycle);
-                document.body.style.transition = 'opacity 1.2s ease-in-out';
-                document.body.style.opacity = '0';
-                setTimeout(() => {
-                    window.location.href = 'shop.html';
-                }, 1200);
-            }
-        }
-
-        const cycle = setInterval(nextSlide, slideInterval);
-        showSlide(0);
-
+        // Pre-fetch next page for 0ms transition delay
         window.addEventListener('load', () => {
-            fetch('/api/products').catch(() => {});
+            const link = document.createElement('link');
+            link.rel = 'prefetch';
+            link.href = 'shop.html';
+            document.head.appendChild(link);
         });
     </script>
 </body>
