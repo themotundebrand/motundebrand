@@ -49,6 +49,20 @@
         background: white;
         transition: all 0.3s ease;
     }
+
+    #sidebar { 
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1); 
+    box-shadow: 20px 0 50px rgba(0,0,0,0.5);
+}
+
+/* Slide in from left */
+.sidebar-open { transform: translateX(0); }
+.sidebar-closed { transform: translateX(-100%); }
+
+/* Optional: Add a slight dimming to the main content when sidebar is open */
+#sidebar-overlay {
+    transition: opacity 0.3s ease;
+}
     
     #sidebar { transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
     .sidebar-open { transform: translateX(0); }
@@ -103,21 +117,26 @@
         </div>
     </nav>
 
-    <div id="sidebar-overlay" onclick="toggleSidebar(false)" class="fixed inset-0 bg-black/60 z-[110] hidden backdrop-blur-sm"></div>
+      <div id="sidebar-overlay" onclick="toggleSidebar(false)" class="fixed inset-0 bg-black/60 z-[110] hidden backdrop-blur-sm"></div>
     
     <aside id="sidebar" class="fixed top-0 left-0 h-full w-64 bg-brandBlack z-[120] sidebar-closed p-6 flex flex-col">
-        <button onclick="toggleSidebar(false)" class="self-end text-brandPink mb-10"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" stroke-width="2"></path></svg></button>
+        <button onclick="toggleSidebar(false)" class="self-end text-brandPink mb-10">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" stroke-width="2"></path></svg>
+        </button>
         <div class="flex flex-col space-y-6 text-[10px] tracking-[0.25em] uppercase text-brandPink/80">
-            <a href="shop.html" class="hover:text-brandPink transition">Shop</a>
-            <a href="womens.html" class="text-brandPink">Women</a>
-            <a href="mens.html" class="hover:text-brandPink transition">Men</a>
-            <a href="kids.html" class="hover:text-brandPink transition">Kids</a>
-            <a href="mist.html" class="hover:text-brandPink transition">Mist</a>
-            <a href="combo.html" class="hover:text-brandPink transition">Combo</a>
-            <a href="orderhistory.html" class="hover:text-brandPink">Order History</a>
+            <a href="shop.html" onclick="toggleSidebar(false)" class="hover:text-brandPink transition-colors">Shop</a>
+            <a href="womens.html" onclick="toggleSidebar(false)" class="hover:text-brandPink transition-colors">Women</a>
+            <a href="mens.html" onclick="toggleSidebar(false)" class="hover:text-brandPink transition-colors">Men</a>
+            <a href="kids.html" onclick="toggleSidebar(false)" class="hover:text-brandPink transition-colors">Kids</a>
+            <a href="combo.html" onclick="toggleSidebar(false)" class="hover:text-brandPink transition-colors">Combo</a>
+            <a href="mist.html" onclick="toggleSidebar(false)" class="hover:text-brandPink transition-colors">Mist</a>    
+             <a href="orderhistory.html" onclick="toggleSidebar(false)" class="hover:text-brandPink transition-colors">Order History</a>
+
+            <div class="pt-6 border-t border-brandPink/10 mt-4">
+                <a href="account.html" class="text-[9px] tracking-widest opacity-50 hover:opacity-100 transition-opacity">My Account</a>
+            </div>
         </div>
     </aside>
-
 
     <main class="pt-28 pb-12 px-4 md:px-12">
         <header class="text-center mb-12">
@@ -432,44 +451,38 @@
         document.getElementById('sidebar-overlay').classList.toggle('hidden', !open);
     }
 
-// --- TWICE-DAILY RANDOMIZED AD WITH 30s INITIAL DELAY & 4-HOUR GAP ---
+// --- TWICE-DAILY RANDOMIZED AD WITH 35s INITIAL DELAY ---
 document.addEventListener('DOMContentLoaded', () => {
     const overlay = document.getElementById('videoAdOverlay');
     const video = document.getElementById('adVideo');
     const skipBtn = document.getElementById('skipBtn');
     const muteIcon = document.getElementById('muteIcon');
 
-    // 1. SET THE INITIAL DELAY (35 Seconds = 35000ms)
-    const initialSiteVisitDelay = 35000; 
+    const initialSiteVisitDelay = 40000; 
 
     setTimeout(() => {
         const today = new Date().toISOString().split('T')[0];
         const now = Date.now(); 
-        const minGap = 4 * 60 * 60 * 1000; // 4 hours
+        const minGap = 4 * 60 * 60 * 1000; 
 
-        // 2. Load tracker from localStorage
         let adData = JSON.parse(localStorage.getItem('outflickz_ad_tracker')) || { 
             date: today, 
             count: 0, 
             lastSeenTime: 0 
         };
 
-        // 3. Reset if it's a new day
         if (adData.date !== today) {
             adData = { date: today, count: 0, lastSeenTime: 0 };
         }
 
-        // 4. Logic Check (Frequency and Gap)
         const timeSinceLastAd = now - adData.lastSeenTime;
-        const randomChance = Math.random() > 0.5; // 50% chance to trigger
+        const randomChance = Math.random() > 0.5; 
 
-        // Only proceed if all luxury/frequency conditions are met
         if (adData.count < 2 && timeSinceLastAd > minGap && randomChance && overlay && video) {
             
             overlay.classList.remove('hidden');
             overlay.classList.add('flex');
             
-            // 5. Save the state IMMEDIATELY when shown
             adData.count += 1;
             adData.lastSeenTime = Date.now();
             localStorage.setItem('outflickz_ad_tracker', JSON.stringify(adData));
@@ -485,18 +498,29 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
             }
 
-            // REDIRECT TO SHOP WHEN FINISHED
+            // REDIRECT AND KILL SOUND WHEN FINISHED
             video.onended = function() {
-                window.location.href = 'shop.html'; 
+                killAdAudio(); // Ensure sound is dead
+                window.location.href = 'womens.html'; 
             };
 
-            // Show Skip button after 6 seconds of playback
             setTimeout(() => {
                 if(skipBtn) skipBtn.classList.remove('hidden');
             }, 6000); 
         }
     }, initialSiteVisitDelay); 
 });
+
+// NEW HELPER: Completely kills the audio/video stream
+function killAdAudio() {
+    const video = document.getElementById('adVideo');
+    if (video) {
+        video.pause();
+        video.muted = true;
+        video.volume = 0;
+        video.currentTime = 0; // Reset to start so it doesn't buffer audio
+    }
+}
 
 function toggleMute(event) {
     event.preventDefault();
@@ -505,6 +529,7 @@ function toggleMute(event) {
     const icon = document.getElementById('muteIcon');
     if (video.muted) {
         video.muted = false;
+        video.volume = 1;
         icon.innerText = "🔊";
     } else {
         video.muted = true;
@@ -514,12 +539,14 @@ function toggleMute(event) {
 
 function closeAd() {
     const overlay = document.getElementById('videoAdOverlay');
-    const video = document.getElementById('adVideo');
-    if(video) video.pause();
+    
+    killAdAudio(); // Use the killer function here
+    
     if(overlay) {
         overlay.classList.add('hidden');
         overlay.classList.remove('flex');
     }
+    sessionStorage.setItem('tmb_ad_seen', 'true');
 }
 
     window.onload = () => {

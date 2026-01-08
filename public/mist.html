@@ -433,45 +433,38 @@ async function loadMistCollection() {
         localStorage.setItem('tmb_cart', JSON.stringify(cart));
         updateCartBadge();
     }
-
-// --- TWICE-DAILY RANDOMIZED AD WITH 30s INITIAL DELAY & 4-HOUR GAP ---
+// --- TWICE-DAILY RANDOMIZED AD WITH 35s INITIAL DELAY ---
 document.addEventListener('DOMContentLoaded', () => {
     const overlay = document.getElementById('videoAdOverlay');
     const video = document.getElementById('adVideo');
     const skipBtn = document.getElementById('skipBtn');
     const muteIcon = document.getElementById('muteIcon');
 
-    // 1. SET THE INITIAL DELAY (35 Seconds = 35000ms)
     const initialSiteVisitDelay = 35000; 
 
     setTimeout(() => {
         const today = new Date().toISOString().split('T')[0];
         const now = Date.now(); 
-        const minGap = 4 * 60 * 60 * 1000; // 4 hours
+        const minGap = 4 * 60 * 60 * 1000; 
 
-        // 2. Load tracker from localStorage
         let adData = JSON.parse(localStorage.getItem('outflickz_ad_tracker')) || { 
             date: today, 
             count: 0, 
             lastSeenTime: 0 
         };
 
-        // 3. Reset if it's a new day
         if (adData.date !== today) {
             adData = { date: today, count: 0, lastSeenTime: 0 };
         }
 
-        // 4. Logic Check (Frequency and Gap)
         const timeSinceLastAd = now - adData.lastSeenTime;
-        const randomChance = Math.random() > 0.5; // 50% chance to trigger
+        const randomChance = Math.random() > 0.5; 
 
-        // Only proceed if all luxury/frequency conditions are met
         if (adData.count < 2 && timeSinceLastAd > minGap && randomChance && overlay && video) {
             
             overlay.classList.remove('hidden');
             overlay.classList.add('flex');
             
-            // 5. Save the state IMMEDIATELY when shown
             adData.count += 1;
             adData.lastSeenTime = Date.now();
             localStorage.setItem('outflickz_ad_tracker', JSON.stringify(adData));
@@ -487,12 +480,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
             }
 
-            // REDIRECT TO SHOP WHEN FINISHED
+            // REDIRECT AND KILL SOUND WHEN FINISHED
             video.onended = function() {
-                window.location.href = 'shop.html'; 
+                killAdAudio(); // Ensure sound is dead
+                window.location.href = 'mist.html'; 
             };
 
-            // Show Skip button after 6 seconds of playback
             setTimeout(() => {
                 if(skipBtn) skipBtn.classList.remove('hidden');
             }, 6000); 
@@ -500,6 +493,16 @@ document.addEventListener('DOMContentLoaded', () => {
     }, initialSiteVisitDelay); 
 });
 
+// NEW HELPER: Completely kills the audio/video stream
+function killAdAudio() {
+    const video = document.getElementById('adVideo');
+    if (video) {
+        video.pause();
+        video.muted = true;
+        video.volume = 0;
+        video.currentTime = 0; // Reset to start so it doesn't buffer audio
+    }
+}
 
 function toggleMute(event) {
     event.preventDefault();
@@ -508,6 +511,7 @@ function toggleMute(event) {
     const icon = document.getElementById('muteIcon');
     if (video.muted) {
         video.muted = false;
+        video.volume = 1;
         icon.innerText = "🔊";
     } else {
         video.muted = true;
@@ -517,12 +521,14 @@ function toggleMute(event) {
 
 function closeAd() {
     const overlay = document.getElementById('videoAdOverlay');
-    const video = document.getElementById('adVideo');
-    if(video) video.pause();
+    
+    killAdAudio(); // Use the killer function here
+    
     if(overlay) {
         overlay.classList.add('hidden');
         overlay.classList.remove('flex');
     }
+    sessionStorage.setItem('tmb_ad_seen', 'true');
 }
 
     window.onload = () => {
