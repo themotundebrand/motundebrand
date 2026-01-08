@@ -433,6 +433,7 @@ async function loadMistCollection() {
         localStorage.setItem('tmb_cart', JSON.stringify(cart));
         updateCartBadge();
     }
+
 // --- TWICE-DAILY RANDOMIZED AD WITH 35s INITIAL DELAY ---
 document.addEventListener('DOMContentLoaded', () => {
     const overlay = document.getElementById('videoAdOverlay');
@@ -440,7 +441,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const skipBtn = document.getElementById('skipBtn');
     const muteIcon = document.getElementById('muteIcon');
 
-    const initialSiteVisitDelay = 35000; 
+    const initialSiteVisitDelay = 30000; 
 
     setTimeout(() => {
         const today = new Date().toISOString().split('T')[0];
@@ -530,7 +531,6 @@ function closeAd() {
     }
     sessionStorage.setItem('tmb_ad_seen', 'true');
 }
-
     window.onload = () => {
         loadMistCollection();
         updateCartBadge();

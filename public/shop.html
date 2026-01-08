@@ -869,6 +869,7 @@ function rotateSlides() {
         document.getElementById(`slide-${currentIdx + 1}`).classList.replace('slide-hidden', 'slide-active');
     }
 }
+
 // --- TWICE-DAILY RANDOMIZED AD WITH 35s INITIAL DELAY ---
 document.addEventListener('DOMContentLoaded', () => {
     const overlay = document.getElementById('videoAdOverlay');
@@ -876,7 +877,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const skipBtn = document.getElementById('skipBtn');
     const muteIcon = document.getElementById('muteIcon');
 
-    const initialSiteVisitDelay = 40000; 
+    const initialSiteVisitDelay = 30000; 
 
     setTimeout(() => {
         const today = new Date().toISOString().split('T')[0];
