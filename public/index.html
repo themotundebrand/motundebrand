@@ -32,8 +32,12 @@
         }
 
         .brand-logo {
-            width: 60%; /* Optimized for mobile */
-            max-width: 320px; /* Optimized for desktop */
+            /* Ensures centering on all screen sizes */
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+            width: 80%; /* Slightly larger for mobile impact */
+            max-width: 320px; /* Limit for desktop */
             height: auto;
             filter: drop-shadow(0 0 15px rgba(247, 200, 208, 0.2));
             animation: softPulse 2s infinite ease-in-out;
@@ -50,15 +54,15 @@
         @keyframes progress { from { width: 0%; } to { width: 100%; } }
     </style>
 </head>
-<body class="bg-brandBlack text-brandWhite overflow-hidden antialiased h-screen flex flex-col items-center justify-center">
+<body class="bg-brandBlack text-brandWhite overflow-hidden antialiased h-screen w-full flex flex-col items-center justify-center">
 
     <div class="fixed top-0 left-0 h-[2px] bg-brandPink z-50 timer-bar"></div>
 
-    <main class="relative z-30 flex flex-col justify-center items-center text-center px-6">
-        <div class="mb-6">
+    <main class="relative z-30 flex flex-col justify-center items-center text-center px-4 w-full">
+        <div class="mb-8 flex justify-center w-full">
             <img 
                 src="https://i.imgur.com/CVKXV7R.png" 
-                alt="Logo" 
+                alt="The Motunde Brand Logo" 
                 class="brand-logo"
                 loading="eager"
             >
@@ -68,7 +72,7 @@
             The Motunde Brand
         </h1>
 
-        <div class="w-16 h-[1px] bg-brandPink/40 mb-4"></div>
+        <div class="w-16 h-[1px] bg-brandPink/40 mb-4 mx-auto"></div>
         
         <p class="text-[9px] md:text-xs tracking-[0.6em] md:tracking-[0.8em] uppercase text-brandPink font-light">
             Essence of Timeless Luxury
@@ -84,7 +88,7 @@
             }, 800);
         }, 2000);
 
-        // Pre-fetch next page for 0ms transition delay
+        // Pre-fetch for zero-lag transition
         window.addEventListener('load', () => {
             const link = document.createElement('link');
             link.rel = 'prefetch';
