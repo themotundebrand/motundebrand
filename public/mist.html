@@ -434,59 +434,77 @@ async function loadMistCollection() {
         updateCartBadge();
     }
 
-// --- TWICE-DAILY RANDOMIZED AD WITH 35s INITIAL DELAY ---
+// --- OUTFILICKZ MULTI-PAGE AD CONTROLLER ---
 document.addEventListener('DOMContentLoaded', () => {
-    const overlay = document.getElementById('videoAdOverlay');
-    const video = document.getElementById('adVideo');
-    const skipBtn = document.getElementById('skipBtn');
-    const muteIcon = document.getElementById('muteIcon');
+    // 1. DATA INITIALIZATION
+    const today = new Date().toISOString().split('T')[0];
+    const now = Date.now();
+    const minGap = 4 * 60 * 60 * 1000; // 4 hours in milliseconds
+    const initialSiteVisitDelay = 40000; // 40 seconds
 
-    const initialSiteVisitDelay = 30000; 
+    // Load tracking data from localStorage
+    let adData = JSON.parse(localStorage.getItem('outflickz_ad_tracker')) || { 
+        date: today, 
+        count: 0, 
+        lastSeenTime: 0 
+    };
 
+    // Reset tracker if it's a new day
+    if (adData.date !== today) {
+        adData = { date: today, count: 0, lastSeenTime: 0 };
+        localStorage.setItem('outflickz_ad_tracker', JSON.stringify(adData));
+    }
+
+    // 2. ELIGIBILITY CHECK (Prevents timer from starting unnecessarily)
+    const hasSeenThisSession = sessionStorage.getItem('tmb_ad_seen') === 'true';
+    const limitReached = adData.count >= 2;
+    const coolingDown = (now - adData.lastSeenTime) < minGap;
+
+    if (hasSeenThisSession || limitReached || coolingDown) {
+        console.log("Ad status: Not eligible (Limit reached, cooling down, or seen this session).");
+        return; 
+    }
+
+    // 3. START THE DELAY
     setTimeout(() => {
-        const today = new Date().toISOString().split('T')[0];
-        const now = Date.now(); 
-        const minGap = 4 * 60 * 60 * 1000; 
+        const overlay = document.getElementById('videoAdOverlay');
+        const video = document.getElementById('adVideo');
+        const skipBtn = document.getElementById('skipBtn');
+        const muteIcon = document.getElementById('muteIcon');
 
-        let adData = JSON.parse(localStorage.getItem('outflickz_ad_tracker')) || { 
-            date: today, 
-            count: 0, 
-            lastSeenTime: 0 
-        };
-
-        if (adData.date !== today) {
-            adData = { date: today, count: 0, lastSeenTime: 0 };
-        }
-
-        const timeSinceLastAd = now - adData.lastSeenTime;
+        // Roll the dice (50% chance)
         const randomChance = Math.random() > 0.5; 
 
-        if (adData.count < 2 && timeSinceLastAd > minGap && randomChance && overlay && video) {
-            
+        if (randomChance && overlay && video) {
+            // Show UI
             overlay.classList.remove('hidden');
             overlay.classList.add('flex');
             
+            // Update tracking
             adData.count += 1;
             adData.lastSeenTime = Date.now();
             localStorage.setItem('outflickz_ad_tracker', JSON.stringify(adData));
 
+            // Attempt Autoplay
             video.muted = false;
             let playPromise = video.play();
 
             if (playPromise !== undefined) {
                 playPromise.catch(() => {
+                    // Autoplay with sound blocked: Mute and play anyway
                     video.muted = true;
                     if(muteIcon) muteIcon.innerText = "🔇";
                     video.play();
                 });
             }
 
-            // REDIRECT AND KILL SOUND WHEN FINISHED
+            // End of video behavior
             video.onended = function() {
-                killAdAudio(); // Ensure sound is dead
+                killAdAudio(); 
                 window.location.href = 'mist.html'; 
             };
 
+            // Show Skip button after 6 seconds
             setTimeout(() => {
                 if(skipBtn) skipBtn.classList.remove('hidden');
             }, 6000); 
@@ -494,20 +512,37 @@ document.addEventListener('DOMContentLoaded', () => {
     }, initialSiteVisitDelay); 
 });
 
-// NEW HELPER: Completely kills the audio/video stream
+/**
+ * THE NUCLEAR KILL FUNCTION
+ * Completely stops video and tears down the stream to prevent background noise.
+ */
 function killAdAudio() {
     const video = document.getElementById('adVideo');
     if (video) {
         video.pause();
         video.muted = true;
         video.volume = 0;
-        video.currentTime = 0; // Reset to start so it doesn't buffer audio
+        
+        // Force browser to stop buffering/processing the video file
+        const originalSrc = video.src;
+        video.src = ""; 
+        video.load(); 
+        
+        // Optional: restore src so it's ready for a future page load
+        video.src = originalSrc;
+        
+        console.log("Audio stream fully terminated.");
     }
 }
 
+/**
+ * UI CONTROLS
+ */
 function toggleMute(event) {
-    event.preventDefault();
-    event.stopPropagation();
+    if(event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
     const video = document.getElementById('adVideo');
     const icon = document.getElementById('muteIcon');
     if (video.muted) {
@@ -523,12 +558,14 @@ function toggleMute(event) {
 function closeAd() {
     const overlay = document.getElementById('videoAdOverlay');
     
-    killAdAudio(); // Use the killer function here
+    killAdAudio(); // Kill the sound/stream first
     
     if(overlay) {
         overlay.classList.add('hidden');
         overlay.classList.remove('flex');
     }
+    
+    // Set session flag so they don't see it again until they restart the browser
     sessionStorage.setItem('tmb_ad_seen', 'true');
 }
     window.onload = () => {
