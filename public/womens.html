@@ -59,6 +59,12 @@
         transition: opacity 0.3s ease;
     }
 
+    /* Force the video to stay silent and invisible if the overlay is hidden */
+#videoAdOverlay.hidden video {
+    display: none !important;
+    opacity: 0 !important;
+}
+
     .product-card {
         background: white;
         transition: all 0.3s ease;
@@ -226,9 +232,9 @@
     <div class="relative w-full h-full md:h-auto md:max-w-[400px] bg-black md:rounded-xl overflow-hidden shadow-2xl">
         
         <a href="https://www.outflickz.com" target="_blank" class="block w-full h-full cursor-pointer">
-            <video id="adVideo" class="w-full h-full md:h-auto object-cover md:object-contain" playsinline autoplay>
-                <source src="outflickz-ads.mp4" type="video/mp4">
-            </video>
+           <video id="adVideo" class="w-full h-full md:h-auto object-cover md:object-contain" playsinline muted preload="none">
+    <source src="outflickz-ads.mp4" type="video/mp4">
+</video>
         </a>
 
         <button onclick="toggleMute(event)" class="absolute top-6 left-6 bg-black/60 text-white p-2 rounded-full border border-white/20 z-[1020] flex items-center justify-center">
@@ -500,17 +506,20 @@ document.addEventListener('DOMContentLoaded', () => {
         return; 
     }
 
-    // 3. START THE DELAY
+  // 3. START THE DELAY (Optimized for Netlify Multi-page)
     setTimeout(() => {
         const overlay = document.getElementById('videoAdOverlay');
         const video = document.getElementById('adVideo');
         const skipBtn = document.getElementById('skipBtn');
         const muteIcon = document.getElementById('muteIcon');
 
+        // Safety check: if user navigated away or element missing, stop everything
+        if (!overlay || !video) return;
+
         // Roll the dice (50% chance)
         const randomChance = Math.random() > 0.5; 
 
-        if (randomChance && overlay && video) {
+        if (randomChance) {
             // Show UI
             overlay.classList.remove('hidden');
             overlay.classList.add('flex');
@@ -520,13 +529,15 @@ document.addEventListener('DOMContentLoaded', () => {
             adData.lastSeenTime = Date.now();
             localStorage.setItem('outflickz_ad_tracker', JSON.stringify(adData));
 
-            // Attempt Autoplay
-            video.muted = false;
+            // Explicitly set properties before playing to avoid "audio leaks"
+            video.currentTime = 0; 
+            video.muted = false; // Try to play with sound first
+            
             let playPromise = video.play();
 
             if (playPromise !== undefined) {
                 playPromise.catch(() => {
-                    // Autoplay with sound blocked: Mute and play anyway
+                    // If browser blocks sound, mute and play silently
                     video.muted = true;
                     if(muteIcon) muteIcon.innerText = "🔇";
                     video.play();
@@ -536,15 +547,20 @@ document.addEventListener('DOMContentLoaded', () => {
             // End of video behavior
             video.onended = function() {
                 killAdAudio(); 
-                window.location.href = 'womens.html'; 
+                window.location.href = 'shop.html'; 
             };
 
             // Show Skip button after 6 seconds
             setTimeout(() => {
                 if(skipBtn) skipBtn.classList.remove('hidden');
             }, 6000); 
+        } else {
+            // IMPORTANT: If the 50% roll fails, kill the audio stream 
+            // to prevent "Ghost Audio" from pre-buffering
+            killAdAudio();
+            console.log("Ad skipped by random chance. Audio killed.");
         }
-    }, initialSiteVisitDelay); 
+    }, initialSiteVisitDelay);
 });
 
 /**
